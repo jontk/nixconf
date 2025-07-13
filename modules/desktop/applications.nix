@@ -19,7 +19,7 @@
       # Office and productivity
       libreoffice-fresh
       evince # PDF viewer
-      okular # Alternative PDF viewer with more features
+      kdePackages.okular # Alternative PDF viewer with more features
       zathura # Minimal PDF viewer
       
       # Media players
