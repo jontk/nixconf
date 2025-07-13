@@ -42,6 +42,44 @@
     reattach-to-user-namespace # For tmux clipboard support on macOS
   ];
   
+  # RustDesk configuration
+  home.file.".config/rustdesk/RustDesk2.toml" = lib.mkIf isNixOS {
+    text = ''
+      rendezvous_server = "192.168.1.241:21119"
+      relay_server = "192.168.1.241:21117"
+      nat_type = 2
+      serial = 0
+      
+      [options]
+      local-ip-addr = "192.168.1.241"
+      custom-rendezvous-server = "192.168.1.241:21119"
+      relay-server = "192.168.1.241:21117"
+      api-server = ""
+      key = ""
+    '';
+    # Make the file read-only to prevent RustDesk from overwriting it
+    onChange = ''
+      chmod 444 $HOME/.config/rustdesk/RustDesk2.toml
+    '';
+  };
+  
+  # RustDesk wrapper script to preserve server settings
+  home.file.".local/bin/rustdesk-local" = lib.mkIf isNixOS {
+    executable = true;
+    text = ''
+      #!/usr/bin/env bash
+      
+      # Backup current config
+      cp ~/.config/rustdesk/RustDesk2.toml ~/.config/rustdesk/RustDesk2.toml.bak 2>/dev/null || true
+      
+      # Start RustDesk with custom server
+      ${pkgs.rustdesk}/bin/rustdesk --server 192.168.1.241:21119,21117 "$@"
+      
+      # Restore config after RustDesk exits
+      cp ~/.config/rustdesk/RustDesk2.toml.bak ~/.config/rustdesk/RustDesk2.toml 2>/dev/null || true
+    '';
+  };
+  
   # Git configuration
   programs.git = {
     enable = true;
@@ -281,7 +319,10 @@
       # System info
       myip = "curl http://ipecho.net/plain; echo";
       
-      # macOS specific aliases
+    } // lib.optionalAttrs isNixOS {
+      # RustDesk with local server
+      rustdesk = "rustdesk-local";
+      
     } // lib.optionalAttrs isDarwin {
       # macOS specific
       showfiles = "defaults write com.apple.finder AppleShowAllFiles -bool true && killall Finder";
