@@ -69,15 +69,69 @@
     text = ''
       #!/usr/bin/env bash
       
-      # Backup current config
-      cp ~/.config/rustdesk/RustDesk2.toml ~/.config/rustdesk/RustDesk2.toml.bak 2>/dev/null || true
+      # Create config directory if it doesn't exist
+      mkdir -p ~/.config/rustdesk
       
-      # Start RustDesk with custom server
-      ${pkgs.rustdesk}/bin/rustdesk --server 192.168.1.241:21119,21117 "$@"
+      # Stop any running RustDesk instances
+      pkill -x rustdesk || true
+      sleep 1
       
-      # Restore config after RustDesk exits
-      cp ~/.config/rustdesk/RustDesk2.toml.bak ~/.config/rustdesk/RustDesk2.toml 2>/dev/null || true
+      # Write the config file
+      cat > ~/.config/rustdesk/RustDesk2.toml << 'EOF'
+      rendezvous_server = '192.168.1.241:21119'
+      nat_type = 1
+      serial = 1
+      
+      [options]
+      custom-rendezvous-server = '192.168.1.241:21119'
+      relay-server = '192.168.1.241:21117'
+      api-server = ''
+      key = ''
+      EOF
+      
+      # Make it harder to overwrite (not foolproof but helps)
+      chmod 644 ~/.config/rustdesk/RustDesk2.toml
+      
+      # Start RustDesk
+      exec ${pkgs.rustdesk}/bin/rustdesk "$@"
     '';
+  };
+  
+  # Alternative: Use a systemd timer to restore config
+  systemd.user.timers.rustdesk-config-restore = lib.mkIf isNixOS {
+    Install.WantedBy = [ "timers.target" ];
+    Timer = {
+      OnBootSec = "1min";
+      OnUnitActiveSec = "5min";
+      Unit = "rustdesk-config-restore.service";
+    };
+  };
+  
+  systemd.user.services.rustdesk-config-restore = lib.mkIf isNixOS {
+    Service = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.writeShellScript "restore-rustdesk-config" ''
+        #!/usr/bin/env bash
+        
+        # Only restore if RustDesk is running
+        if pgrep -x rustdesk > /dev/null; then
+          # Check if config has wrong server
+          if ! grep -q "192.168.1.241:21119" ~/.config/rustdesk/RustDesk2.toml 2>/dev/null; then
+            cat > ~/.config/rustdesk/RustDesk2.toml << 'EOF'
+        rendezvous_server = '192.168.1.241:21119'
+        nat_type = 1
+        serial = 1
+        
+        [options]
+        custom-rendezvous-server = '192.168.1.241:21119'
+        relay-server = '192.168.1.241:21117'
+        api-server = ''
+        key = ''
+        EOF
+          fi
+        fi
+      ''}";
+    };
   };
   
   # Git configuration
