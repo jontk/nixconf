@@ -1,0 +1,22 @@
+{
+  "nodes": {
+    "root": {
+      "inputs": {
+        "nixpkgs": "nixpkgs",
+        "nixpkgs-stable": "nixpkgs-stable",
+        "nix-darwin": "nix-darwin",
+        "home-manager": "home-manager",
+        "hyprland": "hyprland",
+        "nixos-hardware": "nixos-hardware",
+        "flake-utils": "flake-utils",
+        "flake-parts": "flake-parts",
+        "rust-overlay": "rust-overlay",
+        "nix-vscode-extensions": "nix-vscode-extensions",
+        "firefox-addons": "firefox-addons",
+        "sops-nix": "sops-nix"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
