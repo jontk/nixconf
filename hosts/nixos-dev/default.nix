@@ -8,7 +8,7 @@
   networking.domain = "local";
   
   # System state version - IMPORTANT: Don't change after initial install
-  system.stateVersion = "24.05";
+  system.stateVersion = "25.05";
   
   # Nix configuration
   nix = {
@@ -67,7 +67,7 @@
     ssh = {
       enable = true;
       port = 22;
-      passwordAuthentication = false;
+      passwordAuthentication = true;
       permitRootLogin = "prohibit-password";
     };
     rustdesk = {
@@ -219,7 +219,7 @@
       jontk = {
         isNormalUser = true;
         description = "Jon Thor Kristinsson";
-        hashedPassword = "$y$j9T$iLzZPGKkBMd5ePceB2zum0$erf01a3aqoPtPAKzN6imoUoDdAcSYyvpLrRtkaYz7M8";
+        hashedPassword = "$y$j9T$iLzZPGKkBMd5ePceB2zum0$erf01a3aqoPtPAKzN6imoUoDdAcSYyvpLrRtkaYz7M8"; # Use mkpasswd to generate
         extraGroups = [
           "wheel"
           "networkmanager"
@@ -235,7 +235,7 @@
         shell = pkgs.zsh;
         openssh.authorizedKeys.keys = [
           # Add your SSH public key here
-          # "ssh-ed25519 AAAAC3... user@host"
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKaJLsLPvlPcHfK/PBdgI27vh6a7aOy6JWKXso6lZF5h git@jontk.com"
         ];
       };
       
@@ -465,7 +465,7 @@
           users = [ "jontk" ];
           commands = [
             {
-              command = "${pkgs.systemd}/bin/systemctl";
+              command = "ALL";
               options = [ "NOPASSWD" ];
             }
           ];

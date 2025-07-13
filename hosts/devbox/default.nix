@@ -67,7 +67,7 @@
     ssh = {
       enable = true;
       port = 22;
-      passwordAuthentication = false;
+      passwordAuthentication = true;
       permitRootLogin = "prohibit-password";
     };
     rustdesk = {
@@ -167,10 +167,14 @@
         3001  # Development servers
         8080  # Alternative HTTP
         8081  # Alternative HTTP
+        21119 # ID/Rendezvous Server
+        21117 # Relay Server
       ];
       allowedUDPPorts = [
         # mDNS
         5353
+        # RustDesk
+        21119 # ID/Rendezvous Server UDP
       ];
     };
     
@@ -220,7 +224,7 @@
       jontk = {
         isNormalUser = true;
         description = "Jon Thor Kristinsson";
-        hashedPassword = "$y$j9T$iLzZPGKkBMd5ePceB2zum0$erf01a3aqoPtPAKzN6imoUoDdAcSYyvpLrRtkaYz7M8";
+        hashedPassword = "REDACTED_PASSWORD_HASH";
         extraGroups = [
           "wheel"
           "networkmanager"
@@ -236,7 +240,7 @@
         shell = pkgs.zsh;
         openssh.authorizedKeys.keys = [
           # Add your SSH public key here
-          # "ssh-ed25519 AAAAC3... user@host"
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKaJLsLPvlPcHfK/PBdgI27vh6a7aOy6JWKXso6lZF5h git@jontk.com"
         ];
       };
       
@@ -466,7 +470,7 @@
           users = [ "jontk" ];
           commands = [
             {
-              command = "${pkgs.systemd}/bin/systemctl";
+              command = "ALL";
               options = [ "NOPASSWD" ];
             }
           ];
