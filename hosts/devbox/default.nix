@@ -8,7 +8,7 @@
   networking.domain = "local";
   
   # System state version - IMPORTANT: Don't change after initial install
-  system.stateVersion = "24.05";
+  system.stateVersion = "25.05";
   
   # Nix configuration
   nix = {
@@ -219,7 +219,7 @@
       jontk = {
         isNormalUser = true;
         description = "Jon Thor Kristinsson";
-        hashedPassword = "$6$rounds=424242$yourhashedpasswordhere"; # Use mkpasswd to generate
+        hashedPassword = "$y$j9T$iLzZPGKkBMd5ePceB2zum0$erf01a3aqoPtPAKzN6imoUoDdAcSYyvpLrRtkaYz7M8";
         extraGroups = [
           "wheel"
           "networkmanager"

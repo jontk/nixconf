@@ -2,7 +2,7 @@
 
 {
   # Home Manager configuration for user jontk
-  home.stateVersion = "23.11";
+  home.stateVersion = "25.05";
   
   # User information
   home.username = "jontk";

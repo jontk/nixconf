@@ -94,7 +94,7 @@ in
     bear # Build EAR for compile_commands.json
     
     # .NET
-    dotnet-sdk_9
+    # dotnet-sdk_9
     # omnisharp-roslyn # Currently pulls in dotnet-sdk-6.0 which is EOL
     # mono # May pull in dotnet-sdk-6.0
     # msbuild # May pull in dotnet-sdk-6.0
