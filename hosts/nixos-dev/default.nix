@@ -61,6 +61,35 @@
     };
   };
   
+  # Enable remote access features
+  modules.remoteAccess = {
+    enable = true;
+    ssh = {
+      enable = true;
+      port = 22;
+      passwordAuthentication = false;
+      permitRootLogin = "prohibit-password";
+    };
+    rustdesk = {
+      enable = true;
+      server = {
+        enable = true; # Run local RustDesk server
+        relayPort = 21117;
+        wsPort = 21118;
+        tcpPort = 21119;
+      };
+    };
+    fail2ban = {
+      enable = true;
+      maxRetries = 5;
+      banTime = "10m";
+    };
+    firewall = {
+      allowedTCPPorts = [ ];
+      allowedUDPPorts = [ ];
+    };
+  };
+  
   # Boot loader configuration
   boot = {
     # Use systemd-boot
@@ -362,19 +391,7 @@
       wireplumber.enable = true;
     };
     
-    # SSH server
-    openssh = {
-      enable = true;
-      settings = {
-        PermitRootLogin = "no";
-        PasswordAuthentication = false;
-        KbdInteractiveAuthentication = false;
-        X11Forwarding = true;
-      };
-      extraConfig = ''
-        StreamLocalBindUnlink yes
-      '';
-    };
+    # SSH server is configured via modules.remoteAccess
     
     # Enable fstrim for SSDs
     fstrim.enable = true;
