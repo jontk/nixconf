@@ -216,7 +216,7 @@
       wlr.enable = true;
       extraPortals = with pkgs; [
         xdg-desktop-portal-gtk
-        xdg-desktop-portal-hyprland
+        # xdg-desktop-portal-hyprland is automatically enabled by programs.hyprland
       ];
       config = {
         common = {
