@@ -311,7 +311,7 @@ final: prev: {
       jetbrains.rust-rover
       
       # Database tools
-      dbeaver
+      dbeaver-bin
       pgadmin4
       
       # API development

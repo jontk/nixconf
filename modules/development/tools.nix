@@ -47,7 +47,7 @@ in
     pgcli # PostgreSQL CLI with auto-completion
     mycli # MySQL CLI with auto-completion
     litecli # SQLite CLI with auto-completion
-    redis-cli
+    redis
     mongosh # MongoDB Shell
     usql # Universal SQL CLI
     
@@ -56,12 +56,12 @@ in
     buildah
     skopeo
     hadolint # Dockerfile linter
-    container-diff
+    # container-diff # Package may not be available in this nixpkgs version
     cosign # Container signing
     
     # CI/CD tools
     act # Run GitHub Actions locally
-    dagger # CI/CD engine
+    # dagger # CI/CD engine # Package may not be available in this nixpkgs version
     earthly # Build tool
     
     # Documentation generators
@@ -89,7 +89,7 @@ in
     shellcheck
     editorconfig-core-c
     yamllint
-    jsonlint
+    # jsonlint # Package may not be available in this nixpkgs version
     hadolint
     sqlfluff # SQL linter
     
@@ -125,7 +125,7 @@ in
     tree
     broot # Interactive tree
     lsd # ls with icons
-    exa # Modern ls
+    # exa # Modern ls # Package may not be available in this nixpkgs version
     zoxide # Smarter cd
     autojump
     
@@ -180,7 +180,7 @@ in
     # Linux specific tools
     inotify-tools
     sysstat
-    dstat
+    dool # 'dstat' has been removed because it has been unmaintained since 2020. Use 'dool' instead.
   ];
   
   # Tool-specific configurations

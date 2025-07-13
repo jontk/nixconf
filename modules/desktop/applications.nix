@@ -57,7 +57,7 @@
       
       # Development-related GUI apps
       dbeaver-bin # Database GUI
-      postman # API testing
+      # postman # API testing - May pull in dotnet-sdk-6.0
       
       # Screen capture and recording
       obs-studio

@@ -54,10 +54,11 @@
       
       # Fonts
       noto-fonts
-      noto-fonts-cjk
+      noto-fonts-cjk-sans
       noto-fonts-emoji
       font-awesome
-      (nerdfonts.override { fonts = [ "JetBrainsMono" "FiraCode" ]; })
+      nerd-fonts.jetbrains-mono
+      nerd-fonts.fira-code
     ];
     
     # Default Hyprland configuration

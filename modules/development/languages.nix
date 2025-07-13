@@ -51,15 +51,15 @@ in
     nodePackages.webpack
     nodePackages.webpack-cli
     nodePackages."@angular/cli"
-    nodePackages."@vue/cli"
-    nodePackages.create-react-app
+    # nodePackages."@vue/cli"
+    # nodePackages.create-react-app
     nodePackages.vercel
-    nodePackages.netlify-cli
+    # nodePackages.netlify-cli
     deno
     bun
     
     # Go
-    go_1_21
+    go_1_24
     gopls
     golangci-lint
     go-tools
@@ -94,10 +94,10 @@ in
     bear # Build EAR for compile_commands.json
     
     # .NET
-    dotnet-sdk_8
-    omnisharp-roslyn
-    mono
-    msbuild
+    dotnet-sdk_9
+    # omnisharp-roslyn # Currently pulls in dotnet-sdk-6.0 which is EOL
+    # mono # May pull in dotnet-sdk-6.0
+    # msbuild # May pull in dotnet-sdk-6.0
     
     # Ruby
     ruby_3_2
@@ -122,7 +122,7 @@ in
     ormolu # Haskell formatter
     
     # Elixir/Erlang
-    elixir_1_15
+    elixir_1_18
     erlang
     rebar3
     elixir-ls # Elixir LSP

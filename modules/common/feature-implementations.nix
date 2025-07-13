@@ -24,7 +24,7 @@ in
       
       # Text editors and IDEs
       neovim
-      emacs
+      emacs30
       
       # Development utilities
       direnv

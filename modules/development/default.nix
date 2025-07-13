@@ -26,7 +26,7 @@ in
     # Code Editors and IDEs
     vim
     neovim
-    emacs29
+    emacs30
     
     # Build Tools
     gnumake
@@ -65,7 +65,7 @@ in
     jq
     yq-go
     grpcurl
-    postman
+    # postman # May pull in dotnet-sdk-6.0
     insomnia
     
     # Database Tools
@@ -73,7 +73,7 @@ in
     mysql80
     redis
     sqlite
-    dbeaver
+    dbeaver-bin
     
     # Documentation
     pandoc
@@ -122,9 +122,9 @@ in
   
   # Development environment variables
   environment.variables = {
-    EDITOR = "vim";
-    VISUAL = "vim";
-    PAGER = "less";
+    EDITOR = lib.mkDefault "vim";
+    VISUAL = lib.mkDefault "vim";
+    PAGER = lib.mkDefault "less";
     
     # Development paths
     GOPATH = "$HOME/go";
@@ -207,11 +207,6 @@ in
       package = pkgs.wireshark;
     };
     
-    # Java development
-    java = {
-      enable = true;
-      package = pkgs.jdk17;
-    };
   };
   
   # Services configuration

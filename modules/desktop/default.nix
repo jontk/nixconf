@@ -205,9 +205,9 @@
       qt6.qtwayland
       
       # Cursor themes
-      breeze-gtk
-      breeze-icons
-      breeze-qt5
+      kdePackages.breeze-gtk
+      kdePackages.breeze-icons
+      # breeze-qt5
     ];
     
     # Enable portals for desktop integration

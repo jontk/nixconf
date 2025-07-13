@@ -51,10 +51,12 @@ in
     };
     
     # Microcode updates
-    hardware.cpu.intel.updateMicrocode = lib.mkIf (isNixOS && cfg.cpu.enableMicrocode) 
-      lib.mkDefault config.hardware.enableRedistributableFirmware;
-    hardware.cpu.amd.updateMicrocode = lib.mkIf (isNixOS && cfg.cpu.enableMicrocode)
-      lib.mkDefault config.hardware.enableRedistributableFirmware;
+    hardware.cpu.intel.updateMicrocode = lib.mkIf (isNixOS && cfg.cpu.enableMicrocode) (
+      lib.mkDefault config.hardware.enableRedistributableFirmware
+    );
+    hardware.cpu.amd.updateMicrocode = lib.mkIf (isNixOS && cfg.cpu.enableMicrocode) (
+      lib.mkDefault config.hardware.enableRedistributableFirmware
+    );
     
     # Memory management
     boot = lib.mkIf isNixOS {

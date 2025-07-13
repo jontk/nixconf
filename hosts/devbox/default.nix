@@ -403,8 +403,8 @@
     tlp = {
       enable = true;
       settings = {
-        CPU_SCALING_GOVERNOR_ON_AC = "performance";
-        CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
+        CPU_SCALING_GOVERNOR_ON_AC = lib.mkForce "performance";
+        CPU_SCALING_GOVERNOR_ON_BAT = lib.mkForce "powersave";
         START_CHARGE_THRESH_BAT0 = 75;
         STOP_CHARGE_THRESH_BAT0 = 80;
       };
@@ -573,7 +573,7 @@
       dejavu_fonts
       liberation_ttf
       noto-fonts
-      noto-fonts-cjk
+      noto-fonts-cjk-sans
       noto-fonts-emoji
       
       # Programming fonts
@@ -583,15 +583,11 @@
       cascadia-code
       
       # Nerd Fonts
-      (nerdfonts.override {
-        fonts = [
-          "FiraCode"
-          "JetBrainsMono"
-          "Hack"
-          "Iosevka"
-          "NerdFontsSymbolsOnly"
-        ];
-      })
+      nerd-fonts.fira-code
+      nerd-fonts.jetbrains-mono
+      nerd-fonts.hack
+      nerd-fonts.iosevka
+      nerd-fonts.symbols-only
       
       # Icon fonts
       font-awesome

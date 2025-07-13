@@ -271,7 +271,7 @@ final: prev: {
       sqlite-interactive
       
       # GUI tools
-      dbeaver
+      dbeaver-bin
     ];
   };
 
