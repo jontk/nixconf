@@ -183,14 +183,14 @@
     in
     {
       # NixOS configurations
-      nixosConfigurations = nixpkgs.lib.filterAttrs 
-        (name: config: !nixpkgs.lib.hasPrefix "darwin" config.system)
-        (nixpkgs.lib.mapAttrs (name: config: mkSystem config) hostConfigs);
+      nixosConfigurations = nixpkgs.lib.mapAttrs 
+        (name: config: mkSystem config)
+        (nixpkgs.lib.filterAttrs (name: config: !nixpkgs.lib.hasPrefix "darwin" config.system) hostConfigs);
 
       # Darwin configurations
-      darwinConfigurations = nixpkgs.lib.filterAttrs 
-        (name: config: nixpkgs.lib.hasPrefix "darwin" config.system)
-        (nixpkgs.lib.mapAttrs (name: config: mkSystem config) hostConfigs);
+      darwinConfigurations = nixpkgs.lib.mapAttrs 
+        (name: config: mkSystem config)
+        (nixpkgs.lib.filterAttrs (name: config: nixpkgs.lib.hasPrefix "darwin" config.system) hostConfigs);
 
       # Home Manager configurations (standalone)
       homeConfigurations = {

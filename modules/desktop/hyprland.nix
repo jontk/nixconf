@@ -7,11 +7,11 @@
     programs.hyprland = {
       enable = true;
       xwayland.enable = true;
-      
-      # Environment variables for Hyprland
-      environmentVariables = {
-        NIXPKGS_ALLOW_UNFREE = "1";
-      };
+    };
+    
+    # Environment variables for the system
+    environment.sessionVariables = {
+      NIXPKGS_ALLOW_UNFREE = "1";
     };
     
     # Hyprland-specific packages

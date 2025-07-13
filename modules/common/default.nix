@@ -226,7 +226,8 @@ in
     };
 
     # macOS-specific configuration
-    system = lib.mkIf isDarwin {
+  } // lib.optionalAttrs isDarwin {
+    system = {
       # macOS defaults
       defaults = {
         NSGlobalDomain = {

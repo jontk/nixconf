@@ -10,8 +10,8 @@ in
   # based on the feature flags defined in feature-flags.nix
   
   config = {
-    # Development Environment Features
-    environment.systemPackages = with pkgs; lib.optionals cfg.development.enable [
+    # Consolidated system packages based on feature flags
+    environment.systemPackages = with pkgs; (lib.optionals cfg.development.enable [
       # Essential development tools
       git
       gh
@@ -98,7 +98,42 @@ in
       helm
       kustomize
       stern
-    ];
+    ]) ++ (lib.optionals cfg.security.yubikey (with pkgs; [
+      # YubiKey packages
+      yubikey-manager
+      yubikey-personalization
+      yubikey-personalization-gui
+      yubico-piv-tool
+      yubioath-flutter
+    ])) ++ (lib.optionals cfg.desktop.office (with pkgs; [
+      # Office applications
+      libreoffice-fresh
+      thunderbird
+      firefox
+      chromium
+      obsidian
+      zotero
+    ])) ++ (lib.optionals cfg.desktop.multimedia (with pkgs; [
+      # Multimedia applications
+      vlc
+      mpv
+      ffmpeg
+      gimp
+      inkscape
+      audacity
+      obs-studio
+      kdenlive
+      imagemagick
+      feh
+    ])) ++ (lib.optionals cfg.backup.enable (with pkgs; [
+      # Backup and sync tools
+      rsync
+      rclone
+      restic
+      borgbackup
+    ] ++ lib.optionals cfg.backup.nextcloud [
+      nextcloud-client
+    ]));
 
     # Docker configuration
     virtualisation.docker = lib.mkIf (isNixOS && cfg.development.docker) {
@@ -234,33 +269,54 @@ in
           };
         };
       };
+
+      # YubiKey support
+      pcscd = lib.mkIf cfg.security.yubikey {
+        enable = true;
+      };
+
+      udev.packages = lib.mkIf cfg.security.yubikey [
+        pkgs.yubikey-personalization
+      ];
+
+      # Tor anonymity network
+      tor = lib.mkIf cfg.security.tor {
+        enable = true;
+        client.enable = true;
+        settings = {
+          UseBridges = true;
+          ClientTransportPlugin = "obfs4 exec ${pkgs.obfs4}/bin/obfs4proxy";
+        };
+      };
+    };
+
+    # Kernel hardening via boot.kernel.sysctl
+    boot.kernel.sysctl = lib.mkIf (isNixOS && cfg.security.hardening) {
+      # Network security
+      "net.ipv4.conf.default.rp_filter" = 1;
+      "net.ipv4.conf.all.rp_filter" = 1;
+      "net.ipv4.conf.default.accept_source_route" = 0;
+      "net.ipv4.conf.all.accept_source_route" = 0;
+      "net.ipv4.conf.default.accept_redirects" = 0;
+      "net.ipv4.conf.all.accept_redirects" = 0;
+      "net.ipv4.conf.default.secure_redirects" = 0;
+      "net.ipv4.conf.all.secure_redirects" = 0;
+      "net.ipv4.icmp_echo_ignore_broadcasts" = 1;
+      "net.ipv4.icmp_ignore_bogus_error_responses" = 1;
+      
+      # Memory protection
+      "kernel.dmesg_restrict" = 1;
+      "kernel.kptr_restrict" = 2;
+      "kernel.yama.ptrace_scope" = 1;
+      
+      # File system security
+      "fs.protected_hardlinks" = 1;
+      "fs.protected_symlinks" = 1;
     };
 
     # Security hardening
     security = lib.mkIf (isNixOS && cfg.security.hardening) {
-      # Kernel hardening
-      kernel.sysctl = {
-        # Network security
-        "net.ipv4.conf.default.rp_filter" = 1;
-        "net.ipv4.conf.all.rp_filter" = 1;
-        "net.ipv4.conf.default.accept_source_route" = 0;
-        "net.ipv4.conf.all.accept_source_route" = 0;
-        "net.ipv4.conf.default.accept_redirects" = 0;
-        "net.ipv4.conf.all.accept_redirects" = 0;
-        "net.ipv4.conf.default.secure_redirects" = 0;
-        "net.ipv4.conf.all.secure_redirects" = 0;
-        "net.ipv4.icmp_echo_ignore_broadcasts" = 1;
-        "net.ipv4.icmp_ignore_bogus_error_responses" = 1;
-        
-        # Memory protection
-        "kernel.dmesg_restrict" = 1;
-        "kernel.kptr_restrict" = 2;
-        "kernel.yama.ptrace_scope" = 1;
-        
-        # File system security
-        "fs.protected_hardlinks" = 1;
-        "fs.protected_symlinks" = 1;
-      };
+      # Kernel hardening - moved to boot.kernel.sysctl (see below)
 
       # AppArmor
       apparmor = {
@@ -279,48 +335,33 @@ in
       ];
     };
 
-    # YubiKey support
-    services.pcscd = lib.mkIf (isNixOS && cfg.security.yubikey) {
-      enable = true;
-    };
-
-    services.udev.packages = lib.mkIf (isNixOS && cfg.security.yubikey) [
-      pkgs.yubikey-personalization
-    ];
-
-    environment.systemPackages = lib.mkIf cfg.security.yubikey (with pkgs; [
-      yubikey-manager
-      yubikey-personalization
-      yubikey-personalization-gui
-      yubico-piv-tool
-      yubioath-flutter
-    ]);
+    # YubiKey packages are included in main systemPackages above
 
     # WireGuard VPN
     networking.wireguard = lib.mkIf (isNixOS && cfg.network.wireguard) {
       enable = true;
     };
 
-    # Tor support
-    services.tor = lib.mkIf (isNixOS && cfg.security.tor) {
-      enable = true;
-      client.enable = true;
-      settings = {
-        UseBridges = true;
-        ClientTransportPlugin = "obfs4 exec ${pkgs.obfs4}/bin/obfs4proxy";
-      };
-    };
+    # Tor support is configured in services block above
 
-    # Gaming support (NixOS only)
-    programs = lib.mkIf (isNixOS && cfg.desktop.gaming) {
-      steam = {
-        enable = true;
-        remotePlay.openFirewall = true;
-        dedicatedServer.openFirewall = true;
-      };
-      
-      gamemode.enable = true;
-    };
+    # Gaming support and development tools (NixOS only)
+    programs = lib.mkIf isNixOS (lib.mkMerge [
+      (lib.mkIf cfg.desktop.gaming {
+        steam = {
+          enable = true;
+          remotePlay.openFirewall = true;
+          dedicatedServer.openFirewall = true;
+        };
+        
+        gamemode.enable = true;
+      })
+      (lib.mkIf cfg.development.enable {
+        direnv = {
+          enable = true;
+          nix-direnv.enable = true;
+        };
+      })
+    ]);
 
     hardware = lib.mkIf (isNixOS && cfg.desktop.gaming) {
       opengl = {
@@ -330,47 +371,13 @@ in
       };
     };
 
-    # Office applications
-    environment.systemPackages = lib.mkIf cfg.desktop.office (with pkgs; [
-      libreoffice-fresh
-      thunderbird
-      firefox
-      chromium
-      obsidian
-      zotero
-    ]);
+    # Office, multimedia, and backup packages are included in main systemPackages above
 
-    # Multimedia applications
-    environment.systemPackages = lib.mkIf cfg.desktop.multimedia (with pkgs; [
-      vlc
-      mpv
-      gimp
-      inkscape
-      audacity
-      obs-studio
-      kdenlive
-      ffmpeg
-      imagemagick
-      feh
-    ]);
+    # Development shell integration is configured in programs block above
 
-    # Backup solutions
-    environment.systemPackages = lib.mkIf cfg.backup.enable (with pkgs; [
-      restic
-      borgbackup
-      rclone
-    ] ++ lib.optionals cfg.backup.nextcloud [
-      nextcloud-client
-    ]);
-
-    # Development shell integration
-    programs.direnv = lib.mkIf cfg.development.enable {
-      enable = true;
-      nix-direnv.enable = true;
-    };
-
-    # macOS-specific feature implementations
-    homebrew = lib.mkIf (isDarwin && cfg.development.enable) {
+    # macOS-specific feature implementations - disabled temporarily
+} // lib.optionalAttrs false {
+  homebrew = {
       enable = true;
       brews = lib.optionals cfg.development.docker [
         "docker"

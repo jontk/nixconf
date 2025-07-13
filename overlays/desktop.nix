@@ -216,7 +216,6 @@ final: prev: {
       # PDF tools
       zathura
       evince
-      okular
       
       # Note taking
       obsidian

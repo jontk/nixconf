@@ -241,23 +241,24 @@
     # Power management for desktop
     services.upower.enable = true;
     
-    # Notification daemon
-    services.dunst = {
-      enable = true;
-      settings = {
-        global = {
-          follow = "mouse";
-          width = 300;
-          height = 300;
-          origin = "top-right";
-          offset = "30x50";
-          notification_limit = 3;
-          progress_bar = true;
-          transparency = 10;
-          frame_color = "#89b4fa";
-          font = "JetBrains Mono 10";
-        };
-      };
-    };
+    # Notification daemon - should be configured via home-manager, not system services
+    # TODO: Move dunst configuration to home-manager
+    # services.dunst = {
+    #   enable = true;
+    #   settings = {
+    #     global = {
+    #       follow = "mouse";
+    #       width = 300;
+    #       height = 300;
+    #       origin = "top-right";
+    #       offset = "30x50";
+    #       notification_limit = 3;
+    #       progress_bar = true;
+    #       transparency = 10;
+    #       frame_color = "#89b4fa";
+    #       font = "JetBrains Mono 10";
+    #     };
+    #   };
+    # };
   };
 }

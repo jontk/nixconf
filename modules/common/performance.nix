@@ -58,27 +58,28 @@ in
     
     # Memory management
     boot = lib.mkIf isNixOS {
-      # Kernel parameters for performance
+      # Kernel parameters for performance (boot-time only)
       kernelParams = [
-        # Memory management
-        "vm.swappiness=${toString cfg.memory.swappiness}"
-        
-        # Network performance
-      ] ++ lib.optionals cfg.network.optimizeTcp [
-        "net.core.rmem_max=16777216"
-        "net.core.wmem_max=16777216"
-        "net.ipv4.tcp_rmem=4096 16384 16777216"
-        "net.ipv4.tcp_wmem=4096 16384 16777216"
-      ] ++ lib.optionals cfg.network.enableBbr [
-        "net.core.default_qdisc=fq"
-        "net.ipv4.tcp_congestion_control=bbr"
+        # I/O scheduler
+        "elevator=${cfg.storage.scheduler}"
       ];
       
       # Kernel modules for performance
       kernelModules = lib.optionals cfg.network.enableBbr [ "tcp_bbr" ];
       
-      # I/O scheduler
-      kernelParams = [ "elevator=${cfg.storage.scheduler}" ];
+      # Sysctl parameters (runtime kernel settings)
+      kernel.sysctl = {
+        # Memory management
+        "vm.swappiness" = cfg.memory.swappiness;
+      } // lib.optionalAttrs cfg.network.optimizeTcp {
+        "net.core.rmem_max" = 16777216;
+        "net.core.wmem_max" = 16777216;
+        "net.ipv4.tcp_rmem" = "4096 16384 16777216";
+        "net.ipv4.tcp_wmem" = "4096 16384 16777216";
+      } // lib.optionalAttrs cfg.network.enableBbr {
+        "net.core.default_qdisc" = "fq";
+        "net.ipv4.tcp_congestion_control" = "bbr";
+      };
     };
     
     # Zram configuration
@@ -137,17 +138,18 @@ in
       ];
     };
     
-    # Security and performance balance
-    security = lib.mkIf isNixOS {
-      # Mitigations can impact performance
-      mitigations = "auto";
-      
-      # Allow performance monitoring
-      allowUserPerfEvents = true;
-    };
+    # Security and performance balance - disabled as options don't exist in this NixOS version
+    # security = lib.mkIf isNixOS {
+    #   # Mitigations can impact performance
+    #   mitigations = "auto";
+    #   
+    #   # Allow performance monitoring
+    #   allowUserPerfEvents = true;
+    # };
     
     # macOS performance optimizations
-    system = lib.mkIf isDarwin {
+  } // lib.optionalAttrs isDarwin {
+    system = {
       defaults = {
         NSGlobalDomain = {
           # Disable window animations for speed

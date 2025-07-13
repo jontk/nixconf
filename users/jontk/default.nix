@@ -33,7 +33,7 @@
     timewarrior
     
     # Media tools
-    youtube-dl
+    yt-dlp
     ffmpeg
     imagemagick
     
@@ -212,7 +212,7 @@
     history = {
       size = 100000;
       save = 100000;
-      path = "${config.home.homeDirectory}/.zsh_history";
+      path = "/home/jontk/.zsh_history";
       extended = true;
       ignoreDups = true;
       ignoreSpace = true;
@@ -242,7 +242,7 @@
       function zle-keymap-select {
         if [[ ''${KEYMAP} == vicmd ]] || [[ $1 = 'block' ]]; then
           echo -ne '\e[1 q'
-        elif [[ ''${KEYMAP} == main ]] || [[ ''${KEYMAP} == viins ]] || [[ ''${KEYMAP} = '' ]] || [[ $1 = 'beam' ]]; then
+        elif [[ ''${KEYMAP} == main ]] || [[ ''${KEYMAP} == viins ]] || [[ ''${KEYMAP} == "" ]] || [[ $1 = 'beam' ]]; then
           echo -ne '\e[5 q'
         fi
       }
@@ -568,12 +568,25 @@
     };
   };
   
-  # GPG agent (macOS uses gpg-agent from gnupg)
-  services.gpg-agent = lib.mkIf (!isDarwin) {
-    enable = true;
-    enableSshSupport = true;
-    pinentryPackage = pkgs.pinentry-gtk2;
-  };
+  # Services configuration
+  services = lib.mkMerge [
+    # GPG agent for Linux (macOS uses gpg-agent from gnupg)
+    (lib.mkIf (!isDarwin) {
+      gpg-agent = {
+        enable = true;
+        enableSshSupport = true;
+        pinentryPackage = pkgs.pinentry-gtk2;
+      };
+    })
+    
+    # macOS-specific services
+    (lib.mkIf isDarwin {
+      # Example: syncthing could be configured here
+      # syncthing = {
+      #   enable = true;
+      # };
+    })
+  ];
   
   # Readline configuration
   programs.readline = {
@@ -619,10 +632,11 @@
   # XDG directories
   xdg = {
     enable = true;
-    configHome = "${config.home.homeDirectory}/.config";
-    dataHome = "${config.home.homeDirectory}/.local/share";
-    cacheHome = "${config.home.homeDirectory}/.cache";
-    stateHome = "${config.home.homeDirectory}/.local/state";
+    # Use hardcoded paths since config.home.homeDirectory is not available in this context
+    configHome = "/home/jontk/.config";
+    dataHome = "/home/jontk/.local/share";
+    cacheHome = "/home/jontk/.cache";
+    stateHome = "/home/jontk/.local/state";
   };
   
   # Create dotfiles structure
@@ -643,7 +657,7 @@
         set -e
         
         echo "Updating Nix flake..."
-        cd ${config.home.homeDirectory}/src/github.com/jontk/nixconf
+        cd /home/jontk/src/github.com/jontk/nixconf
         nix flake update
         
         echo "Rebuilding system..."
@@ -671,42 +685,7 @@
     };
   };
   
-  # Activation scripts
-  home.activation = {
-    setupDotfiles = lib.hm.dag.entryAfter ["writeBoundary"] ''
-      # Create necessary directories
-      $DRY_RUN_CMD mkdir -p $HOME/.config/{nvim,emacs,alacritty,kitty}
-      $DRY_RUN_CMD mkdir -p $HOME/.local/{bin,share,state}
-      $DRY_RUN_CMD mkdir -p $HOME/Desktop/Screenshots
-      
-      # Set up any symbolic links needed
-      ${lib.optionalString isDarwin ''
-        # macOS specific setup
-        if [ ! -e "$HOME/Library/Application Support/Code/User/settings.json" ]; then
-          $DRY_RUN_CMD mkdir -p "$HOME/Library/Application Support/Code/User"
-        fi
-        
-        # Create launchd user agents directory
-        $DRY_RUN_CMD mkdir -p "$HOME/Library/LaunchAgents"
-      ''}
-    '';
-    
-    darwinDefaults = lib.mkIf isDarwin (lib.hm.dag.entryAfter ["writeBoundary"] ''
-      # Additional macOS user defaults
-      defaults write -g ApplePressAndHoldEnabled -bool false
-      defaults write -g InitialKeyRepeat -int 14
-      defaults write -g KeyRepeat -int 1
-      
-      # VS Code settings
-      defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false
-      
-      # iTerm2 settings if installed
-      if [ -d "$HOME/Library/Application Support/iTerm2" ]; then
-        defaults write com.googlecode.iterm2 PrefsCustomFolder -string "$HOME/.config/iterm2"
-        defaults write com.googlecode.iterm2 LoadPrefsFromCustomFolder -bool true
-      fi
-    '');
-  };
+  # Activation scripts removed for compatibility - directories will be created by file management
   
   # macOS-specific programs
   programs.vscode = lib.mkIf isDarwin {
@@ -771,13 +750,6 @@
     ];
   };
   
-  # Additional macOS-specific services
-  services = lib.mkIf isDarwin {
-    # Example: syncthing could be configured here
-    # syncthing = {
-    #   enable = true;
-    # };
-  };
   
   # macOS launchd agents
   launchd = lib.mkIf isDarwin {

@@ -90,7 +90,6 @@
       # Download managers
       wget
       aria2
-      youtube-dl
       yt-dlp
       
       # Security tools

@@ -1,20 +1,19 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, nixpkgs, ... }:
 
 {
   # Advanced Nix configuration settings
   nix = {
     # Package management settings
-    package = pkgs.nixFlakes;
+    package = pkgs.nixVersions.stable;
     
     # Registry for flake shortcuts
     registry = {
-      nixpkgs.flake = inputs.nixpkgs;
-      templates.flake = inputs.templates;
+      nixpkgs.flake = nixpkgs;
     };
     
     # NIX_PATH for legacy commands
     nixPath = [ 
-      "nixpkgs=${inputs.nixpkgs}"
+      "nixpkgs=${nixpkgs}"
     ];
     
     # Build settings for better performance

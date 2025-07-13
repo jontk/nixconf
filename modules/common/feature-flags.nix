@@ -79,14 +79,17 @@ in
   # Feature flag implications - automatically enable related features
   config = {
     nixconf.features = {
-      # Development implies common development tools
+      # Development implies common development tools (includes virtualization)
       development.enable = lib.mkDefault (
         cfg.development.rust || 
         cfg.development.python || 
         cfg.development.nodejs || 
         cfg.development.go || 
         cfg.development.java || 
-        cfg.development.cpp
+        cfg.development.cpp ||
+        cfg.virtualization.docker || 
+        cfg.virtualization.podman || 
+        cfg.virtualization.libvirt
       );
       
       # Desktop implies multimedia
@@ -100,13 +103,6 @@ in
         cfg.security.vpn || 
         cfg.security.tor || 
         cfg.security.yubikey
-      );
-      
-      # Virtualization implies development
-      development.enable = lib.mkDefault (
-        cfg.virtualization.docker || 
-        cfg.virtualization.podman || 
-        cfg.virtualization.libvirt
       );
     };
   };

@@ -154,7 +154,6 @@ in
     gca = "git commit -a";
     gp = "git push";
     gl = "git pull";
-    glog = "git log --oneline --graph";
     
     # Docker shortcuts
     d = "docker";
@@ -175,13 +174,11 @@ in
     
     # Development shortcuts
     serve = "python3 -m http.server";
-    json = "jq";
     yaml = "yq";
     
     # Code navigation
     ff = "find . -type f -name";
     fd = "find . -type d -name";
-    grep = "grep --color=auto";
     
     # macOS specific aliases
   } // lib.optionalAttrs isDarwin {
@@ -256,26 +253,14 @@ in
     
     # NixOS specific services
     (lib.mkIf isNixOS {
-      # Docker
-      docker = {
-        enable = true;
-        enableOnBoot = true;
-        autoPrune = {
-          enable = true;
-          dates = "weekly";
-        };
-      };
-      
-      # VirtualBox for VMs
-      virtualbox.host = {
-        enable = true;
-        enableExtensionPack = true;
-      };
+      # Docker is handled via virtualisation, not services - moved to feature-implementations.nix
+      # VirtualBox is handled via virtualisation, not services - moved to feature-implementations.nix
     })
   ];
   
   # macOS specific configuration
-  system = lib.mkIf isDarwin {
+} // lib.optionalAttrs isDarwin {
+  system = {
     # Additional defaults for development
     defaults = {
       NSGlobalDomain = {
@@ -305,7 +290,6 @@ in
           IDEIssueNavigatorDetailLevel = 30;
           IDESearchNavigatorDetailLevel = 30;
           IDESourceControlAutomaticallySyncLocalStatusChecks = true;
-          ShowBuildOperationDuration = true;
         };
         
         # Tower Git client
@@ -333,15 +317,16 @@ in
   };
   
   # User configuration for development
-  users.users = lib.mkIf isDarwin {
+  users.users = {
     # Add user to development-related groups
     "${config.users.primaryUser.username or "jontk"}" = {
       extraGroups = [ "docker" ];
     };
   };
   
-  # Homebrew packages for development (macOS only)
-  homebrew = lib.mkIf isDarwin {
+  # Homebrew packages for development (macOS only) - disabled temporarily
+} // lib.optionalAttrs false {
+  homebrew = {
     # Development-specific taps
     taps = [
       "homebrew/cask-versions"

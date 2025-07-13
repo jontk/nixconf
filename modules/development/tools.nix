@@ -302,7 +302,6 @@ in
     
     # JSON/YAML tools
     json = "jq '.'";
-    yaml = "yq eval '.'";
     
     # Network tools
     ports = "netstat -tulanp";
@@ -320,7 +319,8 @@ in
   };
   
   # macOS specific tool configurations
-  system = lib.mkIf isDarwin {
+} // lib.optionalAttrs isDarwin {
+  system = {
     defaults.CustomUserPreferences = {
       # Terminal app preferences for development tools
       "com.googlecode.iterm2" = {
@@ -338,8 +338,10 @@ in
     };
   };
   
-  # Homebrew tool installations (macOS only)
-  homebrew = lib.mkIf isDarwin {
+  # Homebrew tool installations (macOS only) - disabled temporarily
+  # TODO: Fix homebrew configuration for cross-platform compatibility
+} // lib.optionalAttrs false {
+  homebrew = {
     brews = [
       # Additional CLI tools not in nixpkgs
       "gh" # GitHub CLI

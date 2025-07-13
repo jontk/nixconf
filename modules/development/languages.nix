@@ -230,7 +230,8 @@ in
   };
   
   # macOS specific configuration for languages
-  system = lib.mkIf isDarwin {
+} // lib.optionalAttrs isDarwin {
+  system = {
     defaults.CustomUserPreferences = {
       # Xcode language-specific settings
       "com.apple.dt.Xcode" = {
@@ -257,8 +258,9 @@ in
     };
   };
   
-  # Homebrew language-specific packages (macOS only)
-  homebrew = lib.mkIf isDarwin {
+  # Homebrew language-specific packages (macOS only) - disabled temporarily
+} // lib.optionalAttrs false {
+  homebrew = {
     brews = [
       # Ruby version management
       "rbenv"
