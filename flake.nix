@@ -140,6 +140,16 @@
           specialArgs = { inherit hyprland; };
         };
 
+        devbox = {
+          system = "x86_64-linux";
+          modules = [
+            ./hosts/devbox
+            home-manager.nixosModules.home-manager
+            hyprland.nixosModules.default
+          ] ++ commonModules ++ developmentModules ++ desktopModules ++ remoteAccessModules;
+          specialArgs = { inherit hyprland; };
+        };
+
         # macOS configurations  
         macos-laptop = {
           system = "aarch64-darwin";
@@ -188,7 +198,6 @@
           pkgs = mkPkgs "x86_64-linux";
           modules = [ ./users/jontk ];
           extraSpecialArgs = {
-            inherit inputs;
             inherit nix-vscode-extensions firefox-addons;
           };
         };
@@ -196,7 +205,6 @@
           pkgs = mkPkgs "aarch64-darwin";
           modules = [ ./users/jontk ];
           extraSpecialArgs = {
-            inherit inputs;
             inherit nix-vscode-extensions firefox-addons;
           };
         };
