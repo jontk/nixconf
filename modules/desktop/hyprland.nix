@@ -12,6 +12,12 @@
     # Environment variables for the system
     environment.sessionVariables = {
       NIXPKGS_ALLOW_UNFREE = "1";
+      # RustDesk Wayland support
+      QT_QPA_PLATFORM = "wayland;xcb";
+      GDK_BACKEND = "wayland,x11";
+      # Enable screensharing support
+      XDG_CURRENT_DESKTOP = "Hyprland";
+      XDG_SESSION_DESKTOP = "Hyprland";
     };
     
     # Hyprland-specific packages

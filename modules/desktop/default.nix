@@ -241,6 +241,21 @@
     # Power management for desktop
     services.upower.enable = true;
     
+    # PipeWire for audio and screen sharing
+    services.pipewire = {
+      enable = true;
+      alsa.enable = true;
+      alsa.support32Bit = true;
+      pulse.enable = true;
+      jack.enable = true;
+      
+      # Enable screen sharing
+      wireplumber.enable = true;
+    };
+    
+    # Disable PulseAudio as we're using PipeWire
+    hardware.pulseaudio.enable = false;
+    
     # Notification daemon - should be configured via home-manager, not system services
     # TODO: Move dunst configuration to home-manager
     # services.dunst = {
