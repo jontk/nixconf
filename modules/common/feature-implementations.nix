@@ -1,0 +1,394 @@
+{ config, pkgs, lib, inputs, ... }:
+
+let
+  cfg = config.nixconf.features;
+  isDarwin = pkgs.stdenv.isDarwin;
+  isNixOS = !isDarwin;
+in
+{
+  # Implementation of feature flags - this module applies the actual configurations
+  # based on the feature flags defined in feature-flags.nix
+  
+  config = {
+    # Development Environment Features
+    environment.systemPackages = with pkgs; lib.optionals cfg.development.enable [
+      # Essential development tools
+      git
+      gh
+      lazygit
+      
+      # Build tools
+      gnumake
+      cmake
+      pkg-config
+      
+      # Text editors and IDEs
+      neovim
+      emacs
+      
+      # Development utilities
+      direnv
+      nix-direnv
+      
+      # Debugging and profiling
+      gdb
+      valgrind
+      strace
+      ltrace
+    ] ++ lib.optionals cfg.development.rust [
+      # Rust toolchain via rust-overlay
+      (rust-bin.stable.latest.default.override {
+        extensions = [ "rust-src" "cargo" "rustc" ];
+        targets = [ "wasm32-unknown-unknown" ];
+      })
+      rust-analyzer
+      cargo-watch
+      cargo-edit
+      cargo-audit
+      cargo-outdated
+    ] ++ lib.optionals cfg.development.python [
+      python3
+      python3Packages.pip
+      python3Packages.virtualenv
+      python3Packages.poetry
+      python3Packages.black
+      python3Packages.isort
+      python3Packages.flake8
+      python3Packages.mypy
+      python3Packages.pytest
+      python3Packages.pylsp
+    ] ++ lib.optionals cfg.development.nodejs [
+      nodejs
+      npm
+      yarn
+      pnpm
+      nodePackages.typescript
+      nodePackages.ts-node
+      nodePackages.eslint
+      nodePackages.prettier
+      nodePackages.typescript-language-server
+    ] ++ lib.optionals cfg.development.go [
+      go
+      gopls
+      golangci-lint
+      delve
+      go-tools
+    ] ++ lib.optionals cfg.development.java [
+      openjdk17
+      maven
+      gradle
+      visualvm
+    ] ++ lib.optionals cfg.development.cpp [
+      gcc
+      clang
+      lldb
+      cmake
+      ninja
+      ccls
+      cppcheck
+    ] ++ lib.optionals cfg.development.docker [
+      docker
+      docker-compose
+      dive
+      lazydocker
+    ] ++ lib.optionals cfg.development.kubernetes [
+      kubectl
+      kubectx
+      k9s
+      helm
+      kustomize
+      stern
+    ];
+
+    # Docker configuration
+    virtualisation.docker = lib.mkIf (isNixOS && cfg.development.docker) {
+      enable = true;
+      enableOnBoot = true;
+      autoPrune = {
+        enable = true;
+        dates = "weekly";
+      };
+    };
+
+    # Podman as Docker alternative
+    virtualisation.podman = lib.mkIf (isNixOS && cfg.virtualization.podman) {
+      enable = true;
+      dockerCompat = true;
+      defaultNetwork.settings.dns_enabled = true;
+    };
+
+    # KVM/libvirt virtualization
+    virtualisation.libvirtd = lib.mkIf (isNixOS && cfg.virtualization.libvirt) {
+      enable = true;
+      qemu = {
+        package = pkgs.qemu_kvm;
+        runAsRoot = false;
+        swtpm.enable = true;
+        ovmf = {
+          enable = true;
+          packages = [ pkgs.OVMFFull.fd ];
+        };
+      };
+    };
+
+    # VirtualBox support
+    virtualisation.virtualbox.host = lib.mkIf (isNixOS && cfg.virtualization.virtualbox) {
+      enable = true;
+      enableExtensionPack = true;
+    };
+
+    # Network services
+    services = lib.mkIf isNixOS {
+      # SSH configuration
+      openssh = lib.mkIf cfg.remote.ssh {
+        enable = true;
+        ports = [ 22 ];
+        settings = {
+          PasswordAuthentication = false;
+          PermitRootLogin = "no";
+          X11Forwarding = false;
+          MaxAuthTries = 3;
+        };
+        openFirewall = true;
+      };
+
+      # Tailscale mesh VPN
+      tailscale = lib.mkIf cfg.network.tailscale {
+        enable = true;
+        useRoutingFeatures = "client";
+      };
+
+      # Syncthing file synchronization
+      syncthing = lib.mkIf cfg.backup.syncthing {
+        enable = true;
+        user = "jontk";
+        dataDir = "/home/jontk/Sync";
+        configDir = "/home/jontk/.config/syncthing";
+        openDefaultPorts = true;
+      };
+
+      # ZeroTier networking
+      zerotierone = lib.mkIf cfg.network.zerotier {
+        enable = true;
+      };
+
+      # Web server capabilities
+      nginx = lib.mkIf cfg.server.web {
+        enable = true;
+        recommendedTlsSettings = true;
+        recommendedOptimisation = true;
+        recommendedGzipSettings = true;
+        recommendedProxySettings = true;
+      };
+
+      # Database services
+      postgresql = lib.mkIf cfg.server.database {
+        enable = true;
+        package = pkgs.postgresql_15;
+        enableTCPIP = true;
+        authentication = pkgs.lib.mkOverride 10 ''
+          local all all trust
+          host all all 127.0.0.1/32 trust
+          host all all ::1/128 trust
+        '';
+        initialScript = pkgs.writeText "backend-initScript" ''
+          CREATE ROLE jontk WITH LOGIN PASSWORD 'jontk' CREATEDB;
+          CREATE DATABASE jontk;
+          GRANT ALL PRIVILEGES ON DATABASE jontk TO jontk;
+        '';
+      };
+
+      redis.servers."" = lib.mkIf cfg.server.database {
+        enable = true;
+        port = 6379;
+        bind = "127.0.0.1";
+      };
+
+      # Monitoring and logging
+      prometheus = lib.mkIf cfg.server.monitoring {
+        enable = true;
+        port = 9090;
+        exporters = {
+          node = {
+            enable = true;
+            enabledCollectors = [ "systemd" ];
+            port = 9100;
+          };
+        };
+        scrapeConfigs = [
+          {
+            job_name = "node";
+            static_configs = [{
+              targets = [ "localhost:9100" ];
+            }];
+          }
+        ];
+      };
+
+      grafana = lib.mkIf cfg.server.monitoring {
+        enable = true;
+        settings = {
+          server = {
+            http_addr = "127.0.0.1";
+            http_port = 3000;
+          };
+        };
+      };
+    };
+
+    # Security hardening
+    security = lib.mkIf (isNixOS && cfg.security.hardening) {
+      # Kernel hardening
+      kernel.sysctl = {
+        # Network security
+        "net.ipv4.conf.default.rp_filter" = 1;
+        "net.ipv4.conf.all.rp_filter" = 1;
+        "net.ipv4.conf.default.accept_source_route" = 0;
+        "net.ipv4.conf.all.accept_source_route" = 0;
+        "net.ipv4.conf.default.accept_redirects" = 0;
+        "net.ipv4.conf.all.accept_redirects" = 0;
+        "net.ipv4.conf.default.secure_redirects" = 0;
+        "net.ipv4.conf.all.secure_redirects" = 0;
+        "net.ipv4.icmp_echo_ignore_broadcasts" = 1;
+        "net.ipv4.icmp_ignore_bogus_error_responses" = 1;
+        
+        # Memory protection
+        "kernel.dmesg_restrict" = 1;
+        "kernel.kptr_restrict" = 2;
+        "kernel.yama.ptrace_scope" = 1;
+        
+        # File system security
+        "fs.protected_hardlinks" = 1;
+        "fs.protected_symlinks" = 1;
+      };
+
+      # AppArmor
+      apparmor = {
+        enable = true;
+        killUnconfinedConfinables = true;
+      };
+
+      # Audit framework
+      auditd.enable = true;
+      audit.enable = true;
+      audit.rules = [
+        "-w /etc/passwd -p wa -k identity"
+        "-w /etc/group -p wa -k identity"
+        "-w /etc/shadow -p wa -k identity"
+        "-w /etc/sudoers -p wa -k identity"
+      ];
+    };
+
+    # YubiKey support
+    services.pcscd = lib.mkIf (isNixOS && cfg.security.yubikey) {
+      enable = true;
+    };
+
+    services.udev.packages = lib.mkIf (isNixOS && cfg.security.yubikey) [
+      pkgs.yubikey-personalization
+    ];
+
+    environment.systemPackages = lib.mkIf cfg.security.yubikey (with pkgs; [
+      yubikey-manager
+      yubikey-personalization
+      yubikey-personalization-gui
+      yubico-piv-tool
+      yubioath-flutter
+    ]);
+
+    # WireGuard VPN
+    networking.wireguard = lib.mkIf (isNixOS && cfg.network.wireguard) {
+      enable = true;
+    };
+
+    # Tor support
+    services.tor = lib.mkIf (isNixOS && cfg.security.tor) {
+      enable = true;
+      client.enable = true;
+      settings = {
+        UseBridges = true;
+        ClientTransportPlugin = "obfs4 exec ${pkgs.obfs4}/bin/obfs4proxy";
+      };
+    };
+
+    # Gaming support (NixOS only)
+    programs = lib.mkIf (isNixOS && cfg.desktop.gaming) {
+      steam = {
+        enable = true;
+        remotePlay.openFirewall = true;
+        dedicatedServer.openFirewall = true;
+      };
+      
+      gamemode.enable = true;
+    };
+
+    hardware = lib.mkIf (isNixOS && cfg.desktop.gaming) {
+      opengl = {
+        enable = true;
+        driSupport = true;
+        driSupport32Bit = true;
+      };
+    };
+
+    # Office applications
+    environment.systemPackages = lib.mkIf cfg.desktop.office (with pkgs; [
+      libreoffice-fresh
+      thunderbird
+      firefox
+      chromium
+      obsidian
+      zotero
+    ]);
+
+    # Multimedia applications
+    environment.systemPackages = lib.mkIf cfg.desktop.multimedia (with pkgs; [
+      vlc
+      mpv
+      gimp
+      inkscape
+      audacity
+      obs-studio
+      kdenlive
+      ffmpeg
+      imagemagick
+      feh
+    ]);
+
+    # Backup solutions
+    environment.systemPackages = lib.mkIf cfg.backup.enable (with pkgs; [
+      restic
+      borgbackup
+      rclone
+    ] ++ lib.optionals cfg.backup.nextcloud [
+      nextcloud-client
+    ]);
+
+    # Development shell integration
+    programs.direnv = lib.mkIf cfg.development.enable {
+      enable = true;
+      nix-direnv.enable = true;
+    };
+
+    # macOS-specific feature implementations
+    homebrew = lib.mkIf (isDarwin && cfg.development.enable) {
+      enable = true;
+      brews = lib.optionals cfg.development.docker [
+        "docker"
+        "docker-compose"
+      ] ++ lib.optionals cfg.development.kubernetes [
+        "kubectl"
+        "helm"
+      ];
+      
+      casks = [
+        "docker"
+      ] ++ lib.optionals cfg.desktop.office [
+        "libreoffice"
+        "thunderbird"
+      ] ++ lib.optionals cfg.desktop.multimedia [
+        "vlc"
+        "gimp"
+      ];
+    };
+  };
+}
