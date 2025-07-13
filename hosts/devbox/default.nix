@@ -92,14 +92,15 @@
   
   # Boot loader configuration
   boot = {
-    # Use systemd-boot
+    # Use GRUB for BIOS systems
     loader = {
-      systemd-boot = {
+      grub = {
         enable = true;
+        device = "/dev/vda"; # Install GRUB to the disk
         configurationLimit = 10; # Keep last 10 generations
-        editor = false; # Disable editor for security
       };
-      efi.canTouchEfiVariables = true;
+      # Disable systemd-boot for BIOS systems
+      systemd-boot.enable = false;
       timeout = 3; # Boot menu timeout in seconds
     };
     
