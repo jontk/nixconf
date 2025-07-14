@@ -34,6 +34,9 @@
       connect-timeout = 5;
       stalled-download-timeout = 90;
       
+      # Download buffer size (default is 64MB, increase to 256MB)
+      download-buffer-size = 268435456; # 256 * 1024 * 1024
+      
       # Allow building for other architectures
       extra-platforms = lib.mkIf (pkgs.system == "x86_64-linux") [ "i686-linux" ];
       
