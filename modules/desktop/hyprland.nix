@@ -31,6 +31,7 @@
       hyprpicker # Color picker
       hypridle # Idle management daemon
       hyprlock # Screen locker
+      swaylock # Alternative screen locker
       
       # Status bar
       waybar

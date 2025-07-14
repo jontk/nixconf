@@ -726,6 +726,47 @@
     ".config/alacritty/alacritty.toml".source = ./dotfiles/alacritty.toml;
     ".config/kitty/kitty.conf".source = ./dotfiles/kitty.conf;
     
+    # Hyprlock configuration
+    ".config/hypr/hyprlock.conf" = lib.mkIf isNixOS {
+      text = ''
+        background {
+            monitor =
+            path = screenshot
+            blur_size = 5
+            blur_passes = 2
+        }
+
+        input-field {
+            monitor =
+            size = 200, 50
+            outline_thickness = 3
+            dots_size = 0.33 # Scale of input-field height, 0.2 - 0.8
+            dots_spacing = 0.15 # Scale of dots' absolute size, 0.0 - 1.0
+            dots_center = true
+            outer_color = rgb(151515)
+            inner_color = rgb(200, 200, 200)
+            font_color = rgb(10, 10, 10)
+            fade_on_empty = true
+            placeholder_text = <i>Password...</i>
+            hide_input = false
+            position = 0, -20
+            halign = center
+            valign = center
+        }
+
+        label {
+            monitor =
+            text = $TIME
+            color = rgba(200, 200, 200, 1.0)
+            font_size = 55
+            font_family = Noto Sans
+            position = 0, 80
+            halign = center
+            valign = center
+        }
+      '';
+    };
+    
     # Hyprland user configuration
     ".config/hypr/hyprland.conf" = lib.mkIf isNixOS {
       text = ''
@@ -760,6 +801,9 @@
         
         # Add your personal customizations below
         # Example: Custom keybindings, window rules, monitor setup, etc.
+        
+        # Override lock command to use swaylock if hyprlock fails
+        bind = $mainMod, L, exec, hyprlock || swaylock
         
         # Personal keybindings
         # bind = $mainMod SHIFT, Return, exec, alacritty
