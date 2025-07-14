@@ -748,7 +748,9 @@
             blur {
                 enabled = false
             }
-            drop_shadow = false
+            shadow {
+                enabled = false
+            }
         }
         
         # Simpler animations for VM
