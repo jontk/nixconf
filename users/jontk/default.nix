@@ -726,6 +726,31 @@
     ".config/alacritty/alacritty.toml".source = ./dotfiles/alacritty.toml;
     ".config/kitty/kitty.conf".source = ./dotfiles/kitty.conf;
     
+    # Swaylock configuration
+    ".config/swaylock/config" = lib.mkIf isNixOS {
+      text = ''
+        color=000000
+        inside-color=1e1e1e
+        ring-color=33ccff
+        key-hl-color=00ff99
+        line-color=000000
+        separator-color=000000
+        text-color=ffffff
+        
+        indicator-radius=100
+        indicator-thickness=10
+        
+        effect-blur=7x5
+        effect-vignette=0.5:0.5
+        
+        clock
+        timestr=%H:%M
+        datestr=%A, %Y-%m-%d
+        
+        fade-in=0.2
+      '';
+    };
+    
     # Hyprlock configuration
     ".config/hypr/hyprlock.conf" = lib.mkIf isNixOS {
       text = ''
@@ -802,8 +827,8 @@
         # Add your personal customizations below
         # Example: Custom keybindings, window rules, monitor setup, etc.
         
-        # Override lock command to use swaylock if hyprlock fails
-        bind = $mainMod, L, exec, hyprlock || swaylock
+        # Override lock command to use swaylock (more reliable in VM)
+        bind = $mainMod, L, exec, swaylock -c 000000
         
         # Personal keybindings
         # bind = $mainMod SHIFT, Return, exec, alacritty
