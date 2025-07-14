@@ -55,7 +55,7 @@ in
     # nodePackages.create-react-app
     nodePackages.vercel
     # nodePackages.netlify-cli
-    nodePackages.claude-code
+    # nodePackages.claude-code # Not available in nixpkgs
     deno
     bun
     
