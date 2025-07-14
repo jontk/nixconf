@@ -723,7 +723,7 @@
     ".local/bin/.keep".text = "";
     
     # Terminal emulator configurations
-    ".config/alacritty/alacritty.yml".source = ./dotfiles/alacritty.yml;
+    ".config/alacritty/alacritty.toml".source = ./dotfiles/alacritty.toml;
     ".config/kitty/kitty.conf".source = ./dotfiles/kitty.conf;
     
     # Hyprland user configuration
