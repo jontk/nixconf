@@ -194,20 +194,63 @@ in
   };
   
   # Programs configuration
-  programs = {
-    # Enable adb for Android development
-    adb.enable = true;
+  programs = lib.mkMerge [
+    {
+      # Enable adb for Android development
+      adb.enable = true;
+      
+      # Enable mtr with GUI support
+      mtr.enable = true;
+      
+      # Enable wireshark
+      wireshark = {
+        enable = true;
+        package = pkgs.wireshark;
+      };
+    }
     
-    # Enable mtr with GUI support
-    mtr.enable = true;
-    
-    # Enable wireshark
-    wireshark = {
-      enable = true;
-      package = pkgs.wireshark;
-    };
-    
-  };
+    # NixOS specific programs
+    (lib.mkIf isNixOS {
+      # Enable nix-ld for running unpatched dynamic binaries (e.g., VSCode Server)
+      nix-ld = {
+        enable = true;
+        libraries = with pkgs; [
+          # Common libraries needed by VSCode Server and other binaries
+          stdenv.cc.cc.lib
+          zlib
+          fuse3
+          icu
+          nss
+          openssl
+          curl
+          expat
+          # X11 libraries that might be needed
+          xorg.libX11
+          xorg.libXcomposite
+          xorg.libXcursor
+          xorg.libXdamage
+          xorg.libXext
+          xorg.libXfixes
+          xorg.libXi
+          xorg.libXrandr
+          xorg.libXrender
+          xorg.libXtst
+          xorg.libxcb
+          xorg.libxkbfile
+          # Additional libraries
+          glib
+          gtk3
+          libnotify
+          libsecret
+          libuuid
+          libgcc
+          libglvnd
+          libbsd
+          libmd
+        ];
+      };
+    })
+  ];
   
   # Services configuration
   services = lib.mkMerge [
@@ -248,45 +291,6 @@ in
     
     # NixOS specific services
     (lib.mkIf isNixOS {
-      # Enable nix-ld for running unpatched dynamic binaries (e.g., VSCode Server)
-      programs.nix-ld = {
-        enable = true;
-        libraries = with pkgs; [
-          # Common libraries needed by VSCode Server and other binaries
-          stdenv.cc.cc.lib
-          zlib
-          fuse3
-          icu
-          nss
-          openssl
-          curl
-          expat
-          # X11 libraries that might be needed
-          xorg.libX11
-          xorg.libXcomposite
-          xorg.libXcursor
-          xorg.libXdamage
-          xorg.libXext
-          xorg.libXfixes
-          xorg.libXi
-          xorg.libXrandr
-          xorg.libXrender
-          xorg.libXtst
-          xorg.libxcb
-          xorg.libxkbfile
-          # Additional libraries
-          glib
-          gtk3
-          libnotify
-          libsecret
-          libuuid
-          libgcc
-          libglvnd
-          libbsd
-          libmd
-        ];
-      };
-      
       # Docker is handled via virtualisation, not services - moved to feature-implementations.nix
       # VirtualBox is handled via virtualisation, not services - moved to feature-implementations.nix
     })
