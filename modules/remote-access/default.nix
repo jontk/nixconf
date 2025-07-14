@@ -62,6 +62,18 @@ in
         default = "10m";
         description = "Ban duration";
       };
+      ignoreIP = mkOption {
+        type = types.listOf types.str;
+        default = [
+          "127.0.0.1/8"      # Localhost
+          "::1"              # IPv6 localhost
+          "192.168.0.0/16"   # Private network (includes 192.168.1.x)
+          "10.0.0.0/8"       # Private network
+          "172.16.0.0/12"    # Private network
+          "fc00::/7"         # IPv6 private network
+        ];
+        description = "IP addresses or CIDR masks to ignore (never ban)";
+      };
     };
 
     firewall = {
@@ -215,6 +227,7 @@ in
         enable = true;
         maxretry = cfg.fail2ban.maxRetries;
         bantime = cfg.fail2ban.banTime;
+        ignoreIP = cfg.fail2ban.ignoreIP;
         bantime-increment = {
           enable = true;
           rndtime = "5m";
