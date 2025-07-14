@@ -170,6 +170,9 @@ in
     devbox # Development environments
     mise # Runtime executor (asdf rust clone)
     
+    # AI-powered coding assistants
+    claude-code
+    
     # macOS specific tools
   ] ++ lib.optionals isDarwin [
     m-cli # macOS command line tools
