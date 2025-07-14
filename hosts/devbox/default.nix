@@ -358,16 +358,8 @@
         options = "caps:escape"; # Caps Lock as Escape
       };
       
-      # Enable touchpad support
-      libinput = {
-        enable = true;
-        touchpad = {
-          naturalScrolling = true;
-          tapping = true;
-          clickMethod = "clickfinger";
-          disableWhileTyping = true;
-        };
-      };
+      # Touchpad configuration kept for X11 compatibility
+      # (actual libinput config moved to services.libinput)
       
       # Video drivers (will be specified in hardware-configuration.nix)
       videoDrivers = [ ];
@@ -397,6 +389,20 @@
     };
     
     # SSH server is configured via modules.remoteAccess
+    
+    # Touchpad support
+    libinput = {
+      enable = true;
+      touchpad = {
+        naturalScrolling = true;
+        tapping = true;
+        clickMethod = "clickfinger";
+        disableWhileTyping = true;
+      };
+    };
+    
+    # Disable PulseAudio as we're using PipeWire
+    pulseaudio.enable = false;
     
     # Enable fstrim for SSDs
     fstrim.enable = true;
@@ -507,8 +513,7 @@
       };
     };
     
-    # Sound
-    pulseaudio.enable = false; # Using PipeWire instead
+    # Sound configuration moved to services.pulseaudio
   };
   
   # System environment

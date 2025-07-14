@@ -104,20 +104,8 @@
         else if config.desktop.graphics.driver == "virtualbox" then [ "virtualbox" ]
         else [ "modesetting" ];
       
-      # Display manager (using SDDM for Wayland compatibility)
-      displayManager = {
-        sddm = {
-          enable = true;
-          wayland.enable = true;
-          theme = "breeze";
-          settings = {
-            Theme = {
-              CursorTheme = "breeze_cursors";
-            };
-          };
-        };
-        defaultSession = "hyprland";
-      };
+      # Display manager configuration kept for X11 compatibility
+      # (actual display manager config moved to services.displayManager)
       
       # Keyboard configuration
       xkb = {
@@ -126,17 +114,8 @@
         options = "caps:escape,compose:ralt";
       };
       
-      # Touchpad support
-      libinput = {
-        enable = true;
-        touchpad = {
-          naturalScrolling = true;
-          tapping = true;
-          clickMethod = "clickfinger";
-          disableWhileTyping = true;
-          scrollMethod = "twofinger";
-        };
-      };
+      # Touchpad configuration kept for X11 compatibility
+      # (actual libinput config moved to services.libinput)
     };
     
     # Wayland-specific configuration
@@ -237,6 +216,33 @@
     # Enable gnome-keyring for secret management
     services.gnome.gnome-keyring.enable = true;
     
+    # Display manager (using SDDM for Wayland compatibility)
+    services.displayManager = {
+      sddm = {
+        enable = true;
+        wayland.enable = true;
+        theme = "breeze";
+        settings = {
+          Theme = {
+            CursorTheme = "breeze_cursors";
+          };
+        };
+      };
+      defaultSession = "hyprland";
+    };
+    
+    # Touchpad support
+    services.libinput = {
+      enable = true;
+      touchpad = {
+        naturalScrolling = true;
+        tapping = true;
+        clickMethod = "clickfinger";
+        disableWhileTyping = true;
+        scrollMethod = "twofinger";
+      };
+    };
+    
     # Power management for desktop
     services.upower.enable = true;
     
@@ -253,7 +259,7 @@
     };
     
     # Disable PulseAudio as we're using PipeWire
-    hardware.pulseaudio.enable = false;
+    services.pulseaudio.enable = false;
     
     # Notification daemon - should be configured via home-manager, not system services
     # TODO: Move dunst configuration to home-manager
