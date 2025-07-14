@@ -85,8 +85,8 @@
       [options]
       custom-rendezvous-server = '192.168.1.241:21119'
       relay-server = '192.168.1.241:21117'
-      api-server = ''
-      key = ''
+      api-server = ""
+      key = ""
       EOF
       
       # Make it harder to overwrite (not foolproof but helps)
@@ -125,8 +125,8 @@
         [options]
         custom-rendezvous-server = '192.168.1.241:21119'
         relay-server = '192.168.1.241:21117'
-        api-server = ''
-        key = ''
+        api-server = ""
+        key = ""
         EOF
           fi
         fi

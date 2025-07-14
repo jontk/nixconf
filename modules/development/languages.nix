@@ -55,6 +55,7 @@ in
     # nodePackages.create-react-app
     nodePackages.vercel
     # nodePackages.netlify-cli
+    nodePackages.claude-code
     deno
     bun
     
@@ -107,11 +108,11 @@ in
     bundler
     
     # PHP
-    php82
-    php82Packages.composer
-    php82Packages.psalm
-    php82Packages.phpstan
-    php82Packages.php-cs-fixer
+    # php82
+    # php82Packages.composer
+    # php82Packages.psalm
+    # php82Packages.phpstan
+    # php82Packages.php-cs-fixer
     
     # Haskell
     ghc
