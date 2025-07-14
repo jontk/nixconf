@@ -16,6 +16,7 @@
     # Terminal utilities
     tmux
     screen
+    procs # Modern replacement for ps
     
     # Text editors
     neovim
@@ -352,6 +353,7 @@
       
       # System info
       myip = "curl http://ipecho.net/plain; echo";
+      ps = "procs";
       
     } // lib.optionalAttrs isNixOS {
       # RustDesk with local server
@@ -723,6 +725,52 @@
     # Terminal emulator configurations
     ".config/alacritty/alacritty.yml".source = ./dotfiles/alacritty.yml;
     ".config/kitty/kitty.conf".source = ./dotfiles/kitty.conf;
+    
+    # Hyprland user configuration
+    ".config/hypr/hyprland.conf" = lib.mkIf isNixOS {
+      text = ''
+        # User-specific Hyprland configuration
+        # This configuration extends the system default
+        
+        # Source the system configuration
+        source = /etc/hypr/hyprland.conf
+        
+        # VM-specific fixes
+        env = WLR_NO_HARDWARE_CURSORS,1
+        env = WLR_RENDERER,pixman
+        env = LIBSEAT_BACKEND,logind
+        
+        # Simplified monitor config for VM
+        monitor=,preferred,auto,1
+        
+        # Disable some effects for better VM performance
+        decoration {
+            blur {
+                enabled = false
+            }
+            drop_shadow = false
+        }
+        
+        # Simpler animations for VM
+        animations {
+            enabled = false
+        }
+        
+        # Add your personal customizations below
+        # Example: Custom keybindings, window rules, monitor setup, etc.
+        
+        # Personal keybindings
+        # bind = $mainMod SHIFT, Return, exec, alacritty
+        
+        # Personal window rules
+        # windowrulev2 = workspace 2,class:^(firefox)$
+        # windowrulev2 = workspace 3,class:^(code)$
+        
+        # Personal startup applications
+        # exec-once = firefox
+        # exec-once = discord
+      '';
+    };
     
     # Custom scripts
     ".local/bin/update-system" = {

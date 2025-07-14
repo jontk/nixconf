@@ -103,7 +103,7 @@
             inherit system modules;
             specialArgs = specialArgs // { 
               inherit self nixpkgs nixpkgs-stable nixos-hardware pkgs;
-              inputs = { inherit rust-overlay nix-vscode-extensions firefox-addons sops-nix; };
+              inputs = { inherit hyprland rust-overlay nix-vscode-extensions firefox-addons sops-nix; };
             };
           };
       

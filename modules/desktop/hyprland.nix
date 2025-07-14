@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 {
   # Hyprland window manager configuration
@@ -18,6 +18,10 @@
       # Enable screensharing support
       XDG_CURRENT_DESKTOP = "Hyprland";
       XDG_SESSION_DESKTOP = "Hyprland";
+      # VM-specific settings
+      WLR_RENDERER = "pixman";
+      WLR_NO_HARDWARE_CURSORS = "1";
+      LIBSEAT_BACKEND = "logind";
     };
     
     # Hyprland-specific packages

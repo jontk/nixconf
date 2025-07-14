@@ -56,7 +56,7 @@
   desktop = {
     enable = true;
     graphics = {
-      driver = "intel"; # Change to "amd", "nvidia", "hybrid-intel-nvidia", etc. as needed
+      driver = "qemu"; # Use QEMU/KVM driver for virtual machines
       highDpi = false; # Set to true for high DPI displays
     };
   };
@@ -108,7 +108,6 @@
     kernelParams = [
       "quiet"
       "splash"
-      "nvidia-drm.modeset=1" # For NVIDIA GPUs
     ];
     
     # Use latest kernel
@@ -265,6 +264,11 @@
     which
     gnumake
     
+    # Wayland test tools
+    weston
+    wev
+    wlr-randr
+    
     # System administration
     pciutils
     usbutils
@@ -360,10 +364,11 @@
       
       # Touchpad configuration kept for X11 compatibility
       # (actual libinput config moved to services.libinput)
-      
-      # Video drivers (will be specified in hardware-configuration.nix)
-      videoDrivers = [ ];
     };
+    
+    # QEMU guest agent for better VM integration
+    qemuGuest.enable = true;
+    spice-vdagentd.enable = true;
     
     # Enable CUPS for printing
     printing = {
@@ -441,7 +446,7 @@
     
     # System monitoring
     smartd = {
-      enable = true;
+      enable = false; # Disabled in VM - no SMART devices
       autodetect = true;
     };
     

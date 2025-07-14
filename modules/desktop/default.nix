@@ -15,7 +15,7 @@
     
     graphics = {
       driver = lib.mkOption {
-        type = lib.types.enum [ "intel" "amd" "nvidia" "hybrid-intel-nvidia" "hybrid-amd-nvidia" "vmware" "virtualbox" ];
+        type = lib.types.enum [ "intel" "amd" "nvidia" "hybrid-intel-nvidia" "hybrid-amd-nvidia" "vmware" "virtualbox" "qemu" ];
         default = "intel";
         description = "Graphics driver to use";
       };
@@ -102,6 +102,7 @@
         else if lib.hasPrefix "hybrid-" config.desktop.graphics.driver then [ "nvidia" "modesetting" ]
         else if config.desktop.graphics.driver == "vmware" then [ "vmware" ]
         else if config.desktop.graphics.driver == "virtualbox" then [ "virtualbox" ]
+        else if config.desktop.graphics.driver == "qemu" then [ "qxl" "modesetting" ]
         else [ "modesetting" ];
       
       # Display manager configuration kept for X11 compatibility
@@ -191,17 +192,16 @@
     # Enable portals for desktop integration
     xdg.portal = {
       enable = true;
-      wlr.enable = true;
-      extraPortals = with pkgs; [
-        xdg-desktop-portal-gtk
-        # xdg-desktop-portal-hyprland is automatically enabled by programs.hyprland
-      ];
+      xdgOpenUsePortal = true;
       config = {
-        common = {
-          default = [ "hyprland" "gtk" ];
-          "org.freedesktop.impl.portal.Secret" = [ "gnome-keyring" ];
-        };
+        common.default = [ "gtk" ];
+        hyprland.default = [
+          "gtk"
+          "hyprland"
+        ];
       };
+
+      extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
     };
     
     # Security for Wayland
