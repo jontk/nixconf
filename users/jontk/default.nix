@@ -42,26 +42,6 @@
     reattach-to-user-namespace # For tmux clipboard support on macOS
   ];
   
-  # RustDesk configuration
-  home.file.".config/rustdesk/RustDesk2.toml" = lib.mkIf isNixOS {
-    text = ''
-      rendezvous_server = "192.168.1.241:21119"
-      relay_server = "192.168.1.241:21117"
-      nat_type = 2
-      serial = 0
-      
-      [options]
-      local-ip-addr = "192.168.1.241"
-      custom-rendezvous-server = "192.168.1.241:21119"
-      relay-server = "192.168.1.241:21117"
-      api-server = ""
-      key = ""
-    '';
-    # Make the file read-only to prevent RustDesk from overwriting it
-    onChange = ''
-      chmod 444 $HOME/.config/rustdesk/RustDesk2.toml
-    '';
-  };
   
   # RustDesk wrapper script to preserve server settings
   home.file.".local/bin/rustdesk-local" = lib.mkIf isNixOS {
