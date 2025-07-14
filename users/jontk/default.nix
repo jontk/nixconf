@@ -29,7 +29,7 @@
     tig # Text-mode interface for git
     
     # Productivity tools
-    taskwarrior
+    taskwarrior3
     timewarrior
     
     # Media tools
@@ -291,7 +291,7 @@
       share = true;
     };
     
-    initExtra = ''
+    initContent = ''
       # Load any local configuration
       [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
       
@@ -499,7 +499,7 @@
     enable = true;
     enableZshIntegration = true;
     git = true;
-    icons = true;
+    icons = "auto";
   };
   
   # Zoxide (better cd)
@@ -650,7 +650,7 @@
       gpg-agent = {
         enable = true;
         enableSshSupport = true;
-        pinentryPackage = pkgs.pinentry-gtk2;
+        pinentry.package = pkgs.pinentry-gtk2;
       };
     })
     
