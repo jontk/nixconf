@@ -733,18 +733,15 @@
       url = {
         "git@github.com:" = {
           insteadOf = "gh:";
-          pushInsteadOf = "github:";
-          pushInsteadOf = "https://github.com/";
+          pushInsteadOf = [ "github:" "https://github.com/" ];
         };
         "git@gitlab.com:" = {
           insteadOf = "gl:";
-          pushInsteadOf = "gitlab:";
-          pushInsteadOf = "https://gitlab.com/";
+          pushInsteadOf = [ "gitlab:" "https://gitlab.com/" ];
         };
         "git@bitbucket.org:" = {
           insteadOf = "bb:";
-          pushInsteadOf = "bitbucket:";
-          pushInsteadOf = "https://bitbucket.org/";
+          pushInsteadOf = [ "bitbucket:" "https://bitbucket.org/" ];
         };
       };
       
@@ -1397,6 +1394,96 @@
       #   enable = true;
       # };
     })
+    
+    # NixOS-specific services
+    (lib.mkIf (!isDarwin) {
+      # Notification system with dunst
+      dunst = {
+        enable = true;
+        iconTheme = {
+          name = "Dracula";
+          package = pkgs.dracula-icon-theme;
+          size = "32x32";
+        };
+        settings = {
+          global = {
+            monitor = 0;
+            follow = "mouse";
+            width = 350;
+            height = 300;
+            origin = "top-right";
+            offset = "10x50";
+            scale = 0;
+            notification_limit = 5;
+            progress_bar = true;
+            progress_bar_height = 10;
+            progress_bar_frame_width = 1;
+            progress_bar_min_width = 150;
+            progress_bar_max_width = 300;
+            indicate_hidden = "yes";
+            shrink = "no";
+            transparency = 0;
+            separator_height = 2;
+            padding = 8;
+            horizontal_padding = 8;
+            text_icon_padding = 0;
+            frame_width = 2;
+            frame_color = "#282a36";
+            separator_color = "frame";
+            sort = "yes";
+            idle_threshold = 120;
+            font = "JetBrains Mono 10";
+            line_height = 0;
+            markup = "full";
+            format = "<b>%s</b>\\n%b";
+            alignment = "left";
+            vertical_alignment = "center";
+            show_age_threshold = 60;
+            word_wrap = "yes";
+            ellipsize = "middle";
+            ignore_newline = "no";
+            stack_duplicates = true;
+            hide_duplicate_count = false;
+            show_indicators = "yes";
+            icon_position = "left";
+            min_icon_size = 0;
+            max_icon_size = 32;
+            sticky_history = "yes";
+            history_length = 20;
+            dmenu = "rofi -dmenu -p dunst:";
+            browser = "firefox";
+            always_run_script = true;
+            title = "Dunst";
+            class = "Dunst";
+            corner_radius = 8;
+            ignore_dbusclose = false;
+            force_xinerama = false;
+            mouse_left_click = "close_current";
+            mouse_middle_click = "do_action, close_current";
+            mouse_right_click = "close_all";
+          };
+          
+          urgency_low = {
+            background = "#282a36";
+            foreground = "#f8f8f2";
+            timeout = 10;
+          };
+          
+          urgency_normal = {
+            background = "#282a36";
+            foreground = "#f8f8f2";
+            timeout = 10;
+          };
+          
+          urgency_critical = {
+            background = "#ff5555";
+            foreground = "#f8f8f2";
+            frame_color = "#ff5555";
+            timeout = 0;
+          };
+        };
+      };
+    })
   ];
   
   # Readline configuration
@@ -1622,8 +1709,8 @@
         "ctrl+shift+alt+t" = "set_tab_title";
         
         # Window management
-        "ctrl+shift+]" = "next_window";
-        "ctrl+shift+[" = "previous_window";
+        "ctrl+shift+right" = "next_window";
+        "ctrl+shift+left" = "previous_window";
         "ctrl+shift+f" = "move_window_forward";
         "ctrl+shift+b" = "move_window_backward";
         "ctrl+shift+`" = "move_window_to_top";
@@ -1941,6 +2028,90 @@
     dataHome = "/home/jontk/.local/share";
     cacheHome = "/home/jontk/.cache";
     stateHome = "/home/jontk/.local/state";
+    
+    # Desktop entries for applications (NixOS only)
+  } // lib.optionalAttrs (!isDarwin) {
+    desktopEntries = {
+      "tmux-session" = {
+        name = "Tmux Development Session";
+        comment = "Start a new tmux development session";
+        exec = "alacritty -e tmux new-session -s development";
+        icon = "utilities-terminal";
+        categories = [ "Development" "System" ];
+      };
+      
+      "quick-edit" = {
+        name = "Quick Edit";
+        comment = "Quick file editor with Neovim";
+        exec = "alacritty -e nvim";
+        icon = "text-editor";
+        categories = [ "Development" "TextEditor" ];
+      };
+      
+      "project-browser" = {
+        name = "Project Browser";
+        comment = "Browse projects with file manager";
+        exec = "thunar ~/projects";
+        icon = "folder-development";
+        categories = [ "Development" "FileManager" ];
+      };
+      
+      "system-monitor" = {
+        name = "System Monitor";
+        comment = "Monitor system resources with btop";
+        exec = "alacritty -e btop";
+        icon = "utilities-system-monitor";
+        categories = [ "System" "Monitor" ];
+      };
+    };
+    
+    # User directories configuration
+    userDirs = {
+      enable = true;
+      desktop = "/home/jontk/Desktop";
+      documents = "/home/jontk/Documents";
+      download = "/home/jontk/Downloads";
+      music = "/home/jontk/Music";
+      pictures = "/home/jontk/Pictures";
+      videos = "/home/jontk/Videos";
+      # Development directories
+      templates = "/home/jontk/Templates";
+      publicShare = "/home/jontk/Public";
+    };
+    
+    # MIME type associations
+    mimeApps = {
+      enable = true;
+      defaultApplications = {
+        "text/plain" = "nvim.desktop";
+        "text/x-markdown" = "nvim.desktop";
+        "text/x-shellscript" = "nvim.desktop";
+        "application/json" = "nvim.desktop";
+        "application/x-yaml" = "nvim.desktop";
+        "text/x-python" = "nvim.desktop";
+        "text/x-rust" = "nvim.desktop";
+        "text/x-go" = "nvim.desktop";
+        "text/x-javascript" = "nvim.desktop";
+        "text/x-typescript" = "nvim.desktop";
+        "text/html" = "nvim.desktop";
+        "text/css" = "nvim.desktop";
+        "application/pdf" = "firefox.desktop";
+        "text/uri-list" = "firefox.desktop";
+        "x-scheme-handler/http" = "firefox.desktop";
+        "x-scheme-handler/https" = "firefox.desktop";
+        "x-scheme-handler/about" = "firefox.desktop";
+        "x-scheme-handler/unknown" = "firefox.desktop";
+        "image/jpeg" = "feh.desktop";
+        "image/png" = "feh.desktop";
+        "image/gif" = "feh.desktop";
+        "image/webp" = "feh.desktop";
+        "video/mp4" = "mpv.desktop";
+        "video/x-matroska" = "mpv.desktop";
+        "audio/mpeg" = "mpv.desktop";
+        "audio/flac" = "mpv.desktop";
+        "inode/directory" = "thunar.desktop";
+      };
+    };
   };
   
   # Create dotfiles structure
@@ -2312,149 +2483,7 @@
     };
   };
   
-  # XDG settings for desktop integration
-  xdg = lib.mkIf (!isDarwin) {
-    enable = true;
-    
-    # Desktop entries for applications
-    desktopEntries = {
-      "tmux-session" = {
-        name = "Tmux Development Session";
-        comment = "Start a new tmux development session";
-        exec = "alacritty -e tmux new-session -s development";
-        icon = "utilities-terminal";
-        categories = [ "Development" "Utility" ];
-        terminal = false;
-      };
-      
-      "system-monitor" = {
-        name = "System Monitor";
-        comment = "Monitor system resources";
-        exec = "alacritty -e htop";
-        icon = "utilities-system-monitor";
-        categories = [ "System" "Monitor" ];
-        terminal = false;
-      };
-    };
-    
-    # MIME type associations
-    mimeApps = {
-      enable = true;
-      defaultApplications = {
-        "text/plain" = [ "nvim.desktop" ];
-        "text/markdown" = [ "nvim.desktop" ];
-        "application/json" = [ "nvim.desktop" ];
-        "application/yaml" = [ "nvim.desktop" ];
-        "text/x-shellscript" = [ "nvim.desktop" ];
-        "text/x-python" = [ "nvim.desktop" ];
-        "text/x-rust" = [ "nvim.desktop" ];
-        "text/x-go" = [ "nvim.desktop" ];
-        
-        "image/jpeg" = [ "org.gnome.eog.desktop" ];
-        "image/png" = [ "org.gnome.eog.desktop" ];
-        "image/gif" = [ "org.gnome.eog.desktop" ];
-        "image/webp" = [ "org.gnome.eog.desktop" ];
-        
-        "application/pdf" = [ "org.gnome.Evince.desktop" ];
-        
-        "inode/directory" = [ "org.gnome.Nautilus.desktop" ];
-        
-        "x-scheme-handler/http" = [ "firefox.desktop" ];
-        "x-scheme-handler/https" = [ "firefox.desktop" ];
-        "text/html" = [ "firefox.desktop" ];
-      };
-    };
-    
-    # User directories
-    userDirs = {
-      enable = true;
-      createDirectories = true;
-      desktop = "\$HOME/Desktop";
-      documents = "\$HOME/Documents";
-      download = "\$HOME/Downloads";
-      music = "\$HOME/Music";
-      pictures = "\$HOME/Pictures";
-      videos = "\$HOME/Videos";
-      templates = "\$HOME/Templates";
-      publicShare = "\$HOME/Public";
-    };
-  };
   
-  # Notification system with dunst
-  services.dunst = lib.mkIf (!isDarwin) {
-    enable = true;
-    iconTheme = {
-      name = "Dracula";
-      package = pkgs.dracula-icon-theme;
-      size = "32x32";
-    };
-    settings = {
-      global = {
-        # Geometry
-        width = 350;
-        height = 100;
-        origin = "top-right";
-        offset = "30x60";
-        notification_limit = 5;
-        progress_bar = true;
-        progress_bar_height = 8;
-        progress_bar_frame_width = 1;
-        
-        # Appearance
-        transparency = 10;
-        separator_height = 2;
-        padding = 12;
-        horizontal_padding = 12;
-        text_icon_padding = 12;
-        frame_width = 2;
-        frame_color = "#bd93f9";
-        separator_color = "frame";
-        
-        # Typography
-        font = "Inter 11";
-        line_height = 0;
-        markup = "full";
-        format = "<b>%s</b>\\n%b";
-        alignment = "left";
-        vertical_alignment = "center";
-        show_age_threshold = 60;
-        ellipsize = "middle";
-        ignore_newline = false;
-        stack_duplicates = true;
-        hide_duplicate_count = false;
-        show_indicators = true;
-        
-        # Interaction
-        mouse_left_click = "close_current";
-        mouse_middle_click = "do_action, close_current";
-        mouse_right_click = "close_all";
-        
-        # Timing
-        idle_threshold = 120;
-        sticky_history = true;
-        history_length = 20;
-      };
-      
-      urgency_low = {
-        background = "#282a36";
-        foreground = "#f8f8f2";
-        timeout = 5;
-      };
-      
-      urgency_normal = {
-        background = "#282a36";
-        foreground = "#f8f8f2";
-        timeout = 10;
-      };
-      
-      urgency_critical = {
-        background = "#ff5555";
-        foreground = "#f8f8f2";
-        frame_color = "#ff5555";
-        timeout = 0;
-      };
-    };
-  };
   
   # Desktop applications and services
   # Note: This section adds desktop-specific packages for NixOS systems

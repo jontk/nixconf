@@ -313,6 +313,7 @@ in
               maxretry = cfg.fail2ban.maxRetries;
               findtime = "10m";
               bantime = cfg.fail2ban.banTime;
+              ignoreip = lib.concatStringsSep " " cfg.fail2ban.ignoreIP;
             };
           };
         };
