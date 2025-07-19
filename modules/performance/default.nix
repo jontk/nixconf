@@ -28,11 +28,26 @@ in
       priority = 10;      # Higher priority than disk swap
     };
 
-    # Memory management
-    systemd.oomd = lib.mkIf (isNixOS && cfg.oomd.enable) {
-      enable = true;
-      enableRootSlice = true;
-      enableUserSlices = true;
+    # Memory management and service optimizations
+    systemd = lib.mkIf isNixOS {
+      oomd = lib.mkIf cfg.oomd.enable {
+        enable = true;
+        enableRootSlice = true;
+        enableUserSlices = true;
+      };
+      
+      # Faster service startup
+      extraConfig = ''
+        DefaultTimeoutStopSec=30s
+        DefaultTimeoutStartSec=30s
+      '';
+      
+      # Optimize journald
+      services.systemd-journald.serviceConfig = {
+        SystemMaxUse = "500M";
+        RuntimeMaxUse = "100M";
+        SystemMaxFileSize = "50M";
+      };
     };
 
     # CPU performance
@@ -41,23 +56,55 @@ in
       cpuFreqGovernor = cfg.cpu.governor;
     };
 
-    # I/O scheduling optimizations
-    boot.kernel.sysctl = lib.mkIf isNixOS {
-      # VM tuning
-      "vm.dirty_ratio" = 15;
-      "vm.dirty_background_ratio" = 5;
-      "vm.swappiness" = 10;  # Prefer RAM over swap
-      "vm.vfs_cache_pressure" = 50;
+    # I/O scheduling and boot optimizations
+    boot = lib.mkIf isNixOS {
+      # Kernel sysctl settings
+      kernel.sysctl = {
+        # VM tuning
+        "vm.dirty_ratio" = 15;
+        "vm.dirty_background_ratio" = 5;
+        "vm.swappiness" = 10;  # Prefer RAM over swap
+        "vm.vfs_cache_pressure" = 50;
+        
+        # Network performance
+        "net.core.rmem_max" = 134217728;
+        "net.core.wmem_max" = 134217728;
+        "net.ipv4.tcp_rmem" = "4096 87380 134217728";
+        "net.ipv4.tcp_wmem" = "4096 65536 134217728";
+        "net.ipv4.tcp_congestion_control" = "bbr";
+        
+        # File system
+        "fs.file-max" = 2097152;
+      };
       
-      # Network performance
-      "net.core.rmem_max" = 134217728;
-      "net.core.wmem_max" = 134217728;
-      "net.ipv4.tcp_rmem" = "4096 87380 134217728";
-      "net.ipv4.tcp_wmem" = "4096 65536 134217728";
-      "net.ipv4.tcp_congestion_control" = "bbr";
+      # Kernel modules
+      kernelModules = [ "tcp_bbr" ]; # Better congestion control
       
-      # File system
-      "fs.file-max" = 2097152;
+      # Boot speed optimization
+      loader.systemd-boot.configurationLimit = 10;
+      loader.timeout = 3;
+      
+      # Initrd optimization
+      initrd.systemd.enable = true; # Faster boot with systemd in initrd
+      
+      # Kernel parameters
+      kernelParams = [
+        "mitigations=off" # Disable CPU vulnerability mitigations for performance
+        "quiet"
+        "splash"
+        "rd.systemd.show_status=false"
+        "rd.udev.log_level=3"
+        "udev.log_priority=3"
+      ];
+      
+      # Parallel kernel module loading
+      kernel.sysctl."kernel.modules_disabled" = 0;
+      
+      # Temporary file systems
+      tmp = {
+        useTmpfs = true;
+        tmpfsSize = "50%"; # Use 50% of RAM for /tmp
+      };
     };
 
     # Nix store optimizations
@@ -93,35 +140,6 @@ in
       dates = [ "weekly" ];
     };
 
-    # Faster boot times
-    boot = lib.mkIf isNixOS {
-      # Kernel modules
-      kernelModules = [ "tcp_bbr" ]; # Better congestion control
-      
-      # Faster boot
-      loader.timeout = lib.mkDefault 3;
-      
-      # Temporary file systems
-      tmp = {
-        useTmpfs = true;
-        tmpfsSize = "50%"; # Use 50% of RAM for /tmp
-      };
-    };
 
-    # Service optimizations
-    systemd = lib.mkIf isNixOS {
-      # Faster service startup
-      extraConfig = ''
-        DefaultTimeoutStopSec=30s
-        DefaultTimeoutStartSec=30s
-      '';
-      
-      # Optimize journald
-      services.systemd-journald.serviceConfig = {
-        SystemMaxUse = "500M";
-        RuntimeMaxUse = "100M";
-        SystemMaxFileSize = "50M";
-      };
-    };
   };
 }

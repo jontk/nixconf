@@ -163,8 +163,8 @@ in
   };
 
   config = mkIf (cfg.enable && isNixOS) {
-    # Install backup scripts
-    environment.systemPackages = [
+    # Install backup scripts and required packages
+    environment.systemPackages = with pkgs; [
       (pkgs.writeShellScriptBin "nixconf-backup" ''
         exec ${backupScript} "$@"
       '')
@@ -174,6 +174,9 @@ in
       (pkgs.writeShellScriptBin "nixconf-recovery" ''
         exec ${recoveryScript} "$@"
       '')
+    ] ++ lib.optionals cfg.monitoring.email.enable [
+      mailutils
+      msmtp
     ];
     
     # Main backup service
@@ -455,10 +458,5 @@ in
       };
     };
     
-    # Ensure required packages are available
-    environment.systemPackages = mkIf cfg.monitoring.email.enable (with pkgs; [
-      mailutils
-      msmtp
-    ]);
   };
 }

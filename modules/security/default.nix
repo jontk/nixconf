@@ -44,19 +44,15 @@ in
       "fs.suid_dumpable" = 0;
     };
 
-    # Security services
-    services = lib.mkIf isNixOS {
-      # Audit daemon for security monitoring
-      auditd.enable = cfg.auditd.enable;
-      
-      # AppArmor profiles
-      apparmor = lib.mkIf cfg.apparmor.enable {
-        enable = true;
-        killUnconfinedConfinables = true;
-      };
-      
-      # Automatic security updates (consider carefully)
-      # unattended-upgrades.enable = true;
+    # Security audit configuration
+    security.auditd = lib.mkIf (isNixOS && cfg.auditd.enable) {
+      enable = true;
+    };
+    
+    # AppArmor configuration
+    security.apparmor = lib.mkIf (isNixOS && cfg.apparmor.enable) {
+      enable = true;
+      killUnconfinedConfinables = true;
     };
 
     # Enhanced firewall rules

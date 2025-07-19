@@ -436,14 +436,22 @@ in
       ];
     };
     
-    # Networking configuration
-    networking.firewall.allowedTCPPorts = mkIf cfg.enable (
-      optional cfg.registry.enable cfg.registry.port
-      ++ optional (cfg.monitoring.enable && cfg.monitoring.cadvisor) 8080
-      ++ optional (cfg.kubernetes.enable && cfg.kubernetes.role != "agent") 6443
-    );
+    # Merged networking configuration
+    networking.firewall = mkIf cfg.enable {
+      # Allowed TCP ports from both definitions
+      allowedTCPPorts = 
+        optional cfg.registry.enable cfg.registry.port
+        ++ optional (cfg.monitoring.enable && cfg.monitoring.cadvisor) 8080
+        ++ optional (cfg.kubernetes.enable && cfg.kubernetes.role != "agent") 6443;
+      
+      # Trusted interfaces from second definition
+      trustedInterfaces = mkMerge [
+        (mkIf cfg.podman.enable [ "cni-podman0" "podman0" ])
+        (mkIf cfg.docker.enable [ "docker0" ])
+      ];
+    };
     
-    # Container tools and packages
+    # Merged container tools and packages
     environment.systemPackages = with pkgs; mkMerge [
       # Base container tools
       (mkIf cfg.podman.enable [
@@ -480,6 +488,102 @@ in
         ctop          # Container monitoring
         lazydocker    # Docker TUI
         cosign        # Container signing
+      ])
+      
+      # Development environment container helper script
+      (mkIf cfg.enable [
+        (pkgs.writeShellScriptBin "container-dev-env" ''
+          #!/usr/bin/env bash
+          # Container Development Environment Helper
+          
+          set -euo pipefail
+          
+          show_usage() {
+            cat << EOF
+          Usage: container-dev-env [COMMAND] [OPTIONS]
+          
+          Container development environment management
+          
+          COMMANDS:
+            create <name> <image>    Create development container
+            start <name>             Start development container
+            stop <name>              Stop development container
+            exec <name> [cmd]        Execute command in container
+            list                     List development containers
+            remove <name>            Remove development container
+            
+          EXAMPLES:
+            container-dev-env create node-dev node:18-alpine
+            container-dev-env start node-dev
+            container-dev-env exec node-dev bash
+          EOF
+          }
+          
+          container_cmd="${if cfg.podman.enable then "${pkgs.podman}/bin/podman" else "${pkgs.docker}/bin/docker"}"
+          
+          case "''${1:-help}" in
+            create)
+              name="''${2:-}"
+              image="''${3:-}"
+              if [[ -z "$name" || -z "$image" ]]; then
+                echo "Error: Name and image required"
+                show_usage
+                exit 1
+              fi
+              
+              echo "Creating development container: $name"
+              $container_cmd create \
+                --name "$name" \
+                --interactive \
+                --tty \
+                --volume "$(pwd):/workspace:Z" \
+                --workdir "/workspace" \
+                --network bridge \
+                "$image" \
+                /bin/sh
+              ;;
+            start)
+              name="''${2:-}"
+              if [[ -z "$name" ]]; then
+                echo "Error: Container name required"
+                exit 1
+              fi
+              $container_cmd start "$name"
+              ;;
+            stop)
+              name="''${2:-}"
+              if [[ -z "$name" ]]; then
+                echo "Error: Container name required"
+                exit 1
+              fi
+              $container_cmd stop "$name"
+              ;;
+            exec)
+              name="''${2:-}"
+              cmd="''${3:-bash}"
+              if [[ -z "$name" ]]; then
+                echo "Error: Container name required"
+                exit 1
+              fi
+              $container_cmd exec -it "$name" "$cmd"
+              ;;
+            list)
+              echo "Development containers:"
+              $container_cmd ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Image}}"
+              ;;
+            remove)
+              name="''${2:-}"
+              if [[ -z "$name" ]]; then
+                echo "Error: Container name required"
+                exit 1
+              fi
+              $container_cmd rm -f "$name"
+              ;;
+            *)
+              show_usage
+              ;;
+          esac
+        '')
       ])
     ];
     
@@ -631,109 +735,5 @@ in
       enable = true;
       internalInterfaces = [ "cni-podman0" ];
     };
-    
-    # Firewall rules for container networking
-    networking.firewall = mkIf cfg.enable {
-      trustedInterfaces = mkMerge [
-        (mkIf cfg.podman.enable [ "cni-podman0" "podman0" ])
-        (mkIf cfg.docker.enable [ "docker0" ])
-      ];
-    };
-    
-    # Development environment containers helper
-    environment.systemPackages = mkIf cfg.enable [
-      (pkgs.writeShellScriptBin "container-dev-env" ''
-        #!/usr/bin/env bash
-        # Container Development Environment Helper
-        
-        set -euo pipefail
-        
-        show_usage() {
-          cat << EOF
-        Usage: container-dev-env [COMMAND] [OPTIONS]
-        
-        Container development environment management
-        
-        COMMANDS:
-          create <name> <image>    Create development container
-          start <name>             Start development container
-          stop <name>              Stop development container
-          exec <name> [cmd]        Execute command in container
-          list                     List development containers
-          remove <name>            Remove development container
-          
-        EXAMPLES:
-          container-dev-env create node-dev node:18-alpine
-          container-dev-env start node-dev
-          container-dev-env exec node-dev bash
-        EOF
-        }
-        
-        container_cmd="${if cfg.podman.enable then "${pkgs.podman}/bin/podman" else "${pkgs.docker}/bin/docker"}"
-        
-        case "''${1:-help}" in
-          create)
-            name="''${2:-}"
-            image="''${3:-}"
-            if [[ -z "$name" || -z "$image" ]]; then
-              echo "Error: Name and image required"
-              show_usage
-              exit 1
-            fi
-            
-            echo "Creating development container: $name"
-            $container_cmd create \
-              --name "$name" \
-              --interactive \
-              --tty \
-              --volume "$(pwd):/workspace:Z" \
-              --workdir "/workspace" \
-              --network bridge \
-              "$image" \
-              /bin/sh
-            ;;
-          start)
-            name="''${2:-}"
-            if [[ -z "$name" ]]; then
-              echo "Error: Container name required"
-              exit 1
-            fi
-            $container_cmd start "$name"
-            ;;
-          stop)
-            name="''${2:-}"
-            if [[ -z "$name" ]]; then
-              echo "Error: Container name required"
-              exit 1
-            fi
-            $container_cmd stop "$name"
-            ;;
-          exec)
-            name="''${2:-}"
-            cmd="''${3:-bash}"
-            if [[ -z "$name" ]]; then
-              echo "Error: Container name required"
-              exit 1
-            fi
-            $container_cmd exec -it "$name" "$cmd"
-            ;;
-          list)
-            echo "Development containers:"
-            $container_cmd ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Image}}"
-            ;;
-          remove)
-            name="''${2:-}"
-            if [[ -z "$name" ]]; then
-              echo "Error: Container name required"
-              exit 1
-            fi
-            $container_cmd rm -f "$name"
-            ;;
-          *)
-            show_usage
-            ;;
-        esac
-      '')
-    ];
   };
 }

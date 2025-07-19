@@ -260,7 +260,7 @@
         in
         {
           # Import custom packages
-        } // (import ./packages { inherit pkgs; }));
+        } // (import ./packages { inherit pkgs; lib = pkgs.lib; }));
 
       # Package overlays
       overlays = {

@@ -99,13 +99,13 @@ in
       };
       
       # Enhanced logging
-      journald.settings = {
-        SystemMaxUse = "2G";
-        RuntimeMaxUse = "500M";
-        MaxRetentionSec = cfg.logs.retention;
-        Compress = "yes";
-        ForwardToSyslog = "no";
-      };
+      journald.extraConfig = ''
+        SystemMaxUse=2G
+        RuntimeMaxUse=500M
+        MaxRetentionSec=${cfg.logs.retention}
+        Compress=yes
+        ForwardToSyslog=no
+      '';
       
       # Log rotation
       logrotate = {

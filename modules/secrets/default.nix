@@ -70,14 +70,11 @@ in
       ) cfg.secrets
     );
 
-    # Secrets directory structure
-    environment.systemPackages = with pkgs; lib.optionals isNixOS [
+    # Secrets directory structure and tools
+    environment.systemPackages = with pkgs; lib.optionals isNixOS ([
       sops  # For manual secret management
       age   # For encryption
-    ];
-
-    # Development secrets helper script
-    environment.systemPackages = lib.mkIf isNixOS [
+    ] ++ [
       (pkgs.writeShellScriptBin "secrets-init" ''
         #!/bin/bash
         # Initialize secrets management
@@ -97,6 +94,6 @@ in
           grep "public key:" /var/lib/sops-nix/key.txt
         fi
       '')
-    ];
+    ]);
   };
 }

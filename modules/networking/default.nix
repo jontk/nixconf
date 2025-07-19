@@ -531,8 +531,10 @@ in
       };
     };
     
-    # Network Namespaces Management
-    systemd.services = mkMerge (map (ns: {
+    # Network Namespaces and Traffic Shaping Management
+    systemd.services = mkMerge (
+      # Network namespace services
+      (map (ns: {
       "netns-${ns.name}" = {
         description = "Network namespace ${ns.name}";
         after = [ "network.target" ];
@@ -569,10 +571,10 @@ in
           '';
         };
       };
-    }) cfg.networkNamespaces.namespaces);
-    
-    # Traffic Shaping with tc
-    systemd.services = mkMerge (map (iface: {
+    }) cfg.networkNamespaces.namespaces)
+    ++
+    # Traffic shaping services
+    (map (iface: {
       "traffic-shaping-${iface.name}" = mkIf cfg.trafficShaping.enable {
         description = "Traffic shaping for ${iface.name}";
         after = [ "network.target" ];
@@ -606,10 +608,56 @@ in
           '';
         };
       };
-    }) cfg.trafficShaping.interfaces);
+    }) cfg.trafficShaping.interfaces)
+    ++
+    # Network monitoring service
+    (optional cfg.monitoring.enable {
+      "network-monitoring" = {
+        description = "Network monitoring and statistics";
+        serviceConfig = {
+          Type = "oneshot";
+          User = "root";
+          ExecStart = pkgs.writeShellScript "network-monitoring" ''
+            set -euo pipefail
+            
+            echo "=== Network Monitoring Report ==="
+            echo "Timestamp: $(date)"
+            echo ""
+            
+            echo "=== Interface Statistics ==="
+            ${pkgs.iproute2}/bin/ip -s link show
+            echo ""
+            
+            echo "=== Routing Table ==="
+            ${pkgs.iproute2}/bin/ip route show
+            echo ""
+            
+            echo "=== Connection Statistics ==="
+            ${pkgs.nettools}/bin/netstat -tuln 2>/dev/null || ${pkgs.iproute2}/bin/ss -tuln
+            echo ""
+            
+            ${optionalString cfg.wireguard.enable ''
+              echo "=== WireGuard Status ==="
+              ${pkgs.wireguard-tools}/bin/wg show || echo "No WireGuard interfaces"
+              echo ""
+            ''}
+            
+            ${optionalString cfg.monitoring.bandwidthMonitoring ''
+              echo "=== Bandwidth Usage ==="
+              ${pkgs.vnstat}/bin/vnstat -i eth0 2>/dev/null || echo "vnstat not configured"
+              echo ""
+            ''}
+          '';
+          StandardOutput = "journal";
+          StandardError = "journal";
+        };
+      };
+    })
+    );
     
-    # Network monitoring tools
-    environment.systemPackages = mkIf cfg.monitoring.tools (with pkgs; [
+    # Network monitoring tools and utilities
+    environment.systemPackages = with pkgs; mkMerge [
+      (mkIf cfg.monitoring.tools [
       # Basic networking tools
       iproute2
       nettools
@@ -638,10 +686,10 @@ in
       socat
       nmap
       iperf3
-    ]);
+    ])
     
     # WireGuard key generation helper
-    environment.systemPackages = mkIf cfg.wireguard.enable [
+    (mkIf cfg.wireguard.enable [
       (pkgs.writeShellScriptBin "wg-keygen" ''
         #!/usr/bin/env bash
         # WireGuard key generation helper
@@ -760,49 +808,9 @@ in
             ;;
         esac
       '')
+    ])
     ];
     
-    # Network monitoring service
-    systemd.services.network-monitoring = mkIf cfg.monitoring.enable {
-      description = "Network monitoring and statistics";
-      serviceConfig = {
-        Type = "oneshot";
-        User = "root";
-        ExecStart = pkgs.writeShellScript "network-monitoring" ''
-          set -euo pipefail
-          
-          echo "=== Network Monitoring Report ==="
-          echo "Timestamp: $(date)"
-          echo ""
-          
-          echo "=== Interface Statistics ==="
-          ${pkgs.iproute2}/bin/ip -s link show
-          echo ""
-          
-          echo "=== Routing Table ==="
-          ${pkgs.iproute2}/bin/ip route show
-          echo ""
-          
-          echo "=== Connection Statistics ==="
-          ${pkgs.nettools}/bin/netstat -tuln 2>/dev/null || ${pkgs.iproute2}/bin/ss -tuln
-          echo ""
-          
-          ${optionalString cfg.wireguard.enable ''
-            echo "=== WireGuard Status ==="
-            ${pkgs.wireguard-tools}/bin/wg show || echo "No WireGuard interfaces"
-            echo ""
-          ''}
-          
-          ${optionalString cfg.monitoring.bandwidthMonitoring ''
-            echo "=== Bandwidth Usage ==="
-            ${pkgs.vnstat}/bin/vnstat -i eth0 2>/dev/null || echo "vnstat not configured"
-            echo ""
-          ''}
-        '';
-        StandardOutput = "journal";
-        StandardError = "journal";
-      };
-    };
     
     # Network monitoring timer
     systemd.timers.network-monitoring = mkIf cfg.monitoring.enable {

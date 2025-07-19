@@ -133,19 +133,13 @@ in
     # Enable ZFS snapshots
     modules.snapshots.zfs.enable = mkIf (cfg.filesystem == "zfs") true;
     
-    # BTRFS Configuration
-    environment.systemPackages = mkIf cfg.btrfs.enable (with pkgs; [
-      btrfs-progs
-      snapper
-    ]);
-    
     # ZFS Configuration
     boot.supportedFilesystems = mkIf cfg.zfs.enable [ "zfs" ];
     services.zfs.autoScrub.enable = mkIf cfg.zfs.enable true;
-    services.zfs.autoSnapshot.enable = mkIf (cfg.zfs.enable && cfg.autoSnapshot.enable) true;
     
     # ZFS snapshot configuration
     services.zfs.autoSnapshot = mkIf cfg.zfs.enable {
+      enable = cfg.autoSnapshot.enable;
       frequent = cfg.zfs.retentionPolicy.frequent;
       hourly = cfg.zfs.retentionPolicy.hourly;
       daily = cfg.zfs.retentionPolicy.daily;
@@ -214,8 +208,13 @@ in
       };
     };
     
-    # Helper scripts for snapshot management
-    environment.systemPackages = mkIf cfg.enable [
+    # System packages and helper scripts
+    environment.systemPackages = with pkgs; lib.mkMerge [
+      (mkIf cfg.btrfs.enable [
+        btrfs-progs
+        snapper
+      ])
+      (mkIf cfg.enable [
       (pkgs.writeShellScriptBin "nixconf-snapshot" ''
         #!/usr/bin/env bash
         # NixOS Configuration Snapshot Manager
@@ -294,6 +293,7 @@ in
             ;;
         esac
       '')
+      ])
     ];
     
     # Automatic cleanup timers
