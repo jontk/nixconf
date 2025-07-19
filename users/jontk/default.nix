@@ -560,7 +560,7 @@
       stash-all = "stash push --include-untracked";
       sp = "stash pop";
       sl = "stash list";
-      ss = "stash show -p";
+      ssp = "stash show -p";
       
       # Reset/Revert
       unstage = "reset HEAD --";
