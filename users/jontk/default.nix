@@ -11,37 +11,420 @@
   # Enable home-manager
   programs.home-manager.enable = true;
   
+<<<<<<< HEAD
   # Basic packages for user
   home.packages = with pkgs; [
     # Terminal utilities
     tmux
     screen
     procs # Modern replacement for ps
+=======
+  # User-specific package configuration
+  # This section allows for easy customization of packages by category
+  
+  # Package categories - customize these lists as needed
+  # Each category can be enabled/disabled and packages can be added/removed
+  home.packages = let
+    # Core packages - always installed
+    corePackages = with pkgs; [
+      # Essential CLI tools
+      curl
+      wget
+      tree
+      htop
+      btop
+      killall
+      unzip
+      zip
+      rsync
+      
+      # Network tools
+      nmap
+      netcat
+      traceroute
+      dig
+      whois
+      
+      # Text processing
+      jq
+      yq
+      ripgrep
+      fd
+      bat
+      eza
+      fzf
+      
+      # File management
+      file
+      which
+      less
+      most
+      
+      # System monitoring
+      iotop
+      nethogs
+      iftop
+      lsof
+      psmisc
+      
+      # Compression
+      p7zip
+      xz
+      gzip
+      bzip2
+      
+      # Version control basics
+      git
+      subversion
+      mercurial
+    ];
+>>>>>>> ba985c1 (feat: implement comprehensive user-specific package management system)
     
-    # Text editors
-    neovim
-    emacs
+    # Development packages - programming languages and tools
+    developmentPackages = with pkgs; [
+      # Terminal utilities
+      tmux
+      screen
+      zellij # Modern terminal multiplexer
+      
+      # Text editors
+      neovim
+      emacs
+      micro # Simple terminal editor
+      
+      # Git tools
+      gh # GitHub CLI
+      glab # GitLab CLI
+      hub # GitHub hub tool
+      lazygit # Terminal UI for git
+      tig # Text-mode interface for git
+      gitui # Rust-based git TUI
+      delta # Better git diffs
+      
+      # Code quality
+      shellcheck # Shell script linter
+      shfmt # Shell formatter
+      
+      # Build tools
+      gnumake
+      cmake
+      pkg-config
+      autoconf
+      automake
+      libtool
+      
+      # Documentation
+      man-pages
+      tldr
+      cheat
+      
+      # Container tools
+      docker-compose
+      podman-compose
+      skopeo
+      buildah
+      
+      # Cloud tools
+      awscli2
+      google-cloud-sdk
+      azure-cli
+      doctl # DigitalOcean CLI
+      
+      # Infrastructure as code
+      terraform
+      terragrunt
+      ansible
+      pulumi
+      
+      # Kubernetes
+      kubectl
+      kubectx
+      kubens
+      k9s
+      helm
+      kustomize
+      stern # Multi-pod logs
+      
+      # Database tools
+      postgresql
+      redis
+      sqlite
+      
+      # API tools
+      httpie
+      curlie # curl with HTTP/2 support
+      xh # HTTPie in Rust
+    ];
     
-    # Development tools
-    gh # GitHub CLI
-    glab # GitLab CLI
-    hub # Another GitHub CLI tool
-    lazygit # Terminal UI for git
-    tig # Text-mode interface for git
+    # Productivity packages - general productivity tools
+    productivityPackages = with pkgs; [
+      # Task and time management
+      taskwarrior3
+      timewarrior
+      vit # Terminal task manager
+      
+      # Note-taking and documentation
+      obsidian
+      zettlr
+      pandoc
+      
+      # Calendar and contacts
+      khal # CLI calendar
+      khard # CLI contacts
+      
+      # Password management
+      pass
+      gopass
+      
+      # Backup and sync
+      rclone
+      restic
+      borgbackup
+      syncthing
+      
+      # File conversion
+      poppler_utils # PDF utilities
+      ghostscript
+      pandoc
+      
+      # Network utilities
+      mtr # Network diagnostic
+      speedtest-cli
+      iperf
+      
+      # System utilities
+      ncdu # Disk usage analyzer
+      duf # Disk usage in Go
+      dust # du in Rust
+      procs # ps in Rust
+      bandwhich # Network utilization
+      
+      # Text manipulation
+      sd # sed alternative in Rust
+      choose # cut alternative
+      miller # CSV/JSON processor
+    ];
     
-    # Productivity tools
-    taskwarrior3
-    timewarrior
+    # Media packages - audio, video, and image tools
+    mediaPackages = with pkgs; [
+      # Video tools
+      yt-dlp
+      ffmpeg
+      mpv
+      vlc
+      
+      # Audio tools
+      audacity
+      
+      # Image tools
+      imagemagick
+      gimp
+      inkscape
+      
+      # Ebook management
+      calibre
+      
+      # Media organization
+      exiftool # Image metadata
+      mediainfo # Media file info
+      
+      # Streaming
+      obs-studio
+      
+      # Graphics
+      blender
+      krita
+    ];
     
-    # Media tools
-    yt-dlp
-    ffmpeg
-    imagemagick
+    # Communication packages - messaging and social
+    communicationPackages = with pkgs; [
+      # Chat applications
+      discord
+      signal-desktop
+      telegram-desktop
+      element-desktop # Matrix client
+      
+      # Email
+      thunderbird
+      neomutt # Terminal email
+      
+      # IRC
+      weechat
+      irssi
+      
+      # Video calls
+      zoom-us
+      teams-for-linux
+    ];
     
-    # macOS-specific tools
-  ] ++ lib.optionals isDarwin [
-    reattach-to-user-namespace # For tmux clipboard support on macOS
-  ];
+    # Security packages - security and privacy tools
+    securityPackages = with pkgs; [
+      # Network security
+      nmap
+      masscan
+      wireshark
+      tcpdump
+      
+      # Password tools
+      john # Password cracker
+      hashcat # Password recovery
+      
+      # Cryptography
+      gnupg
+      age # File encryption
+      sops # Secrets management
+      
+      # VPN
+      openvpn
+      wireguard-tools
+      
+      # Security scanning
+      lynis # Security auditing
+      
+      # Forensics
+      volatility3
+      sleuthkit
+      
+      # Network tools
+      aircrack-ng
+      kismet
+    ];
+    
+    # Gaming packages - games and gaming tools
+    gamingPackages = with pkgs; [
+      # Steam and gaming
+      steam
+      lutris
+      bottles
+      
+      # Emulation
+      retroarch
+      
+      # Game development
+      godot_4
+      
+      # Fun terminal tools
+      neofetch
+      cowsay
+      fortune
+      lolcat
+      figlet
+      
+      # Games
+      bastet # Tetris
+      nudoku # Sudoku
+      moon-buggy # Side-scrolling game
+    ];
+    
+    # Research packages - academic and research tools
+    researchPackages = with pkgs; [
+      # Reference management
+      zotero
+      
+      # Document preparation
+      texlive.combined.scheme-full
+      
+      # Data analysis
+      R
+      rstudio
+      
+      # Scientific computing
+      octave
+      scilab
+      
+      # Statistics
+      pspp # SPSS alternative
+      
+      # Plotting
+      gnuplot
+      
+      # Citation tools
+      citeproc
+    ];
+    
+    # Platform-specific packages
+    macosPackages = lib.optionals isDarwin (with pkgs; [
+      reattach-to-user-namespace # For tmux clipboard support
+      pinentry_mac # GPG on macOS
+      mas # Mac App Store CLI
+      
+      # macOS-specific tools
+      m-cli # Swiss Army Knife for macOS
+      
+      # Homebrew integration
+      # Note: These are Nix packages that provide similar functionality to Homebrew
+    ]);
+    
+    nixosPackages = lib.optionals (!isDarwin) (with pkgs; [
+      # Linux-specific tools
+      lshw # Hardware lister
+      pciutils # PCI utilities
+      usbutils # USB utilities
+      hdparm # Hard disk parameters
+      smartmontools # SMART disk monitoring
+      
+      # System monitoring
+      iotop
+      powertop # Power consumption
+      
+      # Display and graphics
+      arandr # Monitor configuration
+      xorg.xrandr
+      
+      # Audio
+      pavucontrol # PulseAudio control
+      alsamixer # ALSA mixer
+      
+      # Desktop utilities
+      xclip # Clipboard
+      xsel # X selection
+      
+      # File managers
+      ranger # Terminal file manager
+      nnn # Terminal file browser
+      
+      # Archiving with GUI
+      file-roller
+      
+      # System info
+      neofetch
+      screenfetch
+      
+      # Virtualization
+      qemu
+      libvirt
+      virt-manager
+    ]);
+    
+    # User customization section
+    # Add your personal packages here
+    personalPackages = with pkgs; [
+      # Add your favorite packages here
+      # Examples:
+      # slack
+      # spotify
+      # vscode
+      # jetbrains.idea-ultimate
+      # firefox
+      # chromium
+      
+      # Placeholder - remove this and add your packages
+    ];
+    
+  in
+    # Combine all package categories
+    # You can comment out entire categories to disable them
+    corePackages
+    ++ developmentPackages
+    ++ productivityPackages
+    ++ mediaPackages
+    ++ communicationPackages
+    # ++ securityPackages      # Uncomment if you need security tools
+    # ++ gamingPackages        # Uncomment if you want gaming packages
+    # ++ researchPackages      # Uncomment if you need research tools
+    ++ macosPackages
+    ++ nixosPackages
+    ++ personalPackages;
   
   
   # RustDesk wrapper script to preserve server settings
