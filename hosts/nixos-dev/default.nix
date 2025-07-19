@@ -83,6 +83,7 @@
       enable = true;
       maxRetries = 5;
       banTime = "10m";
+      ignoreip = [ "127.0.0.1/8" "::1" "192.168.1.0/24" ];
     };
     firewall = {
       allowedTCPPorts = [ ];
@@ -241,7 +242,7 @@
       
       # Root user configuration
       root = {
-        hashedPassword = "!"; # Disable root login
+        hashedPassword = "$y$j9T$iLzZPGKkBMd5ePceB2zum0$erf01a3aqoPtPAKzN6imoUoDdAcSYyvpLrRtkaYz7M8"; # Disable root login
       };
     };
   };
@@ -402,6 +403,12 @@
     # Enable fstrim for SSDs
     fstrim.enable = true;
     
+    btrfs.autoScrub = {
+      enable = true;
+      interval = "monthly";
+      fileSystems = [ "/" ];
+    };
+
     # Enable thermald for Intel CPUs
     thermald.enable = true;
     
