@@ -11,14 +11,6 @@
   # Enable home-manager
   programs.home-manager.enable = true;
   
-<<<<<<< HEAD
-  # Basic packages for user
-  home.packages = with pkgs; [
-    # Terminal utilities
-    tmux
-    screen
-    procs # Modern replacement for ps
-=======
   # User-specific package configuration
   # This section allows for easy customization of packages by category
   
@@ -78,7 +70,6 @@
       subversion
       mercurial
     ];
->>>>>>> ba985c1 (feat: implement comprehensive user-specific package management system)
     
     # Development packages - programming languages and tools
     developmentPackages = with pkgs; [
