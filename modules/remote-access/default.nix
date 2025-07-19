@@ -88,6 +88,75 @@ in
         description = "Additional UDP ports to open";
       };
     };
+
+    vpn = {
+      wireguard = {
+        enable = mkEnableOption "WireGuard VPN";
+        interfaces = mkOption {
+          type = types.attrsOf (types.submodule {
+            options = {
+              privateKeyFile = mkOption {
+                type = types.nullOr types.path;
+                default = null;
+                description = "Path to the private key file";
+              };
+              listenPort = mkOption {
+                type = types.nullOr types.int;
+                default = null;
+                description = "Port to listen on (null for client mode)";
+              };
+              ips = mkOption {
+                type = types.listOf types.str;
+                default = [ ];
+                description = "IP addresses for this interface";
+              };
+              peers = mkOption {
+                type = types.listOf (types.submodule {
+                  options = {
+                    publicKey = mkOption {
+                      type = types.str;
+                      description = "Public key of the peer";
+                    };
+                    allowedIPs = mkOption {
+                      type = types.listOf types.str;
+                      description = "IP ranges that can be routed to this peer";
+                    };
+                    endpoint = mkOption {
+                      type = types.nullOr types.str;
+                      default = null;
+                      description = "Endpoint address (for client mode)";
+                    };
+                    persistentKeepalive = mkOption {
+                      type = types.nullOr types.int;
+                      default = null;
+                      description = "Keepalive interval in seconds";
+                    };
+                  };
+                });
+                default = [ ];
+                description = "WireGuard peers";
+              };
+            };
+          });
+          default = { };
+          description = "WireGuard interface configurations";
+        };
+      };
+      
+      tailscale = {
+        enable = mkEnableOption "Tailscale VPN";
+        authKeyFile = mkOption {
+          type = types.nullOr types.path;
+          default = null;
+          description = "Path to Tailscale auth key file";
+        };
+        useRoutingFeatures = mkOption {
+          type = types.enum [ "none" "client" "server" "both" ];
+          default = "client";
+          description = "Routing features to enable";
+        };
+      };
+    };
   };
 
   config = mkIf cfg.enable (mkMerge [
@@ -279,6 +348,38 @@ in
       };
     }
 
+    # WireGuard VPN Configuration
+    (mkIf cfg.vpn.wireguard.enable {
+      networking.wireguard.interfaces = cfg.vpn.wireguard.interfaces;
+      
+      # Open firewall ports for WireGuard interfaces
+      networking.firewall.allowedUDPPorts = lib.flatten (
+        lib.mapAttrsToList (name: cfg: 
+          lib.optional (cfg.listenPort != null) cfg.listenPort
+        ) cfg.vpn.wireguard.interfaces
+      );
+      
+      # Enable IP forwarding if acting as a VPN server
+      boot.kernel.sysctl = mkIf (lib.any (cfg: cfg.listenPort != null) 
+        (lib.attrValues cfg.vpn.wireguard.interfaces)) {
+        "net.ipv4.ip_forward" = 1;
+        "net.ipv6.conf.all.forwarding" = 1;
+      };
+    })
+
+    # Tailscale VPN Configuration
+    (mkIf cfg.vpn.tailscale.enable {
+      services.tailscale = {
+        enable = true;
+        useRoutingFeatures = cfg.vpn.tailscale.useRoutingFeatures;
+        authKeyFile = cfg.vpn.tailscale.authKeyFile;
+      };
+      
+      # Ensure tailscale is started after network
+      systemd.services.tailscaled.after = [ "network-online.target" ];
+      systemd.services.tailscaled.wants = [ "network-online.target" ];
+    })
+
     # Common packages for remote access
     {
       environment.systemPackages = with pkgs; [
@@ -295,10 +396,10 @@ in
         iftop
         nethogs
         
-        # VPN tools (optional, can be enabled separately)
+        # VPN tools
         wireguard-tools
         openvpn
-      ];
+      ] ++ lib.optional cfg.vpn.tailscale.enable tailscale;
     }
   ]);
 }
