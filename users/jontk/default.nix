@@ -372,7 +372,7 @@
       
       # Audio
       pavucontrol # PulseAudio control
-      alsamixer # ALSA mixer
+      alsa-utils # ALSA mixer (includes alsamixer)
       
       # Desktop utilities
       xclip # Clipboard
