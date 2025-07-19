@@ -3590,6 +3590,22 @@
     if [[ ! -d "$HOME/.local/share/secrets" ]]; then
         echo "💡 Secret management not initialized. Run 'init-secrets' to set up."
     fi
+    
+    # System maintenance aliases
+    alias nix-update="$CONFIG_ROOT/scripts/update.sh"
+    alias nix-rollback="$CONFIG_ROOT/scripts/rollback.sh"
+    alias nix-maintain="$CONFIG_ROOT/scripts/maintain.sh"
+    alias system-status="$CONFIG_ROOT/scripts/maintain.sh status"
+    alias system-health="$CONFIG_ROOT/scripts/maintain.sh health"
+    alias system-cleanup="$CONFIG_ROOT/scripts/maintain.sh cleanup"
+    
+    # Quick maintenance shortcuts
+    alias quick-update="$CONFIG_ROOT/scripts/update.sh quick"
+    alias emergency-rollback="$CONFIG_ROOT/scripts/rollback.sh emergency"
+    alias system-backup="$CONFIG_ROOT/scripts/maintain.sh backup"
+    
+    # Set CONFIG_ROOT for scripts
+    export CONFIG_ROOT="$(dirname "$(dirname "$(readlink -f "${(%):-%x}")" 2>/dev/null || echo "$HOME/.config/nixconf")")"
   '';
   
   programs.bash.initExtra = lib.mkAfter ''
@@ -3620,6 +3636,20 @@
     
     alias sec="secrets"
     alias edit-env="edit-secrets"
+    
+    # System maintenance aliases for Bash
+    alias nix-update="$CONFIG_ROOT/scripts/update.sh"
+    alias nix-rollback="$CONFIG_ROOT/scripts/rollback.sh"
+    alias nix-maintain="$CONFIG_ROOT/scripts/maintain.sh"
+    alias system-status="$CONFIG_ROOT/scripts/maintain.sh status"
+    alias system-health="$CONFIG_ROOT/scripts/maintain.sh health"
+    alias system-cleanup="$CONFIG_ROOT/scripts/maintain.sh cleanup"
+    alias quick-update="$CONFIG_ROOT/scripts/update.sh quick"
+    alias emergency-rollback="$CONFIG_ROOT/scripts/rollback.sh emergency"
+    alias system-backup="$CONFIG_ROOT/scripts/maintain.sh backup"
+    
+    # Set CONFIG_ROOT for scripts
+    export CONFIG_ROOT="$(dirname "$(dirname "$(readlink -f "$BASH_SOURCE")" 2>/dev/null || echo "$HOME/.config/nixconf")")"
   '';
   
   # Git configuration to ignore secret files

@@ -1,0 +1,2 @@
+# This file ensures the backups directory is tracked by git
+# Backup files are automatically managed by the update and rollback scripts
