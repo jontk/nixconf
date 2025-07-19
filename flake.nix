@@ -135,6 +135,7 @@
         ./modules/secrets
         ./modules/snapshots
         ./modules/backup-scheduler
+        ./modules/containers
       ];
 
       # Host-specific configurations
