@@ -1825,6 +1825,889 @@
   };
   
   
+  # Desktop-specific configurations for NixOS
+  # These settings only apply to NixOS systems with desktop environments
+  gtk = lib.mkIf (!isDarwin) {
+    enable = true;
+    
+    theme = {
+      name = "Dracula";
+      package = pkgs.dracula-theme;
+    };
+    
+    iconTheme = {
+      name = "Dracula";
+      package = pkgs.dracula-icon-theme;
+    };
+    
+    cursorTheme = {
+      name = "breeze_cursors";
+      package = pkgs.kdePackages.breeze;
+      size = 24;
+    };
+    
+    font = {
+      name = "Inter";
+      size = 11;
+    };
+    
+    gtk2.extraConfig = ''
+      gtk-button-images = 1
+      gtk-menu-images = 1
+      gtk-enable-event-sounds = 1
+      gtk-enable-input-feedback-sounds = 0
+      gtk-xft-antialias = 1
+      gtk-xft-hinting = 1
+      gtk-xft-hintstyle = "hintfull"
+      gtk-xft-rgba = "rgb"
+    '';
+    
+    gtk3.extraConfig = {
+      gtk-button-images = true;
+      gtk-menu-images = true;
+      gtk-enable-event-sounds = true;
+      gtk-enable-input-feedback-sounds = false;
+      gtk-xft-antialias = 1;
+      gtk-xft-hinting = 1;
+      gtk-xft-hintstyle = "hintfull";
+      gtk-xft-rgba = "rgb";
+      gtk-application-prefer-dark-theme = true;
+    };
+    
+    gtk4.extraConfig = {
+      gtk-application-prefer-dark-theme = true;
+    };
+  };
+  
+  # Qt theming for NixOS
+  qt = lib.mkIf (!isDarwin) {
+    enable = true;
+    platformTheme.name = "gtk3";
+    style = {
+      name = "Dracula";
+      package = pkgs.dracula-qt5-theme;
+    };
+  };
+  
+  # dconf settings for GNOME applications
+  dconf = lib.mkIf (!isDarwin) {
+    enable = true;
+    settings = {
+      # GNOME settings
+      "org/gnome/desktop/interface" = {
+        gtk-theme = "Dracula";
+        icon-theme = "Dracula";
+        cursor-theme = "breeze_cursors";
+        font-name = "Inter 11";
+        document-font-name = "Inter 11";
+        monospace-font-name = "JetBrains Mono 10";
+        color-scheme = "prefer-dark";
+        enable-hot-corners = false;
+      };
+      
+      "org/gnome/desktop/wm/preferences" = {
+        titlebar-font = "Inter Bold 11";
+        theme = "Dracula";
+      };
+      
+      # Nautilus settings
+      "org/gnome/nautilus/preferences" = {
+        default-folder-viewer = "list-view";
+        search-filter-time-type = "last_modified";
+        show-hidden-files = true;
+      };
+      
+      "org/gnome/nautilus/list-view" = {
+        use-tree-view = true;
+        default-zoom-level = "small";
+      };
+      
+      # Terminal settings
+      "org/gnome/desktop/applications/terminal" = {
+        exec = "alacritty";
+      };
+    };
+  };
+  
+  # XDG settings for desktop integration
+  xdg = lib.mkIf (!isDarwin) {
+    enable = true;
+    
+    # Desktop entries for applications
+    desktopEntries = {
+      "tmux-session" = {
+        name = "Tmux Development Session";
+        comment = "Start a new tmux development session";
+        exec = "alacritty -e tmux new-session -s development";
+        icon = "utilities-terminal";
+        categories = [ "Development" "Utility" ];
+        terminal = false;
+      };
+      
+      "system-monitor" = {
+        name = "System Monitor";
+        comment = "Monitor system resources";
+        exec = "alacritty -e htop";
+        icon = "utilities-system-monitor";
+        categories = [ "System" "Monitor" ];
+        terminal = false;
+      };
+    };
+    
+    # MIME type associations
+    mimeApps = {
+      enable = true;
+      defaultApplications = {
+        "text/plain" = [ "nvim.desktop" ];
+        "text/markdown" = [ "nvim.desktop" ];
+        "application/json" = [ "nvim.desktop" ];
+        "application/yaml" = [ "nvim.desktop" ];
+        "text/x-shellscript" = [ "nvim.desktop" ];
+        "text/x-python" = [ "nvim.desktop" ];
+        "text/x-rust" = [ "nvim.desktop" ];
+        "text/x-go" = [ "nvim.desktop" ];
+        
+        "image/jpeg" = [ "org.gnome.eog.desktop" ];
+        "image/png" = [ "org.gnome.eog.desktop" ];
+        "image/gif" = [ "org.gnome.eog.desktop" ];
+        "image/webp" = [ "org.gnome.eog.desktop" ];
+        
+        "application/pdf" = [ "org.gnome.Evince.desktop" ];
+        
+        "inode/directory" = [ "org.gnome.Nautilus.desktop" ];
+        
+        "x-scheme-handler/http" = [ "firefox.desktop" ];
+        "x-scheme-handler/https" = [ "firefox.desktop" ];
+        "text/html" = [ "firefox.desktop" ];
+      };
+    };
+    
+    # User directories
+    userDirs = {
+      enable = true;
+      createDirectories = true;
+      desktop = "\$HOME/Desktop";
+      documents = "\$HOME/Documents";
+      download = "\$HOME/Downloads";
+      music = "\$HOME/Music";
+      pictures = "\$HOME/Pictures";
+      videos = "\$HOME/Videos";
+      templates = "\$HOME/Templates";
+      publicShare = "\$HOME/Public";
+    };
+  };
+  
+  # Notification system with dunst
+  services.dunst = lib.mkIf (!isDarwin) {
+    enable = true;
+    iconTheme = {
+      name = "Dracula";
+      package = pkgs.dracula-icon-theme;
+      size = "32x32";
+    };
+    settings = {
+      global = {
+        # Geometry
+        width = 350;
+        height = 100;
+        origin = "top-right";
+        offset = "30x60";
+        notification_limit = 5;
+        progress_bar = true;
+        progress_bar_height = 8;
+        progress_bar_frame_width = 1;
+        
+        # Appearance
+        transparency = 10;
+        separator_height = 2;
+        padding = 12;
+        horizontal_padding = 12;
+        text_icon_padding = 12;
+        frame_width = 2;
+        frame_color = "#bd93f9";
+        separator_color = "frame";
+        
+        # Typography
+        font = "Inter 11";
+        line_height = 0;
+        markup = "full";
+        format = "<b>%s</b>\\n%b";
+        alignment = "left";
+        vertical_alignment = "center";
+        show_age_threshold = 60;
+        ellipsize = "middle";
+        ignore_newline = false;
+        stack_duplicates = true;
+        hide_duplicate_count = false;
+        show_indicators = true;
+        
+        # Interaction
+        mouse_left_click = "close_current";
+        mouse_middle_click = "do_action, close_current";
+        mouse_right_click = "close_all";
+        
+        # Timing
+        idle_threshold = 120;
+        sticky_history = true;
+        history_length = 20;
+      };
+      
+      urgency_low = {
+        background = "#282a36";
+        foreground = "#f8f8f2";
+        timeout = 5;
+      };
+      
+      urgency_normal = {
+        background = "#282a36";
+        foreground = "#f8f8f2";
+        timeout = 10;
+      };
+      
+      urgency_critical = {
+        background = "#ff5555";
+        foreground = "#f8f8f2";
+        frame_color = "#ff5555";
+        timeout = 0;
+      };
+    };
+  };
+  
+  # Desktop applications and services
+  # Note: This section adds desktop-specific packages for NixOS systems
+  home.packages = lib.optionals (!isDarwin) (with pkgs; [
+    # Desktop applications
+    firefox
+    chromium
+    thunderbird
+    libreoffice
+    evince # PDF viewer
+    eog # Image viewer
+    gnome-calculator
+    gnome-calendar
+    gnome-weather
+    
+    # Media applications
+    vlc
+    audacity
+    gimp
+    inkscape
+    blender
+    
+    # Communication
+    discord
+    signal-desktop
+    telegram-desktop
+    
+    # Development GUI tools
+    dbeaver-bin # Database management
+    postman # API testing
+    
+    # System utilities
+    gnome-system-monitor
+    gnome-disk-utility
+    baobab # Disk usage analyzer
+    
+    # Wayland-specific tools
+    wl-clipboard
+    wlr-randr
+    kanshi # Display management
+    
+    # Desktop theming
+    dracula-theme
+    dracula-icon-theme
+    inter
+    
+    # Fonts
+    noto-fonts
+    noto-fonts-cjk-sans
+    noto-fonts-emoji
+    liberation_ttf
+    fira-code
+    fira-code-symbols
+    
+    # Archive tools
+    file-roller
+    
+    # Screenshot tools
+    flameshot
+    
+    # Color picker
+    gcolor3
+  ]);
+  
+  # Systemd user services for desktop (NixOS only)
+  systemd.user.services = lib.mkIf (!isDarwin) {
+    # Auto-mount user directories
+    xdg-user-dirs-update = {
+      Unit = {
+        Description = "Update XDG user directories";
+        After = [ "graphical-session-pre.target" ];
+        PartOf = [ "graphical-session.target" ];
+      };
+      Service = {
+        Type = "oneshot";
+        ExecStart = "${pkgs.xdg-user-dirs}/bin/xdg-user-dirs-update";
+      };
+      Install = {
+        WantedBy = [ "graphical-session.target" ];
+      };
+    };
+  };
+  
+  # Wayland-specific home environment
+  home.sessionVariables = lib.mkIf (!isDarwin) {
+    # Wayland environment variables
+    NIXOS_OZONE_WL = "1";  # Chromium/Chrome Wayland support
+    MOZ_ENABLE_WAYLAND = "1";  # Firefox Wayland support
+    QT_QPA_PLATFORM = "wayland;xcb";
+    SDL_VIDEODRIVER = "wayland";
+    CLUTTER_BACKEND = "wayland";
+    GDK_BACKEND = "wayland,x11";
+    
+    # Theme variables
+    GTK_THEME = "Dracula";
+    QT_STYLE_OVERRIDE = "Dracula";
+    
+    # Cursor theme
+    XCURSOR_THEME = "breeze_cursors";
+    XCURSOR_SIZE = "24";
+  };
+  
+  # Wayland-specific programs configuration
+  wayland.windowManager.hyprland = lib.mkIf (!isDarwin) {
+    enable = true;
+    settings = {
+      # Monitor configuration
+      monitor = [
+        ",preferred,auto,1"
+      ];
+      
+      # Input configuration
+      input = {
+        kb_layout = "us";
+        kb_options = "caps:escape,compose:ralt";
+        
+        follow_mouse = 1;
+        touchpad = {
+          natural_scroll = true;
+          disable_while_typing = true;
+          clickfinger_behavior = true;
+          scroll_factor = 1.0;
+        };
+        
+        sensitivity = 0; # -1.0 - 1.0, 0 means no modification
+      };
+      
+      # General settings
+      general = {
+        gaps_in = 5;
+        gaps_out = 10;
+        border_size = 2;
+        "col.active_border" = "rgba(bd93f9ee) rgba(ff79c6ee) 45deg";
+        "col.inactive_border" = "rgba(44475aaa)";
+        
+        layout = "dwindle";
+        allow_tearing = false;
+      };
+      
+      # Decoration
+      decoration = {
+        rounding = 8;
+        
+        blur = {
+          enabled = true;
+          size = 3;
+          passes = 1;
+          new_optimizations = true;
+        };
+        
+        drop_shadow = true;
+        shadow_range = 4;
+        shadow_render_power = 3;
+        "col.shadow" = "rgba(1a1a1aee)";
+      };
+      
+      # Animations
+      animations = {
+        enabled = true;
+        
+        bezier = [
+          "myBezier, 0.05, 0.9, 0.1, 1.05"
+        ];
+        
+        animation = [
+          "windows, 1, 7, myBezier"
+          "windowsOut, 1, 7, default, popin 80%"
+          "border, 1, 10, default"
+          "borderangle, 1, 8, default"
+          "fade, 1, 7, default"
+          "workspaces, 1, 6, default"
+        ];
+      };
+      
+      # Dwindle layout
+      dwindle = {
+        pseudotile = true;
+        preserve_split = true;
+      };
+      
+      # Master layout
+      master = {
+        new_status = "master";
+      };
+      
+      # Gestures
+      gestures = {
+        workspace_swipe = true;
+      };
+      
+      # Misc settings
+      misc = {
+        force_default_wallpaper = 0;
+        disable_hyprland_logo = true;
+      };
+      
+      # Key bindings
+      bind = [
+        # Application shortcuts
+        "SUPER, Return, exec, alacritty"
+        "SUPER, D, exec, rofi -show drun"
+        "SUPER, V, exec, code"
+        "SUPER, F, exec, firefox"
+        "SUPER, E, exec, nautilus"
+        
+        # Window management
+        "SUPER, Q, killactive"
+        "SUPER SHIFT, Q, exit"
+        "SUPER, Space, togglefloating"
+        "SUPER, P, pseudo"
+        "SUPER, J, togglesplit"
+        "SUPER, Escape, exec, hyprlock"
+        
+        # Move focus
+        "SUPER, h, movefocus, l"
+        "SUPER, l, movefocus, r"
+        "SUPER, k, movefocus, u"
+        "SUPER, j, movefocus, d"
+        
+        # Move windows
+        "SUPER SHIFT, h, movewindow, l"
+        "SUPER SHIFT, l, movewindow, r"
+        "SUPER SHIFT, k, movewindow, u"
+        "SUPER SHIFT, j, movewindow, d"
+        
+        # Workspace switching
+        "SUPER, 1, workspace, 1"
+        "SUPER, 2, workspace, 2"
+        "SUPER, 3, workspace, 3"
+        "SUPER, 4, workspace, 4"
+        "SUPER, 5, workspace, 5"
+        "SUPER, 6, workspace, 6"
+        "SUPER, 7, workspace, 7"
+        "SUPER, 8, workspace, 8"
+        "SUPER, 9, workspace, 9"
+        "SUPER, 0, workspace, 10"
+        
+        # Move window to workspace
+        "SUPER SHIFT, 1, movetoworkspace, 1"
+        "SUPER SHIFT, 2, movetoworkspace, 2"
+        "SUPER SHIFT, 3, movetoworkspace, 3"
+        "SUPER SHIFT, 4, movetoworkspace, 4"
+        "SUPER SHIFT, 5, movetoworkspace, 5"
+        "SUPER SHIFT, 6, movetoworkspace, 6"
+        "SUPER SHIFT, 7, movetoworkspace, 7"
+        "SUPER SHIFT, 8, movetoworkspace, 8"
+        "SUPER SHIFT, 9, movetoworkspace, 9"
+        "SUPER SHIFT, 0, movetoworkspace, 10"
+        
+        # Special workspace (scratchpad)
+        "SUPER, S, togglespecialworkspace, magic"
+        "SUPER SHIFT, S, movetoworkspace, special:magic"
+        
+        # Screenshot
+        ", Print, exec, grim -g \"$(slurp)\" - | wl-copy"
+        "SHIFT, Print, exec, grim - | wl-copy"
+        
+        # Audio control
+        ", XF86AudioRaiseVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"
+        ", XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
+        ", XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
+        ", XF86AudioMicMute, exec, wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"
+        
+        # Brightness control
+        ", XF86MonBrightnessUp, exec, brightnessctl set 10%+"
+        ", XF86MonBrightnessDown, exec, brightnessctl set 10%-"
+      ];
+      
+      # Mouse bindings
+      bindm = [
+        "SUPER, mouse:272, movewindow"
+        "SUPER, mouse:273, resizewindow"
+      ];
+      
+      # Window rules
+      windowrule = [
+        "float, ^(pavucontrol)$"
+        "float, ^(nm-applet)$"
+        "float, ^(blueman-manager)$"
+        "float, ^(gnome-calculator)$"
+        "float, ^(gnome-weather)$"
+        "float, ^(file-roller)$"
+        "center, ^(file-roller)$"
+      ];
+      
+      # Exec once (startup applications)
+      exec-once = [
+        "waybar"
+        "dunst"
+        "hyprpaper"
+        "hypridle"
+        "nm-applet"
+        "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
+        "gnome-keyring-daemon --start --components=secrets,ssh,pkcs11"
+        "wl-paste --type text --watch cliphist store"
+        "wl-paste --type image --watch cliphist store"
+      ];
+    };
+  };
+  
+  # Waybar configuration for status bar
+  programs.waybar = lib.mkIf (!isDarwin) {
+    enable = true;
+    settings = {
+      mainBar = {
+        layer = "top";
+        position = "top";
+        height = 35;
+        spacing = 4;
+        
+        modules-left = [ "hyprland/workspaces" "hyprland/mode" "hyprland/scratchpad" "custom/media" ];
+        modules-center = [ "hyprland/window" ];
+        modules-right = [ "pulseaudio" "network" "cpu" "memory" "temperature" "backlight" "keyboard-state" "battery" "clock" "tray" ];
+        
+        "hyprland/workspaces" = {
+          disable-scroll = true;
+          all-outputs = true;
+          format = "{icon}";
+          format-icons = {
+            "1" = "";
+            "2" = "";
+            "3" = "";
+            "4" = "";
+            "5" = "";
+            "urgent" = "";
+            "focused" = "";
+            "default" = "";
+          };
+        };
+        
+        keyboard-state = {
+          numlock = true;
+          capslock = true;
+          format = "{name} {icon}";
+          format-icons = {
+            locked = "";
+            unlocked = "";
+          };
+        };
+        
+        "hyprland/mode" = {
+          format = "<span style=\"italic\">{}</span>";
+        };
+        
+        "hyprland/scratchpad" = {
+          format = "{icon} {count}";
+          show-empty = false;
+          format-icons = [ "" "" ];
+          tooltip = true;
+          tooltip-format = "{app}: {title}";
+        };
+        
+        tray = {
+          spacing = 10;
+        };
+        
+        clock = {
+          timezone = "America/New_York";
+          tooltip-format = "<big>{:%Y %B}</big>\\n<tt><small>{calendar}</small></tt>";
+          format-alt = "{:%Y-%m-%d}";
+        };
+        
+        cpu = {
+          format = "{usage}% ";
+          tooltip = false;
+        };
+        
+        memory = {
+          format = "{}% ";
+        };
+        
+        temperature = {
+          critical-threshold = 80;
+          format = "{temperatureC}°C {icon}";
+          format-icons = [ "" "" "" ];
+        };
+        
+        backlight = {
+          format = "{percent}% {icon}";
+          format-icons = [ "" "" "" "" "" "" "" "" "" ];
+        };
+        
+        battery = {
+          states = {
+            warning = 30;
+            critical = 15;
+          };
+          format = "{capacity}% {icon}";
+          format-charging = "{capacity}% ";
+          format-plugged = "{capacity}% ";
+          format-alt = "{time} {icon}";
+          format-icons = [ "" "" "" "" "" ];
+        };
+        
+        network = {
+          format-wifi = "{essid} ({signalStrength}%) ";
+          format-ethernet = "{ipaddr}/{cidr} ";
+          tooltip-format = "{ifname} via {gwaddr} ";
+          format-linked = "{ifname} (No IP) ";
+          format-disconnected = "Disconnected ⚠";
+          format-alt = "{ifname}: {ipaddr}/{cidr}";
+        };
+        
+        pulseaudio = {
+          format = "{volume}% {icon} {format_source}";
+          format-bluetooth = "{volume}% {icon} {format_source}";
+          format-bluetooth-muted = " {icon} {format_source}";
+          format-muted = " {format_source}";
+          format-source = "{volume}% ";
+          format-source-muted = "";
+          format-icons = {
+            headphone = "";
+            hands-free = "";
+            headset = "";
+            phone = "";
+            portable = "";
+            car = "";
+            default = [ "" "" "" ];
+          };
+          on-click = "pavucontrol";
+        };
+        
+        "custom/media" = {
+          format = "{icon} {}";
+          return-type = "json";
+          max-length = 40;
+          format-icons = {
+            spotify = "";
+            default = "🎜";
+          };
+          escape = true;
+          exec = "$HOME/.config/waybar/mediaplayer.py 2> /dev/null";
+        };
+      };
+    };
+    
+    style = ''
+      * {
+        font-family: "JetBrains Mono", "Font Awesome 6 Free", "Font Awesome 6 Brands";
+        font-size: 13px;
+      }
+      
+      window#waybar {
+        background-color: rgba(40, 42, 54, 0.9);
+        border-bottom: 3px solid rgba(189, 147, 249, 0.8);
+        color: #f8f8f2;
+        transition-property: background-color;
+        transition-duration: .5s;
+      }
+      
+      window#waybar.hidden {
+        opacity: 0.2;
+      }
+      
+      button {
+        box-shadow: inset 0 -3px transparent;
+        border: none;
+        border-radius: 0;
+      }
+      
+      button:hover {
+        background: inherit;
+        box-shadow: inset 0 -3px #f8f8f2;
+      }
+      
+      #workspaces button {
+        padding: 0 5px;
+        background-color: transparent;
+        color: #f8f8f2;
+      }
+      
+      #workspaces button:hover {
+        background: rgba(0, 0, 0, 0.2);
+      }
+      
+      #workspaces button.focused {
+        background-color: #44475a;
+        box-shadow: inset 0 -3px #bd93f9;
+      }
+      
+      #workspaces button.urgent {
+        background-color: #ff5555;
+      }
+      
+      #mode {
+        background-color: #bd93f9;
+        color: #282a36;
+        border-bottom: 3px solid #f8f8f2;
+      }
+      
+      #clock,
+      #battery,
+      #cpu,
+      #memory,
+      #disk,
+      #temperature,
+      #backlight,
+      #network,
+      #pulseaudio,
+      #tray,
+      #mode,
+      #idle_inhibitor,
+      #scratchpad,
+      #mpd {
+        padding: 0 10px;
+        color: #f8f8f2;
+      }
+      
+      #window,
+      #workspaces {
+        margin: 0 4px;
+      }
+      
+      .modules-left > widget:first-child > #workspaces {
+        margin-left: 0;
+      }
+      
+      .modules-right > widget:last-child > #workspaces {
+        margin-right: 0;
+      }
+      
+      #clock {
+        background-color: #8be9fd;
+        color: #282a36;
+      }
+      
+      #battery {
+        background-color: #50fa7b;
+        color: #282a36;
+      }
+      
+      #battery.charging, #battery.plugged {
+        background-color: #50fa7b;
+      }
+      
+      @keyframes blink {
+        to {
+          background-color: #ffffff;
+          color: #000000;
+        }
+      }
+      
+      #battery.critical:not(.charging) {
+        background-color: #ff5555;
+        color: #f8f8f2;
+        animation-name: blink;
+        animation-duration: 0.5s;
+        animation-timing-function: linear;
+        animation-iteration-count: infinite;
+        animation-direction: alternate;
+      }
+      
+      label:focus {
+        background-color: #000000;
+      }
+      
+      #cpu {
+        background-color: #ffb86c;
+        color: #282a36;
+      }
+      
+      #memory {
+        background-color: #ff79c6;
+        color: #282a36;
+      }
+      
+      #disk {
+        background-color: #f1fa8c;
+        color: #282a36;
+      }
+      
+      #backlight {
+        background-color: #f1fa8c;
+        color: #282a36;
+      }
+      
+      #network {
+        background-color: #bd93f9;
+        color: #282a36;
+      }
+      
+      #network.disconnected {
+        background-color: #ff5555;
+      }
+      
+      #pulseaudio {
+        background-color: #8be9fd;
+        color: #282a36;
+      }
+      
+      #pulseaudio.muted {
+        background-color: #6272a4;
+        color: #f8f8f2;
+      }
+      
+      #temperature {
+        background-color: #50fa7b;
+        color: #282a36;
+      }
+      
+      #temperature.critical {
+        background-color: #ff5555;
+      }
+      
+      #tray {
+        background-color: #6272a4;
+      }
+      
+      #tray > .passive {
+        -gtk-icon-effect: dim;
+      }
+      
+      #tray > .needs-attention {
+        -gtk-icon-effect: highlight;
+        background-color: #ff5555;
+      }
+      
+      #idle_inhibitor {
+        background-color: #44475a;
+      }
+      
+      #idle_inhibitor.activated {
+        background-color: #f8f8f2;
+        color: #282a36;
+      }
+      
+      #scratchpad {
+        background-color: #6272a4;
+      }
+      
+      #scratchpad.empty {
+        background-color: transparent;
+      }
+    '';
+  };
+  
   # macOS launchd agents
   launchd = lib.mkIf isDarwin {
     agents = {
