@@ -10,6 +10,11 @@
   # System state version - IMPORTANT: Don't change after initial install
   system.stateVersion = "25.05";
   
+  # Home Manager configuration
+  home-manager = {
+    backupFileExtension = "backup";
+  };
+  
   # Nix configuration
   nix = {
     # Enable flakes and new nix command
@@ -83,7 +88,7 @@
       enable = true;
       maxRetries = 5;
       banTime = "10m";
-      ignoreip = [ "127.0.0.1/8" "::1" "192.168.1.0/24" ];
+      ignoreIP = [ "127.0.0.1/8" "::1" "192.168.1.0/24" ];
     };
     firewall = {
       allowedTCPPorts = [ ];

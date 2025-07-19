@@ -2232,57 +2232,6 @@
       '';
     };
     
-    # Hyprland user configuration
-    ".config/hypr/hyprland.conf" = lib.mkIf isNixOS {
-      text = ''
-        # User-specific Hyprland configuration
-        # This configuration extends the system default
-        
-        # Source the system configuration
-        source = /etc/hypr/hyprland.conf
-        
-        # VM-specific fixes
-        env = WLR_NO_HARDWARE_CURSORS,1
-        env = WLR_RENDERER,pixman
-        env = LIBSEAT_BACKEND,logind
-        
-        # Simplified monitor config for VM
-        monitor=,preferred,auto,1
-        
-        # Disable some effects for better VM performance
-        decoration {
-            blur {
-                enabled = false
-            }
-            shadow {
-                enabled = false
-            }
-        }
-        
-        # Simpler animations for VM
-        animations {
-            enabled = false
-        }
-        
-        # Add your personal customizations below
-        # Example: Custom keybindings, window rules, monitor setup, etc.
-        
-        # Override lock command to use swaylock (more reliable in VM)
-        bind = $mainMod, L, exec, swaylock -c 000000
-        
-        # Personal keybindings
-        # bind = $mainMod SHIFT, Return, exec, alacritty
-        
-        # Personal window rules
-        # windowrulev2 = workspace 2,class:^(firefox)$
-        # windowrulev2 = workspace 3,class:^(code)$
-        
-        # Personal startup applications
-        # exec-once = firefox
-        # exec-once = discord
-      '';
-    };
-    
     # Custom scripts
     ".local/bin/update-system" = {
       executable = true;
@@ -2690,6 +2639,49 @@
         "wl-paste --type image --watch cliphist store"
       ];
     };
+    
+    # Extra configuration that extends the system default
+    extraConfig = ''
+      # Source the system configuration
+      source = /etc/hypr/hyprland.conf
+      
+      # VM-specific fixes
+      env = WLR_NO_HARDWARE_CURSORS,1
+      env = WLR_RENDERER,pixman
+      env = LIBSEAT_BACKEND,logind
+      
+      # Override some settings for VM performance
+      decoration {
+          blur {
+              enabled = false
+          }
+          shadow {
+              enabled = false
+          }
+      }
+      
+      # Simpler animations for VM
+      animations {
+          enabled = false
+      }
+      
+      # Override lock command to use swaylock (more reliable in VM)
+      bind = $mainMod, L, exec, swaylock -c 000000
+      
+      # Personal customizations
+      # Example: Custom keybindings, window rules, monitor setup, etc.
+      
+      # Personal keybindings
+      # bind = $mainMod SHIFT, Return, exec, alacritty
+      
+      # Personal window rules
+      # windowrulev2 = workspace 2,class:^(firefox)$
+      # windowrulev2 = workspace 3,class:^(code)$
+      
+      # Personal startup applications
+      # exec-once = firefox
+      # exec-once = discord
+    '';
   };
   
   # Waybar configuration for status bar
