@@ -378,13 +378,41 @@
       # Desktop utilities
       xclip # Clipboard
       xsel # X selection
+      wl-clipboard # Wayland clipboard
       
       # File managers
       ranger # Terminal file manager
       nnn # Terminal file browser
+      thunar # GUI file manager
       
       # Archiving with GUI
       file-roller
+      
+      # Web browsers
+      firefox
+      chromium
+      
+      # Office and productivity
+      libreoffice
+      evince # PDF viewer
+      
+      # Media viewers
+      eog # Image viewer
+      
+      # Communication
+      thunderbird
+      
+      # System utilities
+      gnome-calculator
+      gnome-system-monitor
+      gnome-disk-utility
+      
+      # Wayland tools
+      wlr-randr
+      kanshi # Display management
+      
+      # Screenshot tools
+      flameshot
       
       # System info
       neofetch
@@ -1094,7 +1122,7 @@
       ''}
     '';
     
-    shellAliases = programs.zsh.shellAliases; # Use same aliases as zsh
+    shellAliases = config.programs.zsh.shellAliases; # Use same aliases as zsh
   };
   
   # fzf
@@ -1821,7 +1849,7 @@
       coc-nvim
       coc-json
       coc-yaml
-      coc-python
+      coc-pyright
       coc-rust-analyzer
       coc-tsserver
       coc-go
@@ -2008,17 +2036,6 @@
     ];
   };
   
-  # User-specific environment variables
-  home.sessionVariables = {
-    EDITOR = "nvim";
-    VISUAL = "nvim";
-    PAGER = "less";
-    LESS = "-R";
-    MANPAGER = "sh -c 'col -bx | bat -l man -p'";
-  } // lib.optionalAttrs isDarwin {
-    # macOS specific environment variables
-    HOMEBREW_NO_ANALYTICS = "1";
-  };
   
   # XDG directories
   xdg = {
@@ -2485,106 +2502,8 @@
   
   
   
-  # Desktop applications and services
-  # Note: This section adds desktop-specific packages for NixOS systems
-  home.packages = lib.optionals (!isDarwin) (with pkgs; [
-    # Desktop applications
-    firefox
-    chromium
-    thunderbird
-    libreoffice
-    evince # PDF viewer
-    eog # Image viewer
-    gnome-calculator
-    gnome-calendar
-    gnome-weather
-    
-    # Media applications
-    vlc
-    audacity
-    gimp
-    inkscape
-    blender
-    
-    # Communication
-    discord
-    signal-desktop
-    telegram-desktop
-    
-    # Development GUI tools
-    dbeaver-bin # Database management
-    postman # API testing
-    
-    # System utilities
-    gnome-system-monitor
-    gnome-disk-utility
-    baobab # Disk usage analyzer
-    
-    # Wayland-specific tools
-    wl-clipboard
-    wlr-randr
-    kanshi # Display management
-    
-    # Desktop theming
-    dracula-theme
-    dracula-icon-theme
-    inter
-    
-    # Fonts
-    noto-fonts
-    noto-fonts-cjk-sans
-    noto-fonts-emoji
-    liberation_ttf
-    fira-code
-    fira-code-symbols
-    
-    # Archive tools
-    file-roller
-    
-    # Screenshot tools
-    flameshot
-    
-    # Color picker
-    gcolor3
-  ]);
   
-  # Systemd user services for desktop (NixOS only)
-  systemd.user.services = lib.mkIf (!isDarwin) {
-    # Auto-mount user directories
-    xdg-user-dirs-update = {
-      Unit = {
-        Description = "Update XDG user directories";
-        After = [ "graphical-session-pre.target" ];
-        PartOf = [ "graphical-session.target" ];
-      };
-      Service = {
-        Type = "oneshot";
-        ExecStart = "${pkgs.xdg-user-dirs}/bin/xdg-user-dirs-update";
-      };
-      Install = {
-        WantedBy = [ "graphical-session.target" ];
-      };
-    };
-  };
   
-  # Wayland-specific home environment
-  home.sessionVariables = lib.mkIf (!isDarwin) {
-    # Wayland environment variables
-    NIXOS_OZONE_WL = "1";  # Chromium/Chrome Wayland support
-    MOZ_ENABLE_WAYLAND = "1";  # Firefox Wayland support
-    QT_QPA_PLATFORM = "wayland;xcb";
-    SDL_VIDEODRIVER = "wayland";
-    CLUTTER_BACKEND = "wayland";
-    GDK_BACKEND = "wayland,x11";
-    
-    # Theme variables
-    GTK_THEME = "Dracula";
-    QT_STYLE_OVERRIDE = "Dracula";
-    
-    # Cursor theme
-    XCURSOR_THEME = "breeze_cursors";
-    XCURSOR_SIZE = "24";
-  };
   
   # Wayland-specific programs configuration
   wayland.windowManager.hyprland = lib.mkIf (!isDarwin) {
@@ -3158,18 +3077,18 @@
               # Check file permissions (should be 600 or 400)
               local perms=$(stat -c "%a" "$file" 2>/dev/null || stat -f "%A" "$file" 2>/dev/null)
               if [[ "$perms" != "600" && "$perms" != "400" ]]; then
-                  echo -e "${YELLOW}Warning: $file has permissive permissions ($perms)${NC}" >&2
-                  echo -e "${YELLOW}Consider: chmod 600 $file${NC}" >&2
+                  echo "Warning: $file has permissive permissions ($perms)" >&2
+                  echo "Consider: chmod 600 $file" >&2
               fi
               
               # Source the file
               set -a  # Mark variables for export
               source "$file"
               set +a  # Unmark variables for export
-              echo -e "${GREEN}✓ Loaded secrets from $file${NC}" >&2
+              echo -e "$${GREEN}✓ Loaded secrets from $file$${NC}" >&2
               return 0
           else
-              echo -e "${YELLOW}Warning: Secret file $file not found or not readable${NC}" >&2
+              echo -e "$${YELLOW}Warning: Secret file $file not found or not readable$${NC}" >&2
               return 1
           fi
       }
@@ -3361,7 +3280,7 @@
       SECRETS_DIR="$HOME/.local/share/secrets"
       CONFIG_SECRETS_DIR="$HOME/.config/secrets"
       
-      echo -e "${BLUE}=== Secret Management Security Check ===${NC}"
+      echo -e "$${BLUE}=== Secret Management Security Check ===$${NC}"
       echo ""
       
       # Check directory permissions
@@ -3370,13 +3289,13 @@
           if [[ -d "$dir" ]]; then
               local perms=$(stat -c "%a" "$dir" 2>/dev/null || stat -f "%A" "$dir" 2>/dev/null)
               if [[ "$perms" == "700" ]]; then
-                  echo -e "${GREEN}✓ $dir has secure permissions ($perms)${NC}"
+                  echo -e "$${GREEN}✓ $dir has secure permissions ($perms)$${NC}"
               else
-                  echo -e "${RED}✗ $dir has insecure permissions ($perms), should be 700${NC}"
+                  echo -e "$${RED}✗ $dir has insecure permissions ($perms), should be 700$${NC}"
                   echo -e "  Fix with: chmod 700 $dir"
               fi
           else
-              echo -e "${YELLOW}⚠ $dir does not exist${NC}"
+              echo -e "$${YELLOW}⚠ $dir does not exist$${NC}"
           fi
       }
       
@@ -3386,9 +3305,9 @@
           if [[ -f "$file" ]]; then
               local perms=$(stat -c "%a" "$file" 2>/dev/null || stat -f "%A" "$file" 2>/dev/null)
               if [[ "$perms" == "600" || "$perms" == "400" ]]; then
-                  echo -e "${GREEN}✓ $file has secure permissions ($perms)${NC}"
+                  echo -e "$${GREEN}✓ $file has secure permissions ($perms)$${NC}"
               else
-                  echo -e "${RED}✗ $file has insecure permissions ($perms), should be 600 or 400${NC}"
+                  echo -e "$${RED}✗ $file has insecure permissions ($perms), should be 600 or 400$${NC}"
                   echo -e "  Fix with: chmod 600 $file"
               fi
           fi
@@ -3415,9 +3334,9 @@
               fi
               
               if [[ ''${#issues[@]} -gt 0 ]]; then
-                  echo -e "${GREEN}✓ $file contains secrets (''${issues[*]})${NC}"
+                  echo -e "$${GREEN}✓ $file contains secrets (''${issues[*]})$${NC}"
               else
-                  echo -e "${YELLOW}⚠ $file appears to be empty or only contains comments${NC}"
+                  echo -e "$${YELLOW}⚠ $file appears to be empty or only contains comments$${NC}"
               fi
           fi
       }
@@ -3447,26 +3366,26 @@
       # Check if secret files are in gitignore
       if [[ -f ".gitignore" ]]; then
           if grep -q ".local/share/secrets" .gitignore && grep -q ".config/secrets" .gitignore; then
-              echo -e "${GREEN}✓ Secret directories are in .gitignore${NC}"
+              echo -e "$${GREEN}✓ Secret directories are in .gitignore$${NC}"
           else
-              echo -e "${RED}✗ Secret directories not properly ignored by git${NC}"
+              echo -e "$${RED}✗ Secret directories not properly ignored by git$${NC}"
               echo -e "  Add these lines to .gitignore:"
               echo -e "  .local/share/secrets/"
               echo -e "  .config/secrets/"
           fi
       else
-          echo -e "${YELLOW}⚠ No .gitignore file found${NC}"
+          echo -e "$${YELLOW}⚠ No .gitignore file found$${NC}"
       fi
       
       # Check if any secret files are tracked
       if command -v git &> /dev/null && git rev-parse --git-dir &> /dev/null; then
           local tracked_secrets=$(git ls-files | grep -E "(secrets|\.env)" || true)
           if [[ -n "$tracked_secrets" ]]; then
-              echo -e "${RED}✗ Secret files are tracked by git:${NC}"
+              echo -e "$${RED}✗ Secret files are tracked by git:$${NC}"
               echo "$tracked_secrets"
               echo -e "  Remove with: git rm --cached <file>"
           else
-              echo -e "${GREEN}✓ No secret files tracked by git${NC}"
+              echo -e "$${GREEN}✓ No secret files tracked by git$${NC}"
           fi
       fi
       
@@ -3476,15 +3395,15 @@
       # List currently loaded secret environment variables
       local secret_vars=$(env | grep -E "(KEY|TOKEN|SECRET|PASSWORD)" | cut -d= -f1 | sort || true)
       if [[ -n "$secret_vars" ]]; then
-          echo -e "${BLUE}Currently loaded secret variables:${NC}"
+          echo -e "$${BLUE}Currently loaded secret variables:$${NC}"
           echo "$secret_vars" | sed 's/^/  /'
       else
-          echo -e "${YELLOW}⚠ No secret environment variables currently loaded${NC}"
+          echo -e "$${YELLOW}⚠ No secret environment variables currently loaded$${NC}"
           echo -e "  Run 'load-secrets' to load secrets"
       fi
       
       echo ""
-      echo -e "${BLUE}=== Security Recommendations ===${NC}"
+      echo -e "$${BLUE}=== Security Recommendations ===$${NC}"
       echo "1. Keep secret files with 600 permissions (owner read/write only)"
       echo "2. Never commit secret files to version control"
       echo "3. Use different secret files per environment (dev/staging/prod)"
@@ -3634,52 +3553,9 @@
     alias system-backup="$CONFIG_ROOT/scripts/maintain.sh backup"
     
     # Set CONFIG_ROOT for scripts
-    export CONFIG_ROOT="$(dirname "$(dirname "$(readlink -f "${(%):-%x}")" 2>/dev/null || echo "$HOME/.config/nixconf")")"
+    export CONFIG_ROOT="$HOME/.config/nixconf"
   '';
   
-  programs.bash.initExtra = lib.mkAfter ''
-    # Secret management functions for Bash
-    
-    secrets() {
-        if [[ $# -eq 0 ]]; then
-            echo "Usage: secrets <command> [args...]"
-            echo "Example: secrets npm run dev"
-            return 1
-        fi
-        
-        load-secrets "$@"
-    }
-    
-    edit-secrets() {
-        local file="''${1:-$HOME/.local/share/secrets/environment}"
-        touch "$file"
-        chmod 600 "$file"
-        "$EDITOR" "$file"
-        chmod 600 "$file"
-        echo "Secret file updated: $file"
-    }
-    
-    secret-status() {
-        check-secrets
-    }
-    
-    alias sec="secrets"
-    alias edit-env="edit-secrets"
-    
-    # System maintenance aliases for Bash
-    alias nix-update="$CONFIG_ROOT/scripts/update.sh"
-    alias nix-rollback="$CONFIG_ROOT/scripts/rollback.sh"
-    alias nix-maintain="$CONFIG_ROOT/scripts/maintain.sh"
-    alias system-status="$CONFIG_ROOT/scripts/maintain.sh status"
-    alias system-health="$CONFIG_ROOT/scripts/maintain.sh health"
-    alias system-cleanup="$CONFIG_ROOT/scripts/maintain.sh cleanup"
-    alias quick-update="$CONFIG_ROOT/scripts/update.sh quick"
-    alias emergency-rollback="$CONFIG_ROOT/scripts/rollback.sh emergency"
-    alias system-backup="$CONFIG_ROOT/scripts/maintain.sh backup"
-    
-    # Set CONFIG_ROOT for scripts
-    export CONFIG_ROOT="$(dirname "$(dirname "$(readlink -f "$BASH_SOURCE")" 2>/dev/null || echo "$HOME/.config/nixconf")")"
-  '';
   
   # Git configuration to ignore secret files
   home.file.".config/git/ignore" = {
