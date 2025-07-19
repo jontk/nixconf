@@ -138,8 +138,7 @@
       
       # Kubernetes
       kubectl
-      kubectx
-      kubens
+      kubectx  # includes kubens
       k9s
       helm
       kustomize
@@ -3557,57 +3556,6 @@
   '';
   
   
-  # Git configuration to ignore secret files
-  home.file.".config/git/ignore" = {
-    text = ''
-      # Global gitignore for secret management
-      
-      # Secret directories
-      .local/share/secrets/
-      .config/secrets/
-      
-      # Common secret files
-      .env
-      .env.local
-      .env.*.local
-      *.key
-      *.pem
-      *.p12
-      *.pfx
-      secrets.yaml
-      secrets.yml
-      secrets.json
-      
-      # IDE and editor files
-      .vscode/settings.json
-      .idea/
-      *.swp
-      *.swo
-      *~
-      
-      # OS files
-      .DS_Store
-      Thumbs.db
-      
-      # Temporary files
-      *.tmp
-      *.temp
-      .cache/
-      node_modules/
-      
-      # Build artifacts
-      dist/
-      build/
-      target/
-      *.o
-      *.so
-      *.dylib
-      
-      # Logs
-      *.log
-      logs/
-    '';
-  };
   
   # Documentation file for secret management
   home.file.".local/share/docs/secret-management.md" = {

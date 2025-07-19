@@ -86,6 +86,10 @@ temp/
 secrets.yml
 secrets.json
 
+# Secret management directories (added for nixconf)
+.local/share/secrets/
+.config/secrets/
+
 # Logs
 logs/
 *.log
