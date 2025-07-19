@@ -1635,9 +1635,9 @@
         { key = "Escape"; mode = "Vi|~Search"; action = "ClearSelection"; }
         
         # Tmux integration
-        { key = "A"; mods = "Control"; chars = "\\x01"; }
-        { key = "D"; mods = "Control"; chars = "\\x01\\x64"; }
-        { key = "T"; mods = "Control|Shift"; chars = "\\x01\\x63"; }
+        { key = "A"; mods = "Control"; chars = "\\u0001"; }
+        { key = "D"; mods = "Control"; chars = "\\u0001\\u0064"; }
+        { key = "T"; mods = "Control|Shift"; chars = "\\u0001\\u0063"; }
       ] ++ lib.optionals isDarwin [
         # macOS specific bindings
         { key = "K"; mods = "Command"; action = "ClearHistory"; }
