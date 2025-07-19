@@ -125,8 +125,8 @@ in
       networkmanager.enable = cfg.networking.enableNetworkManager;
       firewall.enable = cfg.security.enableFirewall;
       
-      # DNS configuration
-      nameservers = [ "8.8.8.8" "8.8.4.4" "1.1.1.1" ];
+      # DNS configuration - commented out to use DHCP-provided DNS
+      # nameservers = [ "8.8.8.8" "8.8.4.4" "1.1.1.1" ];
     };
 
     # Security configuration

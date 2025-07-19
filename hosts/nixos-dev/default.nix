@@ -56,7 +56,7 @@
   desktop = {
     enable = true;
     graphics = {
-      driver = "intel"; # Change to "amd", "nvidia", "hybrid-intel-nvidia", etc. as needed
+      driver = "nvidia"; # RTX 4070 graphics card
       highDpi = false; # Set to true for high DPI displays
     };
   };
@@ -147,7 +147,7 @@
     # Enable NetworkManager (desktop-friendly)
     networkmanager = {
       enable = true;
-      dns = "systemd-resolved";
+      dns = "default"; # Use DHCP-provided DNS
       wifi = {
         backend = "wpa_supplicant";
         macAddress = "random"; # Privacy
@@ -220,7 +220,7 @@
       jontk = {
         isNormalUser = true;
         description = "Jon Thor Kristinsson";
-        hashedPassword = "$y$j9T$iLzZPGKkBMd5ePceB2zum0$erf01a3aqoPtPAKzN6imoUoDdAcSYyvpLrRtkaYz7M8"; # Use mkpasswd to generate
+        hashedPassword = "REDACTED_PASSWORD_HASH"; # Use mkpasswd -m sha-512 to generate
         extraGroups = [
           "wheel"
           "networkmanager"
@@ -242,7 +242,7 @@
       
       # Root user configuration
       root = {
-        hashedPassword = "$y$j9T$iLzZPGKkBMd5ePceB2zum0$erf01a3aqoPtPAKzN6imoUoDdAcSYyvpLrRtkaYz7M8"; # Disable root login
+        hashedPassword = "REDACTED_PASSWORD_HASH"; # Disable root login
       };
     };
   };
@@ -409,8 +409,8 @@
       fileSystems = [ "/" ];
     };
 
-    # Enable thermald for Intel CPUs
-    thermald.enable = true;
+    # Thermald is for Intel CPUs - disable for AMD system
+    # thermald.enable = true;
     
     # Enable TLP for laptop power management
     tlp = {
@@ -493,8 +493,7 @@
     enableAllFirmware = true;
     enableRedistributableFirmware = true;
     
-    # CPU microcode
-    cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+    # CPU microcode - enable AMD only
     cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
     
     # Graphics
