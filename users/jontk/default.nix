@@ -382,7 +382,7 @@
       # File managers
       ranger # Terminal file manager
       nnn # Terminal file browser
-      thunar # GUI file manager
+      xfce.thunar # GUI file manager
       
       # Archiving with GUI
       file-roller
@@ -2014,7 +2014,7 @@
     extraPackages = with pkgs; [
       # Language servers
       nodePackages.typescript-language-server
-      nodePackages.pyright
+      pyright
       rust-analyzer
       gopls
       lua-language-server
