@@ -1,0 +1,196 @@
+# Starship prompt configuration
+# This file is managed by Home Manager
+# Extended configuration beyond what's in default.nix
+
+# Don't print a new line at the start of the prompt
+add_newline = false
+
+# Timeout for commands
+command_timeout = 1000
+
+# Format
+format = """
+$username\
+$hostname\
+$directory\
+$git_branch\
+$git_state\
+$git_status\
+$git_metrics\
+$fill\
+$nodejs\
+$python\
+$rust\
+$golang\
+$java\
+$kotlin\
+$lua\
+$dart\
+$julia\
+$elixir\
+$elm\
+$erlang\
+$haskell\
+$nim\
+$nix_shell\
+$conda\
+$memory_usage\
+$aws\
+$gcloud\
+$env_var\
+$cmd_duration\
+$line_break\
+$jobs\
+$battery\
+$time\
+$status\
+$container\
+$shell\
+$character"""
+
+# Username
+[username]
+style_user = "green bold"
+style_root = "red bold"
+format = "[$user]($style) "
+disabled = false
+show_always = false
+
+# Hostname
+[hostname]
+ssh_only = true
+format = "[@$hostname](bold blue) "
+disabled = false
+
+# Directory
+[directory]
+style = "blue bold"
+format = "[$path]($style)[$read_only]($read_only_style) "
+truncation_length = 3
+truncate_to_repo = true
+truncation_symbol = "…/"
+
+[directory.substitutions]
+"Documents" = "󰈙 "
+"Downloads" = " "
+"Music" = " "
+"Pictures" = " "
+"Projects" = " "
+
+# Git
+[git_branch]
+symbol = " "
+style = "purple bold"
+format = "[$symbol$branch(:$remote_branch)]($style) "
+
+[git_status]
+style = "red bold"
+format = '([\[$all_status$ahead_behind\]]($style) )'
+conflicted = "="
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+untracked = "?${count}"
+stashed = "$${count}"
+modified = "!${count}"
+staged = "+${count}"
+renamed = "»${count}"
+deleted = "✘${count}"
+
+[git_metrics]
+disabled = false
+format = "([+$added]($added_style) )([-$deleted]($deleted_style) )"
+
+# Languages
+[nodejs]
+symbol = " "
+style = "green bold"
+format = "[$symbol($version )]($style)"
+detect_extensions = ["js", "mjs", "cjs", "ts", "tsx", "jsx"]
+
+[python]
+symbol = " "
+style = "yellow bold"
+format = '[$symbol$pyenv_prefix($version )(\($virtualenv\) )]($style)'
+pyenv_version_name = true
+
+[rust]
+symbol = " "
+style = "red bold"
+format = "[$symbol($version )]($style)"
+
+[golang]
+symbol = " "
+style = "cyan bold"
+format = "[$symbol($version )]($style)"
+
+[java]
+symbol = " "
+style = "red bold"
+format = "[$symbol($version )]($style)"
+
+[nix_shell]
+symbol = " "
+style = "blue bold"
+format = '[$symbol$state( \($name\))]($style) '
+
+# Other
+[cmd_duration]
+min_time = 2_000
+format = "took [$duration]($style) "
+style = "yellow bold"
+show_milliseconds = false
+
+[memory_usage]
+symbol = " "
+style = "white bold dimmed"
+format = "$symbol[${ram_pct}]($style) "
+threshold = 80
+disabled = true
+
+[time]
+disabled = true
+style = "white bold"
+format = '[$time]($style) '
+time_format = "%T"
+
+[battery]
+full_symbol = " "
+charging_symbol = " "
+discharging_symbol = " "
+unknown_symbol = " "
+empty_symbol = " "
+format = "[$symbol$percentage]($style) "
+disabled = false
+
+[[battery.display]]
+threshold = 10
+style = "red bold"
+
+[[battery.display]]
+threshold = 30
+style = "yellow bold"
+
+[character]
+success_symbol = "[➜](bold green)"
+error_symbol = "[✗](bold red)"
+vicmd_symbol = "[V](bold green)"
+
+[status]
+style = "red bold"
+symbol = "✖ "
+format = '[$symbol$common_meaning$signal_name$maybe_int]($style) '
+map_symbol = true
+disabled = false
+
+[aws]
+symbol = "  "
+style = "yellow bold"
+format = '[$symbol($profile )(\($region\) )]($style)'
+disabled = true
+
+[gcloud]
+symbol = " "
+style = "blue bold"
+format = '[$symbol$account(@$domain)(\($region\))]($style) '
+disabled = true

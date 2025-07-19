@@ -1,0 +1,182 @@
+# Direnv configuration
+# This file is managed by Home Manager
+
+# Nix integration
+use_nix() {
+  local path="$1"
+  shift
+  if [[ -f "${path}/flake.nix" ]]; then
+    use flake "${path}" "$@"
+  elif [[ -f "${path}/shell.nix" ]]; then
+    use nix "${path}/shell.nix" "$@"
+  elif [[ -f "${path}/default.nix" ]]; then
+    use nix "${path}/default.nix" "$@"
+  else
+    log_error "No Nix file found in ${path}"
+    return 1
+  fi
+}
+
+# Layout functions
+layout_python() {
+  local python=${1:-python3}
+  [[ $# -gt 0 ]] && shift
+  unset PYTHONHOME
+  if [[ -n $VIRTUAL_ENV ]]; then
+    VIRTUAL_ENV=$(realpath "${VIRTUAL_ENV}")
+  else
+    local python_version
+    python_version=$("$python" -c "import platform; print(platform.python_version())")
+    if [[ -z $python_version ]]; then
+      log_error "Could not detect Python version"
+      return 1
+    fi
+    VIRTUAL_ENV=$PWD/.direnv/python-$python_version
+  fi
+  export VIRTUAL_ENV
+  if [[ ! -d $VIRTUAL_ENV ]]; then
+    log_status "Creating virtualenv at $VIRTUAL_ENV"
+    "$python" -m venv "$@" "$VIRTUAL_ENV"
+  fi
+  PATH="${VIRTUAL_ENV}/bin:${PATH}"
+  export PATH
+}
+
+layout_poetry() {
+  if [[ ! -f pyproject.toml ]]; then
+    log_error 'No pyproject.toml found'
+    return 1
+  fi
+
+  local VENV=$(poetry env info --path 2>/dev/null)
+  if [[ -z $VENV || ! -d $VENV/bin ]]; then
+    log_status 'No poetry virtual environment found. Running `poetry install`'
+    poetry install
+    VENV=$(poetry env info --path)
+  fi
+  
+  export VIRTUAL_ENV=$VENV
+  export POETRY_ACTIVE=1
+  PATH_add "$VENV/bin"
+}
+
+layout_node() {
+  local node_version=${1:-}
+  local node_dir=$PWD/.direnv/node
+  
+  if [[ -n $node_version ]]; then
+    node_dir=$PWD/.direnv/node-$node_version
+    if [[ ! -d $node_dir ]]; then
+      log_status "Installing node $node_version"
+      nvm install "$node_version"
+      nvm use "$node_version"
+    fi
+  fi
+  
+  if [[ -d node_modules/.bin ]]; then
+    PATH_add node_modules/.bin
+  fi
+  
+  export NODE_ENV=${NODE_ENV:-development}
+}
+
+layout_ruby() {
+  if [[ -f .ruby-version ]]; then
+    ruby_version=$(cat .ruby-version)
+    if ! ruby --version | grep -q "$ruby_version"; then
+      log_status "Installing Ruby $ruby_version"
+      rbenv install "$ruby_version" || rvm install "$ruby_version"
+    fi
+  fi
+  
+  if [[ -f Gemfile ]]; then
+    PATH_add .bundle/bin
+    PATH_add bin
+  fi
+}
+
+# Utility functions
+use_docker-compose() {
+  if [[ -f docker-compose.yml ]] || [[ -f docker-compose.yaml ]]; then
+    export COMPOSE_PROJECT_NAME=$(basename "$PWD")
+    export COMPOSE_FILE=${COMPOSE_FILE:-docker-compose.yml}
+    log_status "Docker Compose project: $COMPOSE_PROJECT_NAME"
+  fi
+}
+
+use_aws-profile() {
+  local profile=$1
+  export AWS_PROFILE=$profile
+  export AWS_DEFAULT_PROFILE=$profile
+  log_status "AWS Profile: $profile"
+}
+
+use_terraform() {
+  if [[ -f .terraform-version ]]; then
+    local tf_version=$(cat .terraform-version)
+    export TERRAFORM_VERSION=$tf_version
+    log_status "Terraform version: $tf_version"
+  fi
+  
+  if [[ -d .terraform ]]; then
+    PATH_add .terraform/bin
+  fi
+}
+
+# Strict mode
+strict_env() {
+  set -euo pipefail
+  IFS=$'\n\t'
+  export DIRENV_STRICT=1
+}
+
+# Watch additional files
+watch_file() {
+  local file
+  for file in "$@"; do
+    if [[ -f $file ]]; then
+      watch_file "$file"
+    fi
+  done
+}
+
+# Load .env files securely
+dotenv_if_exists() {
+  if [[ -f .env ]]; then
+    dotenv
+  fi
+  if [[ -f .env.local ]]; then
+    dotenv .env.local
+  fi
+}
+
+# Custom logging
+log_status() {
+  echo -e "\033[32m→\033[0m $*" >&2
+}
+
+log_error() {
+  echo -e "\033[31m✗\033[0m $*" >&2
+}
+
+# Auto-detect and use appropriate layout
+auto_layout() {
+  if [[ -f flake.nix ]] || [[ -f shell.nix ]] || [[ -f default.nix ]]; then
+    use_nix .
+  elif [[ -f pyproject.toml ]] && command -v poetry >/dev/null; then
+    layout_poetry
+  elif [[ -f requirements.txt ]] || [[ -f setup.py ]]; then
+    layout_python
+  elif [[ -f package.json ]]; then
+    layout_node
+  elif [[ -f Gemfile ]]; then
+    layout_ruby
+  elif [[ -f go.mod ]]; then
+    layout go
+  fi
+}
+
+# Source local direnvrc if exists
+if [[ -f ~/.config/direnv/direnvrc.local ]]; then
+  source ~/.config/direnv/direnvrc.local
+fi

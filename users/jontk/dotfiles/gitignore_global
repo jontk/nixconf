@@ -1,0 +1,135 @@
+# Global gitignore file
+# This file is managed by Home Manager
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Editor files
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.vim/
+.nvim/
+.emacs.d/
+.emacs.desktop
+.emacs.desktop.lock
+
+# Language specific
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn
+.pnp.*
+*.log
+.cargo/
+target/
+Cargo.lock
+.stack-work/
+.cabal-sandbox/
+cabal.sandbox.config
+*.hi
+*.o
+*.chi
+*.chs.h
+
+# Build outputs
+dist/
+build/
+out/
+*.egg-info/
+.eggs/
+*.egg
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.envrc
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+.cache/
+tmp/
+temp/
+
+# Security
+*.pem
+*.key
+*.crt
+*.p12
+.secrets/
+secrets.yml
+secrets.json
+
+# Logs
+logs/
+*.log
+crash.log
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# Archives
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.rar
+*.7z
+
+# Nix
+result
+result-*
+
+# direnv
+.direnv/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+
+# Coverage
+coverage/
+*.lcov
+.nyc_output/
+htmlcov/
+.coverage
+.coverage.*
+
+# Documentation
+docs/_build/
+site/
+
+# Misc
+.history/
+.svn/
+.hg/
