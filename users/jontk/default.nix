@@ -88,7 +88,6 @@
       zellij # Modern terminal multiplexer
       
       # Text editors
-      neovim
       emacs
       micro # Simple terminal editor
       
@@ -648,7 +647,7 @@
         editor = "nvim";
         whitespace = "fix,-indent-with-non-tab,trailing-space,cr-at-eol";
         excludesfile = "~/.gitignore_global";
-        pager = "delta";
+        # pager is set by delta module
         autocrlf = "input";
         trustctime = false;
         precomposeunicode = false;
@@ -2025,7 +2024,7 @@
       rustfmt
       black
       prettier
-      gofmt
+      # gofmt is included with go package
       
       # Additional tools
       ripgrep
@@ -2067,7 +2066,7 @@
       "project-browser" = {
         name = "Project Browser";
         comment = "Browse projects with file manager";
-        exec = "thunar ~/projects";
+        exec = "thunar /home/jontk/projects";
         icon = "folder-development";
         categories = [ "Development" "FileManager" ];
       };
@@ -3430,11 +3429,8 @@
       BROWSER = if isDarwin then "open" else "firefox";
       PAGER = "less -R";
       
-      # XDG Base Directory specification
-      XDG_CONFIG_HOME = "$HOME/.config";
-      XDG_DATA_HOME = "$HOME/.local/share";
-      XDG_CACHE_HOME = "$HOME/.cache";
-      XDG_STATE_HOME = "$HOME/.local/state";
+      # XDG Base Directory specification (managed by home-manager xdg module)
+      # XDG_CONFIG_HOME, XDG_DATA_HOME, XDG_CACHE_HOME, XDG_STATE_HOME are set by xdg module
       
       # Development tools configuration
       CARGO_HOME = "$HOME/.local/share/cargo";
