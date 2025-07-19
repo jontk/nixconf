@@ -133,6 +133,8 @@
         ./modules/performance
         ./modules/monitoring
         ./modules/secrets
+        ./modules/snapshots
+        ./modules/backup-scheduler
       ];
 
       # Host-specific configurations
