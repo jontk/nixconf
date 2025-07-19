@@ -6,7 +6,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     
     # Stable nixpkgs for production systems (optional fallback)
-    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-24.05";
+    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-25.05";
 
     # Darwin - nix-darwin for macOS system management
     nix-darwin = {
@@ -127,6 +127,14 @@
         ./modules/remote-access
       ];
 
+      # Security and performance modules (NixOS only)
+      securityModules = [
+        ./modules/security
+        ./modules/performance
+        ./modules/monitoring
+        ./modules/secrets
+      ];
+
       # Host-specific configurations
       hostConfigs = {
         # NixOS configurations
@@ -136,7 +144,7 @@
             ./hosts/nixos-dev
             home-manager.nixosModules.home-manager
             hyprland.nixosModules.default
-          ] ++ commonModules ++ developmentModules ++ desktopModules ++ remoteAccessModules;
+          ] ++ commonModules ++ developmentModules ++ desktopModules ++ remoteAccessModules ++ securityModules;
           specialArgs = { inherit hyprland; };
         };
 
@@ -146,7 +154,7 @@
             ./hosts/devbox
             home-manager.nixosModules.home-manager
             hyprland.nixosModules.default
-          ] ++ commonModules ++ developmentModules ++ desktopModules ++ remoteAccessModules;
+          ] ++ commonModules ++ developmentModules ++ desktopModules ++ remoteAccessModules ++ securityModules;
           specialArgs = { inherit hyprland; };
         };
 

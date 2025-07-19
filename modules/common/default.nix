@@ -340,11 +340,10 @@ in
       # Pulse audio (disabled in favor of pipewire)
       pulseaudio.enable = false;
       
-      # Graphics acceleration
-      opengl = {
+      # Graphics acceleration (updated API)
+      graphics = {
         enable = true;
-        driSupport = true;
-        driSupport32Bit = true;
+        enable32Bit = true;
       };
     };
 
