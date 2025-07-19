@@ -137,6 +137,7 @@
         ./modules/backup-scheduler
         ./modules/containers
         ./modules/networking
+        ./modules/maintenance
       ];
 
       # Host-specific configurations
