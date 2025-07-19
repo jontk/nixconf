@@ -3091,6 +3091,658 @@
     '';
   };
   
+  # Secret Management System
+  # This section sets up secure environment variable management
+  # Secrets are loaded from external files, not stored in the Nix configuration
+  
+  # Create directories for secret management
+  home.file.".local/share/secrets/.keep".text = "";
+  home.file.".config/secrets/.keep".text = "";
+  
+  # Secret loading script
+  home.file.".local/bin/load-secrets" = {
+    executable = true;
+    text = ''
+      #!/usr/bin/env bash
+      # Secret loading script for secure environment variable management
+      # This script loads secrets from secure files without storing them in Nix config
+      
+      set -euo pipefail
+      
+      # Colors for output
+      RED='\033[0;31m'
+      GREEN='\033[0;32m'
+      YELLOW='\033[1;33m'
+      NC='\033[0m'
+      
+      # Secret directories
+      SECRETS_DIR="$HOME/.local/share/secrets"
+      CONFIG_SECRETS_DIR="$HOME/.config/secrets"
+      
+      # Environment file to source
+      ENV_FILE="$HOME/.local/share/secrets/environment"
+      
+      # Function to safely load environment file
+      load_env_file() {
+          local file="$1"
+          if [[ -f "$file" && -r "$file" ]]; then
+              # Check file permissions (should be 600 or 400)
+              local perms=$(stat -c "%a" "$file" 2>/dev/null || stat -f "%A" "$file" 2>/dev/null)
+              if [[ "$perms" != "600" && "$perms" != "400" ]]; then
+                  echo -e "${YELLOW}Warning: $file has permissive permissions ($perms)${NC}" >&2
+                  echo -e "${YELLOW}Consider: chmod 600 $file${NC}" >&2
+              fi
+              
+              # Source the file
+              set -a  # Mark variables for export
+              source "$file"
+              set +a  # Unmark variables for export
+              echo -e "${GREEN}✓ Loaded secrets from $file${NC}" >&2
+              return 0
+          else
+              echo -e "${YELLOW}Warning: Secret file $file not found or not readable${NC}" >&2
+              return 1
+          fi
+      }
+      
+      # Function to load individual secret files
+      load_secret_files() {
+          local secrets_dir="$1"
+          if [[ -d "$secrets_dir" ]]; then
+              for file in "$secrets_dir"/*.env; do
+                  [[ -f "$file" ]] && load_env_file "$file"
+              done
+          fi
+      }
+      
+      # Create secret directories if they don't exist
+      mkdir -p "$SECRETS_DIR" "$CONFIG_SECRETS_DIR"
+      
+      # Set secure permissions on secret directories
+      chmod 700 "$SECRETS_DIR" "$CONFIG_SECRETS_DIR"
+      
+      # Load main environment file
+      load_env_file "$ENV_FILE" || true
+      
+      # Load individual secret files
+      load_secret_files "$SECRETS_DIR"
+      load_secret_files "$CONFIG_SECRETS_DIR"
+      
+      # Load platform-specific secrets
+      if [[ "$(uname)" == "Darwin" ]]; then
+          load_env_file "$SECRETS_DIR/macos.env" || true
+      else
+          load_env_file "$SECRETS_DIR/linux.env" || true
+      fi
+      
+      # Load host-specific secrets
+      local hostname=$(hostname | cut -d. -f1)
+      load_env_file "$SECRETS_DIR/$hostname.env" || true
+      
+      # Execute command with loaded environment
+      if [[ $# -gt 0 ]]; then
+          exec "$@"
+      fi
+    '';
+  };
+  
+  # Secret template creation script
+  home.file.".local/bin/init-secrets" = {
+    executable = true;
+    text = ''
+      #!/usr/bin/env bash
+      # Initialize secret management templates
+      
+      set -euo pipefail
+      
+      SECRETS_DIR="$HOME/.local/share/secrets"
+      CONFIG_SECRETS_DIR="$HOME/.config/secrets"
+      
+      # Create directories
+      mkdir -p "$SECRETS_DIR" "$CONFIG_SECRETS_DIR"
+      chmod 700 "$SECRETS_DIR" "$CONFIG_SECRETS_DIR"
+      
+      # Create main environment template
+      if [[ ! -f "$SECRETS_DIR/environment" ]]; then
+          cat > "$SECRETS_DIR/environment" << 'EOF'
+      # Main environment variables for secrets
+      # This file should have permissions 600: chmod 600 ~/.local/share/secrets/environment
+      
+      # === API KEYS ===
+      # export OPENAI_API_KEY="your-openai-key"
+      # export ANTHROPIC_API_KEY="your-anthropic-key"
+      # export GITHUB_TOKEN="your-github-token"
+      
+      # === CLOUD PROVIDERS ===
+      # export AWS_ACCESS_KEY_ID="your-aws-access-key"
+      # export AWS_SECRET_ACCESS_KEY="your-aws-secret-key"
+      # export AWS_DEFAULT_REGION="us-west-2"
+      # export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account.json"
+      # export AZURE_CLIENT_ID="your-azure-client-id"
+      # export AZURE_CLIENT_SECRET="your-azure-client-secret"
+      # export AZURE_TENANT_ID="your-azure-tenant-id"
+      
+      # === DATABASE CONNECTIONS ===
+      # export DATABASE_URL="postgresql://user:pass@localhost:5432/dbname"
+      # export REDIS_URL="redis://localhost:6379"
+      # export MONGODB_URI="mongodb://localhost:27017/dbname"
+      
+      # === AUTHENTICATION ===
+      # export JWT_SECRET="your-jwt-secret"
+      # export SESSION_SECRET="your-session-secret"
+      
+      # === COMMUNICATION ===
+      # export SLACK_TOKEN="your-slack-token"
+      # export DISCORD_TOKEN="your-discord-token"
+      # export TELEGRAM_BOT_TOKEN="your-telegram-token"
+      
+      # === DEVELOPMENT ===
+      # export DOCKER_REGISTRY_PASSWORD="your-registry-password"
+      # export NPM_TOKEN="your-npm-token"
+      # export PYPI_TOKEN="your-pypi-token"
+      
+      # === MONITORING ===
+      # export DATADOG_API_KEY="your-datadog-key"
+      # export NEW_RELIC_LICENSE_KEY="your-newrelic-key"
+      # export SENTRY_DSN="your-sentry-dsn"
+      
+      EOF
+          chmod 600 "$SECRETS_DIR/environment"
+          echo "✓ Created $SECRETS_DIR/environment"
+      fi
+      
+      # Create platform-specific templates
+      if [[ "$(uname)" == "Darwin" && ! -f "$SECRETS_DIR/macos.env" ]]; then
+          cat > "$SECRETS_DIR/macos.env" << 'EOF'
+      # macOS-specific environment variables
+      
+      # === HOMEBREW ===
+      # export HOMEBREW_GITHUB_API_TOKEN="your-github-token"
+      
+      # === XCODE ===
+      # export FASTLANE_PASSWORD="your-apple-id-password"
+      # export MATCH_PASSWORD="your-match-password"
+      
+      EOF
+          chmod 600 "$SECRETS_DIR/macos.env"
+          echo "✓ Created $SECRETS_DIR/macos.env"
+      fi
+      
+      if [[ "$(uname)" == "Linux" && ! -f "$SECRETS_DIR/linux.env" ]]; then
+          cat > "$SECRETS_DIR/linux.env" << 'EOF'
+      # Linux-specific environment variables
+      
+      # === SYSTEM ===
+      # export SUDO_PASSWORD="your-sudo-password"  # Use with caution
+      
+      # === DESKTOP ===
+      # export DESKTOP_SESSION_TOKEN="your-session-token"
+      
+      EOF
+          chmod 600 "$SECRETS_DIR/linux.env"
+          echo "✓ Created $SECRETS_DIR/linux.env"
+      fi
+      
+      # Create development environment template
+      if [[ ! -f "$CONFIG_SECRETS_DIR/development.env" ]]; then
+          cat > "$CONFIG_SECRETS_DIR/development.env" << 'EOF'
+      # Development environment secrets
+      
+      # === LOCAL DEVELOPMENT ===
+      # export DEV_DATABASE_URL="postgresql://localhost:5432/myapp_dev"
+      # export TEST_DATABASE_URL="postgresql://localhost:5432/myapp_test"
+      # export DEV_REDIS_URL="redis://localhost:6379/0"
+      
+      # === API ENDPOINTS ===
+      # export API_BASE_URL="http://localhost:3000"
+      # export WEBHOOK_SECRET="your-webhook-secret"
+      
+      # === FEATURE FLAGS ===
+      # export ENABLE_DEBUG_MODE="true"
+      # export ENABLE_EXPERIMENTAL_FEATURES="false"
+      
+      EOF
+          chmod 600 "$CONFIG_SECRETS_DIR/development.env"
+          echo "✓ Created $CONFIG_SECRETS_DIR/development.env"
+      fi
+      
+      echo ""
+      echo "Secret management initialized!"
+      echo "Edit the files in $SECRETS_DIR to add your secrets."
+      echo "Run 'load-secrets' to load secrets into your environment."
+      echo "Run 'load-secrets <command>' to run a command with secrets loaded."
+    '';
+  };
+  
+  # Secret validation script
+  home.file.".local/bin/check-secrets" = {
+    executable = true;
+    text = ''
+      #!/usr/bin/env bash
+      # Check secret file security and validate configuration
+      
+      set -euo pipefail
+      
+      RED='\033[0;31m'
+      GREEN='\033[0;32m'
+      YELLOW='\033[1;33m'
+      BLUE='\033[0;34m'
+      NC='\033[0m'
+      
+      SECRETS_DIR="$HOME/.local/share/secrets"
+      CONFIG_SECRETS_DIR="$HOME/.config/secrets"
+      
+      echo -e "${BLUE}=== Secret Management Security Check ===${NC}"
+      echo ""
+      
+      # Check directory permissions
+      check_directory_perms() {
+          local dir="$1"
+          if [[ -d "$dir" ]]; then
+              local perms=$(stat -c "%a" "$dir" 2>/dev/null || stat -f "%A" "$dir" 2>/dev/null)
+              if [[ "$perms" == "700" ]]; then
+                  echo -e "${GREEN}✓ $dir has secure permissions ($perms)${NC}"
+              else
+                  echo -e "${RED}✗ $dir has insecure permissions ($perms), should be 700${NC}"
+                  echo -e "  Fix with: chmod 700 $dir"
+              fi
+          else
+              echo -e "${YELLOW}⚠ $dir does not exist${NC}"
+          fi
+      }
+      
+      # Check file permissions
+      check_file_perms() {
+          local file="$1"
+          if [[ -f "$file" ]]; then
+              local perms=$(stat -c "%a" "$file" 2>/dev/null || stat -f "%A" "$file" 2>/dev/null)
+              if [[ "$perms" == "600" || "$perms" == "400" ]]; then
+                  echo -e "${GREEN}✓ $file has secure permissions ($perms)${NC}"
+              else
+                  echo -e "${RED}✗ $file has insecure permissions ($perms), should be 600 or 400${NC}"
+                  echo -e "  Fix with: chmod 600 $file"
+              fi
+          fi
+      }
+      
+      # Check for sensitive patterns
+      check_sensitive_patterns() {
+          local file="$1"
+          if [[ -f "$file" ]]; then
+              local issues=()
+              
+              # Check for common sensitive patterns (only if uncommented)
+              if grep -q "^[^#]*password.*=" "$file" 2>/dev/null; then
+                  issues+=("contains passwords")
+              fi
+              if grep -q "^[^#]*secret.*=" "$file" 2>/dev/null; then
+                  issues+=("contains secrets")
+              fi
+              if grep -q "^[^#]*token.*=" "$file" 2>/dev/null; then
+                  issues+=("contains tokens")
+              fi
+              if grep -q "^[^#]*key.*=" "$file" 2>/dev/null; then
+                  issues+=("contains keys")
+              fi
+              
+              if [[ ''${#issues[@]} -gt 0 ]]; then
+                  echo -e "${GREEN}✓ $file contains secrets (''${issues[*]})${NC}"
+              else
+                  echo -e "${YELLOW}⚠ $file appears to be empty or only contains comments${NC}"
+              fi
+          fi
+      }
+      
+      echo "Directory Security:"
+      check_directory_perms "$SECRETS_DIR"
+      check_directory_perms "$CONFIG_SECRETS_DIR"
+      
+      echo ""
+      echo "File Security:"
+      
+      # Check all secret files
+      for dir in "$SECRETS_DIR" "$CONFIG_SECRETS_DIR"; do
+          if [[ -d "$dir" ]]; then
+              for file in "$dir"/*.env "$dir"/environment; do
+                  if [[ -f "$file" ]]; then
+                      check_file_perms "$file"
+                      check_sensitive_patterns "$file"
+                  fi
+              done
+          fi
+      done
+      
+      echo ""
+      echo "Git Security Check:"
+      
+      # Check if secret files are in gitignore
+      if [[ -f ".gitignore" ]]; then
+          if grep -q ".local/share/secrets" .gitignore && grep -q ".config/secrets" .gitignore; then
+              echo -e "${GREEN}✓ Secret directories are in .gitignore${NC}"
+          else
+              echo -e "${RED}✗ Secret directories not properly ignored by git${NC}"
+              echo -e "  Add these lines to .gitignore:"
+              echo -e "  .local/share/secrets/"
+              echo -e "  .config/secrets/"
+          fi
+      else
+          echo -e "${YELLOW}⚠ No .gitignore file found${NC}"
+      fi
+      
+      # Check if any secret files are tracked
+      if command -v git &> /dev/null && git rev-parse --git-dir &> /dev/null; then
+          local tracked_secrets=$(git ls-files | grep -E "(secrets|\.env)" || true)
+          if [[ -n "$tracked_secrets" ]]; then
+              echo -e "${RED}✗ Secret files are tracked by git:${NC}"
+              echo "$tracked_secrets"
+              echo -e "  Remove with: git rm --cached <file>"
+          else
+              echo -e "${GREEN}✓ No secret files tracked by git${NC}"
+          fi
+      fi
+      
+      echo ""
+      echo "Environment Variable Check:"
+      
+      # List currently loaded secret environment variables
+      local secret_vars=$(env | grep -E "(KEY|TOKEN|SECRET|PASSWORD)" | cut -d= -f1 | sort || true)
+      if [[ -n "$secret_vars" ]]; then
+          echo -e "${BLUE}Currently loaded secret variables:${NC}"
+          echo "$secret_vars" | sed 's/^/  /'
+      else
+          echo -e "${YELLOW}⚠ No secret environment variables currently loaded${NC}"
+          echo -e "  Run 'load-secrets' to load secrets"
+      fi
+      
+      echo ""
+      echo -e "${BLUE}=== Security Recommendations ===${NC}"
+      echo "1. Keep secret files with 600 permissions (owner read/write only)"
+      echo "2. Never commit secret files to version control"
+      echo "3. Use different secret files per environment (dev/staging/prod)"
+      echo "4. Regularly rotate API keys and tokens"
+      echo "5. Use 'load-secrets <command>' to run commands with secrets loaded"
+      echo "6. Consider using a proper secret management service for production"
+    '';
+  };
+  
+  # Environment variables for secret management
+  # These are safe defaults and configuration, not actual secrets
+  home.sessionVariables = lib.mkMerge [
+    # Base session variables (always applied)
+    {
+      # Secret management paths
+      SECRETS_DIR = "$HOME/.local/share/secrets";
+      CONFIG_SECRETS_DIR = "$HOME/.config/secrets";
+      
+      # Security settings
+      GNUPG_HOME = "$HOME/.gnupg";
+      PASSWORD_STORE_DIR = "$HOME/.password-store";
+      
+      # Development environment defaults (non-sensitive)
+      EDITOR = "nvim";
+      BROWSER = if isDarwin then "open" else "firefox";
+      PAGER = "less -R";
+      
+      # XDG Base Directory specification
+      XDG_CONFIG_HOME = "$HOME/.config";
+      XDG_DATA_HOME = "$HOME/.local/share";
+      XDG_CACHE_HOME = "$HOME/.cache";
+      XDG_STATE_HOME = "$HOME/.local/state";
+      
+      # Development tools configuration
+      CARGO_HOME = "$HOME/.local/share/cargo";
+      RUSTUP_HOME = "$HOME/.local/share/rustup";
+      GOPATH = "$HOME/.local/share/go";
+      GOBIN = "$HOME/.local/bin";
+      NODE_REPL_HISTORY = "$HOME/.local/share/node_repl_history";
+      NPM_CONFIG_USERCONFIG = "$HOME/.config/npm/npmrc";
+      
+      # History settings
+      HISTSIZE = "10000";
+      HISTFILESIZE = "10000";
+      HISTCONTROL = "ignoreboth:erasedups";
+      
+      # Terminal settings
+      TERM = "xterm-256color";
+      COLORTERM = "truecolor";
+      
+      # Less settings for better output
+      LESS = "-R --use-color -Dd+r$Du+b$";
+      LESSHISTFILE = "$HOME/.local/share/less_history";
+      
+      # Prevent Wine from creating desktop links
+      WINEDLLOVERRIDES = "winemenubuilder.exe=d";
+    }
+    
+    # macOS-specific variables
+    (lib.mkIf isDarwin {
+      # macOS Homebrew
+      HOMEBREW_NO_ANALYTICS = "1";
+      HOMEBREW_NO_INSECURE_REDIRECT = "1";
+      HOMEBREW_CASK_OPTS = "--require-sha";
+      
+      # macOS development
+      OBJC_DISABLE_INITIALIZE_FORK_SAFETY = "YES";
+    })
+    
+    # NixOS-specific variables
+    (lib.mkIf (!isDarwin) {
+      # Linux desktop
+      XDG_SESSION_TYPE = "wayland";
+      QT_QPA_PLATFORM = "wayland;xcb";
+      
+      # Development on Linux
+      DOCKER_HOST = "unix://$XDG_RUNTIME_DIR/docker.sock";
+    })
+  ];
+  
+  # Shell integration for secret loading
+  programs.zsh.initExtra = lib.mkAfter ''
+    # Secret management functions
+    
+    # Function to load secrets and run a command
+    secrets() {
+        if [[ $# -eq 0 ]]; then
+            echo "Usage: secrets <command> [args...]"
+            echo "Example: secrets npm run dev"
+            echo "         secrets kubectl get pods"
+            return 1
+        fi
+        
+        load-secrets "$@"
+    }
+    
+    # Function to edit secrets securely
+    edit-secrets() {
+        local file="''${1:-$HOME/.local/share/secrets/environment}"
+        
+        # Ensure secure permissions
+        touch "$file"
+        chmod 600 "$file"
+        
+        # Edit with default editor
+        "$EDITOR" "$file"
+        
+        # Verify permissions after editing
+        chmod 600 "$file"
+        echo "Secret file updated: $file"
+    }
+    
+    # Function to show secret status
+    secret-status() {
+        check-secrets
+    }
+    
+    # Auto-completion for secrets command
+    _secrets_completion() {
+        local state
+        _arguments \
+            '1: :_command_names' \
+            '*: :_files'
+    }
+    compdef _secrets_completion secrets
+    
+    # Alias for convenience
+    alias sec="secrets"
+    alias edit-env="edit-secrets"
+    
+    # Warning if secrets directory doesn't exist
+    if [[ ! -d "$HOME/.local/share/secrets" ]]; then
+        echo "💡 Secret management not initialized. Run 'init-secrets' to set up."
+    fi
+  '';
+  
+  programs.bash.initExtra = lib.mkAfter ''
+    # Secret management functions for Bash
+    
+    secrets() {
+        if [[ $# -eq 0 ]]; then
+            echo "Usage: secrets <command> [args...]"
+            echo "Example: secrets npm run dev"
+            return 1
+        fi
+        
+        load-secrets "$@"
+    }
+    
+    edit-secrets() {
+        local file="''${1:-$HOME/.local/share/secrets/environment}"
+        touch "$file"
+        chmod 600 "$file"
+        "$EDITOR" "$file"
+        chmod 600 "$file"
+        echo "Secret file updated: $file"
+    }
+    
+    secret-status() {
+        check-secrets
+    }
+    
+    alias sec="secrets"
+    alias edit-env="edit-secrets"
+  '';
+  
+  # Git configuration to ignore secret files
+  home.file.".config/git/ignore" = {
+    text = ''
+      # Global gitignore for secret management
+      
+      # Secret directories
+      .local/share/secrets/
+      .config/secrets/
+      
+      # Common secret files
+      .env
+      .env.local
+      .env.*.local
+      *.key
+      *.pem
+      *.p12
+      *.pfx
+      secrets.yaml
+      secrets.yml
+      secrets.json
+      
+      # IDE and editor files
+      .vscode/settings.json
+      .idea/
+      *.swp
+      *.swo
+      *~
+      
+      # OS files
+      .DS_Store
+      Thumbs.db
+      
+      # Temporary files
+      *.tmp
+      *.temp
+      .cache/
+      node_modules/
+      
+      # Build artifacts
+      dist/
+      build/
+      target/
+      *.o
+      *.so
+      *.dylib
+      
+      # Logs
+      *.log
+      logs/
+    '';
+  };
+  
+  # Documentation file for secret management
+  home.file.".local/share/docs/secret-management.md" = {
+    text = ''
+      # Secret Management Guide
+      
+      This system provides secure management of environment variables and secrets
+      without storing them in the Nix configuration.
+      
+      ## Quick Start
+      
+      ```bash
+      # Initialize secret management
+      init-secrets
+      
+      # Edit your secrets
+      edit-secrets
+      
+      # Load secrets and run a command
+      secrets npm run dev
+      secrets kubectl get pods
+      
+      # Check security status
+      secret-status
+      ```
+      
+      ## File Structure
+      
+      - `~/.local/share/secrets/environment` - Main secrets file
+      - `~/.local/share/secrets/macos.env` - macOS-specific secrets
+      - `~/.local/share/secrets/linux.env` - Linux-specific secrets
+      - `~/.local/share/secrets/<hostname>.env` - Host-specific secrets
+      - `~/.config/secrets/development.env` - Development environment secrets
+      
+      ## Security Features
+      
+      - Files have 600 permissions (owner read/write only)
+      - Directories have 700 permissions
+      - Files are automatically added to gitignore
+      - Security validation with check-secrets command
+      - No secrets stored in Nix configuration
+      
+      ## Best Practices
+      
+      1. Never commit secret files to version control
+      2. Use different files for different environments
+      3. Regularly rotate API keys and tokens
+      4. Use the secrets command to run applications with secrets loaded
+      5. Backup secret files securely (encrypted)
+      
+      ## Common Usage Patterns
+      
+      ```bash
+      # Development workflow
+      secrets npm run dev
+      secrets docker-compose up
+      secrets terraform apply
+      
+      # Cloud operations
+      secrets aws s3 ls
+      secrets kubectl get pods
+      secrets gcloud compute instances list
+      
+      # Deployment
+      secrets ansible-playbook deploy.yml
+      secrets helm install myapp ./chart
+      ```
+    '';
+  };
+  
   # macOS launchd agents
   launchd = lib.mkIf isDarwin {
     agents = {
