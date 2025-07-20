@@ -48,9 +48,11 @@ git_main_branch() {
 }
 
 # Quick git commit with message
-gcm() {
-  git commit -m "$*"
-}
+# Unalias gcm if it exists to avoid conflicts
+#unalias gcm 2>/dev/null || true
+#gcm() {
+#  git commit -m "$*"
+#}
 
 # Git pull and rebase current branch
 gpr() {
@@ -81,13 +83,14 @@ nix_search() {
 }
 
 # System information
-sysinfo() {
-  echo "Hostname: $(hostname)"
-  echo "OS: $(uname -s) $(uname -r)"
-  echo "Uptime: $(uptime)"
-  echo "Memory: $(free -h 2>/dev/null || vm_stat | grep 'Pages free')"
-  echo "Disk: $(df -h / | tail -1)"
-}
+# Commented out due to conflict with sysinfo alias
+# sysinfo() {
+#   echo "Hostname: $(hostname)"
+#   echo "OS: $(uname -s) $(uname -r)"
+#   echo "Uptime: $(uptime)"
+#   echo "Memory: $(free -h 2>/dev/null || vm_stat | grep 'Pages free')"
+#   echo "Disk: $(df -h / | tail -1)"
+# }
 
 # Weather (requires curl)
 weather() {
@@ -114,10 +117,11 @@ port() {
 }
 
 # Quick HTTP server
-serve() {
-  local port="${1:-8000}"
-  python3 -m http.server "$port"
-}
+# Commented out due to conflict with serve alias
+# serve() {
+#   local port="${1:-8000}"
+#   python3 -m http.server "$port"
+# }
 
 # Colorful man pages
 man() {
