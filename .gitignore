@@ -1,0 +1,100 @@
+# Nix build outputs
+result
+result-*
+/result
+/result-*
+
+# Nix store paths
+*.drv
+
+# Backup files
+*.backup
+*.bak
+*.old
+*~
+.#*
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.nvimlog
+.vim/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Private/Secret files
+PRIVATE.md
+secrets/
+*.secret
+*.key
+*.pem
+*.crt
+*.pfx
+.env
+.env.*
+!.env.example
+
+# Hardware configuration (often contains machine-specific details)
+# Uncomment if you want to ignore hardware-configuration.nix
+# hardware-configuration.nix
+
+# Home Manager
+.config/home-manager/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+tmp/
+temp/
+
+# Cache directories
+.cache/
+__pycache__/
+*.pyc
+
+# Nix garbage collection roots
+.gcroots/
+
+# Direnv
+.direnv/
+.envrc.local
+
+# Local configuration overrides
+local.nix
+*.local.nix
+overrides.nix
+
+# Generated files
+generated/
+
+# Terraform (if using Terraform with Nix)
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+
+# Documentation build outputs
+docs/_build/
+docs/.jekyll-cache/
+
+# Test outputs
+test-results/
+coverage/
+
+# Personal notes
+notes/
+TODO.personal
+NOTES.md
+
+# Credentials and tokens
+*_token
+*_key
+credentials/
+tokens/
