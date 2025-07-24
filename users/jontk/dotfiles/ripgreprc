@@ -1,0 +1,55 @@
+# Ripgrep configuration file
+
+# Search hidden files and directories
+--hidden
+
+# Don't search git ignored files
+--no-ignore-vcs
+
+# Follow symlinks
+--follow
+
+# Set the colors
+--colors=line:none
+--colors=line:style:bold
+--colors=path:fg:green
+--colors=path:style:bold
+--colors=match:fg:red
+--colors=match:style:bold
+
+# Smart case search (case-insensitive unless pattern contains uppercase)
+--smart-case
+
+# Add custom file types
+--type-add=nix:*.nix
+--type-add=shell:*.{sh,bash,zsh,fish}
+--type-add=config:*.{conf,cfg,ini,toml,yaml,yml}
+
+# Exclude directories
+--glob=!.git/
+--glob=!node_modules/
+--glob=!target/
+--glob=!*.min.js
+--glob=!*.min.css
+--glob=!dist/
+--glob=!build/
+--glob=!.next/
+--glob=!.cache/
+--glob=!vendor/
+--glob=!coverage/
+--glob=!.pytest_cache/
+--glob=!__pycache__/
+--glob=!*.pyc
+--glob=!.mypy_cache/
+--glob=!.tox/
+--glob=!.eggs/
+--glob=!*.egg-info/
+
+# Max file size to search (100MB)
+--max-filesize=100M
+
+# Show context around matches
+--context=2
+
+# Sort results by path
+--sort=path

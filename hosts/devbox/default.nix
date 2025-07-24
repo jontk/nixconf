@@ -83,7 +83,7 @@
       enable = true;
       maxRetries = 5;
       banTime = "10m";
-      ignoreip = [ "127.0.0.1/8" "::1" "192.168.1.0/24" ];
+      ignoreIP = [ "127.0.0.1/8" "::1" "192.168.1.0/24" ];
     };
     firewall = {
       allowedTCPPorts = [ ];

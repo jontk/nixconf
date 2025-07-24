@@ -871,7 +871,7 @@
       share = true;
     };
 
-    initContent = ''
+    initExtra = ''
       # Load shell environment
       [[ -f ~/.config/shell/env.sh ]] && source ~/.config/shell/env.sh
 
@@ -909,6 +909,75 @@
         fi
       }
       zle -N zle-keymap-select
+
+      # Secret management functions
+
+      # Function to load secrets and run a command
+      secrets() {
+          if [[ $# -eq 0 ]]; then
+              echo "Usage: secrets <command> [args...]"
+              echo "Example: secrets npm run dev"
+              echo "         secrets kubectl get pods"
+              return 1
+          fi
+
+          load-secrets "$@"
+      }
+
+      # Function to edit secrets securely
+      edit-secrets() {
+          local file="''${1:-$HOME/.local/share/secrets/environment}"
+
+          # Ensure secure permissions
+          touch "$file"
+          chmod 600 "$file"
+
+          # Edit with default editor
+          "$EDITOR" "$file"
+
+          # Verify permissions after editing
+          chmod 600 "$file"
+          echo "Secret file updated: $file"
+      }
+
+      # Function to show secret status
+      secret-status() {
+          check-secrets
+      }
+
+      # Auto-completion for secrets command
+      _secrets_completion() {
+          local state
+          _arguments \
+              '1: :_command_names' \
+              '*: :_files'
+      }
+      compdef _secrets_completion secrets
+
+      # Alias for convenience
+      alias sec="secrets"
+      alias edit-env="edit-secrets"
+
+      # Warning if secrets directory doesn't exist
+      if [[ ! -d "$HOME/.local/share/secrets" ]]; then
+          echo "💡 Secret management not initialized. Run 'init-secrets' to set up."
+      fi
+
+      # System maintenance aliases
+      alias nix-update="$CONFIG_ROOT/scripts/update.sh"
+      alias nix-rollback="$CONFIG_ROOT/scripts/rollback.sh"
+      alias nix-maintain="$CONFIG_ROOT/scripts/maintain.sh"
+      alias system-status="$CONFIG_ROOT/scripts/maintain.sh status"
+      alias system-health="$CONFIG_ROOT/scripts/maintain.sh health"
+      alias system-cleanup="$CONFIG_ROOT/scripts/maintain.sh cleanup"
+
+      # Quick maintenance shortcuts
+      alias quick-update="$CONFIG_ROOT/scripts/update.sh quick"
+      alias emergency-rollback="$CONFIG_ROOT/scripts/rollback.sh emergency"
+      alias system-backup="$CONFIG_ROOT/scripts/maintain.sh backup"
+
+      # Set CONFIG_ROOT for scripts
+      export CONFIG_ROOT="$HOME/.config/nixconf"
     '';
 
     shellAliases = {
@@ -1374,13 +1443,13 @@
       Host github.com
         HostName github.com
         User git
-        IdentityFile ~/.ssh/id_ed25519
+        IdentityFile ~/.ssh/id_github_jontk
 
       # GitLab
       Host gitlab.com
         HostName gitlab.com
         User git
-        IdentityFile ~/.ssh/id_ed25519
+        IdentityFile ~/.ssh/id_github_jontk
     '';
   };
 
@@ -1665,7 +1734,7 @@
       size = 14;
     };
 
-    theme = "Dracula";
+    themeFile = "Dracula";
 
     settings = {
       # Window layout
@@ -2158,6 +2227,9 @@
 
     # Direnv configuration
     ".config/direnv/direnvrc".source = ./dotfiles/direnvrc;
+    
+    # Ripgrep configuration
+    ".config/ripgrep/config".source = ./dotfiles/ripgreprc;
 
     # Terminal emulator integrations
     ".config/shell/alacritty-integration.sh".source = ./dotfiles/alacritty-integration.sh;
@@ -3478,80 +3550,6 @@
     "/opt/homebrew/bin"
     "/opt/homebrew/sbin"
   ];
-
-  # Shell integration for secret loading
-  programs.zsh.initExtra = lib.mkAfter ''
-    # Secret management functions
-
-    # Function to load secrets and run a command
-    secrets() {
-        if [[ $# -eq 0 ]]; then
-            echo "Usage: secrets <command> [args...]"
-            echo "Example: secrets npm run dev"
-            echo "         secrets kubectl get pods"
-            return 1
-        fi
-
-        load-secrets "$@"
-    }
-
-    # Function to edit secrets securely
-    edit-secrets() {
-        local file="''${1:-$HOME/.local/share/secrets/environment}"
-
-        # Ensure secure permissions
-        touch "$file"
-        chmod 600 "$file"
-
-        # Edit with default editor
-        "$EDITOR" "$file"
-
-        # Verify permissions after editing
-        chmod 600 "$file"
-        echo "Secret file updated: $file"
-    }
-
-    # Function to show secret status
-    secret-status() {
-        check-secrets
-    }
-
-    # Auto-completion for secrets command
-    _secrets_completion() {
-        local state
-        _arguments \
-            '1: :_command_names' \
-            '*: :_files'
-    }
-    compdef _secrets_completion secrets
-
-    # Alias for convenience
-    alias sec="secrets"
-    alias edit-env="edit-secrets"
-
-    # Warning if secrets directory doesn't exist
-    if [[ ! -d "$HOME/.local/share/secrets" ]]; then
-        echo "💡 Secret management not initialized. Run 'init-secrets' to set up."
-    fi
-
-    # System maintenance aliases
-    alias nix-update="$CONFIG_ROOT/scripts/update.sh"
-    alias nix-rollback="$CONFIG_ROOT/scripts/rollback.sh"
-    alias nix-maintain="$CONFIG_ROOT/scripts/maintain.sh"
-    alias system-status="$CONFIG_ROOT/scripts/maintain.sh status"
-    alias system-health="$CONFIG_ROOT/scripts/maintain.sh health"
-    alias system-cleanup="$CONFIG_ROOT/scripts/maintain.sh cleanup"
-
-    # Quick maintenance shortcuts
-    alias quick-update="$CONFIG_ROOT/scripts/update.sh quick"
-    alias emergency-rollback="$CONFIG_ROOT/scripts/rollback.sh emergency"
-    alias system-backup="$CONFIG_ROOT/scripts/maintain.sh backup"
-
-    # Set CONFIG_ROOT for scripts
-    export CONFIG_ROOT="$HOME/.config/nixconf"
-  '';
-
-
 
   # Documentation file for secret management
   home.file.".local/share/docs/secret-management.md" = {

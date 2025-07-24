@@ -62,9 +62,18 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    
+    # Dotfiles repository for integration
+    dotfiles = {
+      # Using local path for development
+      url = "path:/home/jontk/src/github.com/jontk/dotfiles/nix";
+      # For GitHub repository (once public or with access token):
+      # url = "github:jontk/dotfiles?dir=nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, nixpkgs-stable, nix-darwin, home-manager, hyprland, nixos-hardware, flake-utils, flake-parts, rust-overlay, nix-vscode-extensions, firefox-addons, sops-nix }:
+  outputs = { self, nixpkgs, nixpkgs-stable, nix-darwin, home-manager, hyprland, nixos-hardware, flake-utils, flake-parts, rust-overlay, nix-vscode-extensions, firefox-addons, sops-nix, dotfiles }:
     let
       systems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
       
@@ -95,7 +104,7 @@
             inherit system modules;
             specialArgs = specialArgs // { 
               inherit self nixpkgs nixpkgs-stable pkgs;
-              inputs = { inherit rust-overlay nix-vscode-extensions firefox-addons sops-nix; };
+              inputs = { inherit rust-overlay nix-vscode-extensions firefox-addons sops-nix dotfiles; };
             };
           }
         else
@@ -103,7 +112,7 @@
             inherit system modules;
             specialArgs = specialArgs // { 
               inherit self nixpkgs nixpkgs-stable nixos-hardware pkgs;
-              inputs = { inherit hyprland rust-overlay nix-vscode-extensions firefox-addons sops-nix; };
+              inputs = { inherit hyprland rust-overlay nix-vscode-extensions firefox-addons sops-nix dotfiles; };
             };
           };
       
