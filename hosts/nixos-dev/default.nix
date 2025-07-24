@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 {
   # NixOS base configuration for development machine
@@ -671,9 +671,13 @@
     };
     extraSpecialArgs = {
       inherit (config.nixpkgs) overlays;
+      inherit inputs;
       isDarwin = false;
       isNixOS = true;
     };
+    sharedModules = [
+      ../../modules/dotfiles-integration
+    ];
   };
   
   # This value determines the NixOS release from which the default
