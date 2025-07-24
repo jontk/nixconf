@@ -119,6 +119,7 @@
       # Common configuration shared across systems
       commonModules = [
         ./modules/common
+        ./modules/dotfiles-integration
       ];
       
       # Development environment modules
