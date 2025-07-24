@@ -9,6 +9,7 @@ in
 {
   imports = [ 
     ./modules.nix
+    ./profiles.nix
   ];
   
   options.modules.dotfilesIntegration = {
