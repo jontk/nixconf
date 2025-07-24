@@ -7,7 +7,9 @@ let
   dotfilesInput = inputs.dotfiles;
 in
 {
-  imports = [ ./modules.nix ];
+  imports = [ 
+    ./modules.nix
+  ];
   
   options.modules.dotfilesIntegration = {
     enable = mkEnableOption "dotfiles integration";
@@ -125,47 +127,5 @@ in
         })
       ];
     }
-    
-    # Import module implementations
-    (mkIf cfg.modules.core.shell {
-      imports = [ ./modules/shell.nix ];
-    })
-    
-    (mkIf cfg.modules.core.git {
-      imports = [ ./modules/git.nix ];
-    })
-    
-    (mkIf cfg.modules.core.tmux {
-      imports = [ ./modules/tmux.nix ];
-    })
-    
-    (mkIf cfg.modules.core.editors {
-      imports = [ ./modules/editors.nix ];
-    })
-    
-    # Development modules
-    (mkIf cfg.modules.development.docker {
-      imports = [ ./modules/docker.nix ];
-    })
-    
-    (mkIf cfg.modules.development.golang {
-      imports = [ ./modules/golang.nix ];
-    })
-    
-    (mkIf cfg.modules.development.python {
-      imports = [ ./modules/python.nix ];
-    })
-    
-    (mkIf cfg.modules.development.nodejs {
-      imports = [ ./modules/nodejs.nix ];
-    })
-    
-    (mkIf cfg.modules.development.rust {
-      imports = [ ./modules/rust.nix ];
-    })
-    
-    (mkIf cfg.modules.development.kubernetes {
-      imports = [ ./modules/kubernetes.nix ];
-    })
   ]);
 }
