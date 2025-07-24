@@ -7,6 +7,8 @@ let
   dotfilesInput = inputs.dotfiles;
 in
 {
+  imports = [ ./modules.nix ];
+  
   options.modules.dotfilesIntegration = {
     enable = mkEnableOption "dotfiles integration";
     
