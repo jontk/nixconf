@@ -29,14 +29,15 @@ in
     ./hooks-commands.nix
   ];
   
-  config = mkIf (config.dotfiles.enable or false) {
+  config = {
     _module.args = 
       let
-        cfg = config.dotfiles;
+        cfg = config.dotfiles or { enable = false; };
+        dotfilesEnabled = cfg.enable or false;
         
         # Parse YAML configurations for structure (not for enablement)
         yamlStructure = 
-          if inputs ? dotfiles then
+          if dotfilesEnabled && inputs ? dotfiles then
             let
               # Paths to YAML configuration files
               configPath = "${inputs.dotfiles}/config";
@@ -117,10 +118,17 @@ in
                 initialEnabledSet;
           in
           resolvedModules;
+        
+        # Return null values when disabled
+        finalArgs = if dotfilesEnabled then {
+          userDotfilesConfig = cfg;
+          inherit enabledModules yamlStructure;
+        } else {
+          userDotfilesConfig = null;
+          enabledModules = {};
+          yamlStructure = null;
+        };
           
-      in {
-        userDotfilesConfig = cfg;
-        inherit enabledModules yamlStructure;
-      };
+      in finalArgs;
   };
 }
