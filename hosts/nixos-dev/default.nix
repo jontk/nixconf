@@ -676,7 +676,7 @@
       isNixOS = true;
     };
     sharedModules = [
-      ../../modules/dotfiles-integration/home-integration-fixed.nix
+      ../../modules/dotfiles-integration/home-integration-simple.nix
     ];
   };
   
