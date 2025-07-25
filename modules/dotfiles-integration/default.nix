@@ -45,14 +45,10 @@ in
     };
     
     profile = mkOption {
-      type = types.enum [ "minimal" "developer" "full" "custom" ];
-      default = "developer";
+      type = types.str;
+      default = "minimal";
       description = ''
-        Profile preset to use:
-        - minimal: Only essential dotfiles
-        - developer: Common development tools
-        - full: All available modules
-        - custom: Manual module selection
+        Profile to use from profiles.yml
       '';
     };
     
@@ -86,47 +82,8 @@ in
     };
   };
   
-  config = mkIf cfg.enable (mkMerge [
-    {
-      # Apply profile presets
-      modules.dotfilesIntegration.modules = mkMerge [
-        (mkIf (cfg.profile == "minimal") {
-          core.shell = true;
-          core.git = true;
-        })
-        
-        (mkIf (cfg.profile == "developer") {
-          core = {
-            shell = true;
-            git = true;
-            tmux = true;
-            editors = true;
-          };
-          development = {
-            docker = true;
-            golang = true;
-            python = true;
-            nodejs = true;
-          };
-        })
-        
-        (mkIf (cfg.profile == "full") {
-          core = {
-            shell = true;
-            git = true;
-            tmux = true;
-            editors = true;
-          };
-          development = {
-            docker = true;
-            golang = true;
-            python = true;
-            nodejs = true;
-            rust = true;
-            kubernetes = true;
-          };
-        })
-      ];
-    }
-  ]);
+  config = mkIf cfg.enable {
+    # Module selection is now handled by home-manager-modules.nix
+    # based on YAML configuration
+  };
 }

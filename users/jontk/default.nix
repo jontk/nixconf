@@ -3634,6 +3634,4 @@
     };
   };
   
-  # Import dotfiles configuration
-  imports = [ ./dotfiles.nix ];
 }

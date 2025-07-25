@@ -55,7 +55,16 @@
     ../../modules/development
     ../../modules/desktop
     ../../modules/remote-access
+    ../../modules/dotfiles-integration
   ];
+  
+  # Enable dotfiles integration
+  modules.dotfilesIntegration = {
+    enable = true;
+    mode = "merge";
+    profile = "personal"; # Changed from server to personal
+    user = "jontk";
+  };
   
   # Enable desktop environment
   desktop = {
@@ -676,7 +685,7 @@
       isNixOS = true;
     };
     sharedModules = [
-      ../../modules/dotfiles-integration
+      # Dotfiles integration is now handled via home-wrapper.nix
     ];
   };
   
