@@ -4,7 +4,6 @@
 with lib;
 
 let
-  cfg = config.dotfiles;
   yamlParser = import ./yaml-parser-simple.nix { inherit lib; };
   dependencyResolver = import ./dependency-resolver.nix { inherit lib; };
   

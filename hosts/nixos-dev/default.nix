@@ -55,7 +55,6 @@
     ../../modules/development
     ../../modules/desktop
     ../../modules/remote-access
-    ../../modules/dotfiles-integration
   ];
   
   # Enable desktop environment
@@ -677,7 +676,7 @@
       isNixOS = true;
     };
     sharedModules = [
-      ../../modules/dotfiles-integration/home-integration.nix
+      ../../modules/dotfiles-integration/home-integration-fixed.nix
     ];
   };
   
