@@ -1,16 +1,20 @@
-{ config, lib, pkgs, inputs, ... }:
+{ config, lib, pkgs, inputs, userDotfilesConfig ? null, enabledModules ? {}, yamlStructure ? null, ... }:
 
 with lib;
 
 let
-  cfg = config.modules.dotfilesIntegration;
+  cfg = userDotfilesConfig;
   yamlParser = import ../yaml-parser-simple.nix { inherit lib; };
   
   # Get dotfiles path from the flake input
   dotfilesPath = inputs.dotfiles.outPath;
   
   # Priority mode for editors module
-  priorityMode = cfg.priorityMode.editors or cfg.mode;
+  priorityMode = 
+    if cfg != null then
+      cfg.priorityModes.editors or "merge"
+    else
+      "merge";
   
   # Read editors module configuration from module.yml
   editorsModuleConfig = yamlParser.readModuleConfig "${dotfilesPath}/modules/editors/module.yml";
@@ -30,7 +34,7 @@ let
       "";
 in
 {
-  config = mkIf (cfg.enable && (cfg.modules.core.editors or true)) {
+  config = mkIf (cfg != null && cfg.enable && (hasAttr "editors" enabledModules)) {
     # Vim configuration
     programs.vim = {
       enable = true;

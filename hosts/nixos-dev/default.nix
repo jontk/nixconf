@@ -58,14 +58,6 @@
     ../../modules/dotfiles-integration
   ];
   
-  # Enable dotfiles integration
-  modules.dotfilesIntegration = {
-    enable = true;
-    mode = "merge";
-    profile = "personal"; # Changed from server to personal
-    user = "jontk";
-  };
-  
   # Enable desktop environment
   desktop = {
     enable = true;
@@ -685,7 +677,7 @@
       isNixOS = true;
     };
     sharedModules = [
-      # Dotfiles integration is now handled via home-wrapper.nix
+      ../../modules/dotfiles-integration/home-integration.nix
     ];
   };
   

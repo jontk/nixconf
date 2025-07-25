@@ -11,6 +11,63 @@
   # Enable home-manager
   programs.home-manager.enable = true;
 
+  # Dotfiles integration configuration (temporarily disabled due to recursion)
+  dotfiles = {
+    enable = false;
+    
+    # User configuration
+    user = {
+      profile = "personal"; # personal, work, server, minimal, experimental
+      platform = "auto";    # auto, macos, linux
+      shell = "auto";       # auto, bash, zsh, fish
+    };
+    
+    # Module enablement - these will be resolved based on profile
+    modules = {
+      # Core modules (enabled by most profiles)
+      shell.enabled = "auto";     # Auto-enable based on profile
+      git.enabled = "auto";
+      tmux.enabled = "auto";
+      editors.enabled = "auto";
+      
+      # Development modules (profile-dependent)
+      docker.enabled = "auto";    # Enabled by personal/work profiles
+      golang.enabled = "auto";    # Enable golang module
+      python.enabled = "auto";
+      nodejs.enabled = "auto";
+      rust.enabled = "disabled";   # Not needed for this user
+      kubernetes.enabled = "auto";
+    };
+    
+    # Per-module priority modes (enhanced)
+    # Available modes: merge, override, nixconf, dotfiles, separate
+    priorityModes = {
+      shell = "merge";         # Merge shell configurations with conflict resolution
+      git = "merge";           # Merge git configurations
+      tmux = "dotfiles";       # Use dotfiles tmux config completely
+      editors = "merge";       # Merge editor configurations
+      docker = "merge";        # Merge docker configurations
+      golang = "merge";        # Merge golang configurations
+      python = "merge";        # Merge python configurations
+      nodejs = "merge";        # Merge nodejs configurations
+      rust = "merge";          # Merge rust configurations
+      kubernetes = "merge";    # Merge kubernetes configurations
+    };
+    
+    # Installation preferences
+    installation = {
+      backupExisting = true;
+      useSymlinks = true;
+      dryRun = false;
+    };
+    
+    # Logging
+    logging = {
+      level = "info";
+      enableVerbose = false;
+    };
+  };
+
   # User-specific package configuration
   # This section allows for easy customization of packages by category
 
