@@ -239,6 +239,16 @@ in
       # Environment variables from module settings
       (mkIf (settingsValidation.isValid)
         settingsConfig.environment)
+      
+      # Dotfiles integration status variables
+      (mkIf (priorityMode != "nixconf") {
+        DOTFILES_INTEGRATED = "true";
+        DOTFILES_MODE = priorityMode;
+        DOTFILES_SHELL_MODULE = "active";
+        DOTFILES_SHELL_VERSION = shellModuleConfig.version or "unknown";
+        DOTFILES_SHELL_SETTINGS_VALID = toString settingsValidation.isValid;
+        DOTFILES_SHELL_USER_OVERRIDES = toString overrideResult.hasOverrides;
+      })
     ];
     
     programs = {
@@ -327,16 +337,6 @@ in
       };
     };
     
-    # Additional environment variables from dotfiles and settings
-    home.sessionVariables = mkMerge [
-      (mkIf (priorityMode != "nixconf") {
-        DOTFILES_INTEGRATED = "true";
-        DOTFILES_MODE = priorityMode;
-        DOTFILES_SHELL_MODULE = "active";
-        DOTFILES_SHELL_VERSION = shellModuleConfig.version or "unknown";
-        DOTFILES_SHELL_SETTINGS_VALID = toString settingsValidation.isValid;
-        DOTFILES_SHELL_USER_OVERRIDES = toString overrideResult.hasOverrides;
-      })
-    ];
+    # Merge all environment variables into the existing home.sessionVariables above
   };
 }
