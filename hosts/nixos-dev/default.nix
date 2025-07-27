@@ -190,7 +190,7 @@
   };
   
   # Time zone and locale
-  time.timeZone = "UTC"; # Change to your timezone
+  time.timeZone = lib.mkForce "Europe/London"; # London timezone
   
   # Internationalization
   i18n = {
