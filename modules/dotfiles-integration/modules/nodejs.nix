@@ -69,6 +69,7 @@ let
   # Default npmrc configuration
   defaultNpmrcConfig = ''
     # NPM Configuration
+    prefix=$HOME/.npm-global
     registry=https://registry.npmjs.org/
     audit-level=moderate
     fund=false
@@ -99,11 +100,17 @@ in
       DOTFILES_NODEJS_VERSION = nodejsModuleConfig.version or "unknown";
       NODE_ENV = "development";
       NPM_CONFIG_CACHE = "$HOME/.cache/npm";
+      NPM_CONFIG_PREFIX = "$HOME/.npm-global";
       NODE_OPTIONS = "--max-old-space-size=4096";
     };
     
     # Install Node.js and essential development tools
     home.packages = mkIf (priorityMode != "nixconf") nodePackages;
+    
+    # Add npm global bin to PATH
+    home.sessionPath = mkIf (priorityMode != "nixconf") [
+      "$HOME/.npm-global/bin"
+    ];
     
     # NPM configuration
     home.file.".npmrc" = mkIf (priorityMode != "nixconf") {
@@ -201,6 +208,12 @@ in
         node --version > .nvmrc
         echo "Saved Node $(cat .nvmrc) to .nvmrc"
       }
+    '';
+    
+    # Create npm global directory
+    home.activation.createNpmGlobal = lib.hm.dag.entryAfter ["writeBoundary"] ''
+      mkdir -p $HOME/.npm-global
+      mkdir -p $HOME/.npm-global/bin
     '';
     
     # Same functions for zsh

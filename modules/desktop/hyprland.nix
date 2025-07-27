@@ -79,7 +79,7 @@
 
       # Monitor configuration
       # monitor=,preferred,auto,auto
-      monitor=,highres,auto,1
+      monitor=,2560x1440@75,auto,1
 
       # Execute at launch
       #exec-once = waybar

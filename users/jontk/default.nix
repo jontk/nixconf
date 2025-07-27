@@ -1054,6 +1054,9 @@
       cp = "cp -i";
       mv = "mv -i";
       rm = "rm -i";
+      
+      # Ensure we use the wrapper sudo
+      sudo = "/run/wrappers/bin/sudo";
 
       # Shortcuts
       g = "git";
@@ -3546,6 +3549,9 @@
       EDITOR = "nvim";
       BROWSER = if isDarwin then "open" else "firefox";
       PAGER = "less -R";
+      
+      # Force /run/wrappers/bin to be first in PATH
+      PATH = "/run/wrappers/bin:$PATH";
 
       # XDG Base Directory specification (managed by home-manager xdg module)
       # XDG_CONFIG_HOME, XDG_DATA_HOME, XDG_CACHE_HOME, XDG_STATE_HOME are set by xdg module
@@ -3599,14 +3605,13 @@
 
   # Session PATH configuration - ensure security wrappers come first
   home.sessionPath = [
-    "/run/wrappers/bin"  # Security wrappers (sudo, etc.) must come first
     "$HOME/.local/bin"
     "$HOME/.config/emacs/bin"
-    "$GOBIN"
   ] ++ lib.optionals isDarwin [
     "/opt/homebrew/bin"
     "/opt/homebrew/sbin"
   ];
+  
 
   # Documentation file for secret management
   home.file.".local/share/docs/secret-management.md" = {
