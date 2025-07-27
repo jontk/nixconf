@@ -2010,15 +2010,64 @@
     ];
 
     extraConfig = ''
-      " Source the existing init.vim
-      source ~/.config/nvim/init.vim
+      " Basic settings
+      set number relativenumber
+      set expandtab
+      set tabstop=2
+      set shiftwidth=2
+      set softtabstop=2
+      set autoindent
+      set smartindent
+      set wrap
+      set linebreak
+      set scrolloff=8
+      set sidescrolloff=8
+      set signcolumn=yes
+      set colorcolumn=80,120
+      set cursorline
+      set termguicolors
+      set hidden
+      set nobackup
+      set nowritebackup
+      set updatetime=300
+      set timeoutlen=300
+      set encoding=utf-8
+      set fileencoding=utf-8
+      set mouse=a
+      set splitbelow
+      set splitright
+      set clipboard=unnamedplus
+      set completeopt=menuone,noselect
+      set ignorecase
+      set smartcase
+      set incsearch
+      set hlsearch
 
-      " Additional configuration
+      " Set leader key
+      let mapleader = " "
+      let maplocalleader = " "
 
-      " Theme
-      colorscheme dracula
-      let g:airline_theme='dracula'
+      " Disable netrw for nvim-tree
+      let g:loaded_netrw = 1
+      let g:loaded_netrwPlugin = 1
+
+      " Theme configuration
       let g:airline_powerline_fonts = 1
+      
+      " Set colorscheme after plugins are loaded
+      function! SetColorScheme()
+        try
+          colorscheme dracula
+          let g:airline_theme='dracula'
+        catch /E185/
+          colorscheme desert
+        endtry
+      endfunction
+      
+      augroup MyColors
+        autocmd!
+        autocmd VimEnter * call SetColorScheme()
+      augroup END
 
       " NERDTree
       nnoremap <leader>n :NERDTreeToggle<CR>
@@ -2093,8 +2142,11 @@
 
       " Lua configuration for Neovim-specific plugins
       lua << EOF
-      -- Treesitter configuration
-      require'nvim-treesitter.configs'.setup {
+      -- Defer Treesitter configuration until after plugins load
+      vim.defer_fn(function()
+        local ok, configs = pcall(require, 'nvim-treesitter.configs')
+        if ok then
+          configs.setup {
         highlight = {
           enable = true,
           additional_vim_regex_highlighting = false,
@@ -2115,9 +2167,13 @@
           },
         },
       }
+        end
+      end, 100)
 
       -- Telescope configuration
-      local telescope = require('telescope')
+      vim.defer_fn(function()
+        local ok, telescope = pcall(require, 'telescope')
+        if ok then
       telescope.setup{
         defaults = {
           mappings = {
@@ -2128,9 +2184,16 @@
           },
         },
       }
+        end
+      end, 100)
 
       -- Gitsigns
-      require('gitsigns').setup()
+      vim.defer_fn(function()
+        local ok, gitsigns = pcall(require, 'gitsigns')
+        if ok then
+          gitsigns.setup()
+        end
+      end, 100)
       EOF
     '';
 
@@ -2262,8 +2325,7 @@
 
     # Terminal emulator configurations are now managed by programs.alacritty and programs.kitty
 
-    # Neovim configuration
-    ".config/nvim/init.vim".source = ./dotfiles/init.vim;
+    # Neovim configuration is managed by programs.neovim
 
     # Tmux additional configuration
     ".tmux.conf.local" = {
