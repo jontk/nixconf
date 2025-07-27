@@ -1762,7 +1762,7 @@
         hide_when_typing = true;
       };
 
-      key_bindings = [
+      keyboard.bindings = [
         # Vi mode
         { key = "Space"; mods = "Control|Shift"; mode = "~Search"; action = "ToggleViMode"; }
         { key = "Escape"; mode = "Vi|~Search"; action = "ClearSelection"; }
