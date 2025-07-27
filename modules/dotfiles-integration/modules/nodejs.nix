@@ -52,7 +52,7 @@ let
   
   # Essential Node.js packages and tools
   nodePackages = with pkgs; [
-    nodejs_20        # Node.js runtime
+    nodejs_22        # Node.js runtime
     npm             # Package manager
     yarn            # Alternative package manager
     pnpm            # Fast package manager
