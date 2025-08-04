@@ -1,0 +1,216 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Prometheus Targets",
+    "tags": ["prometheus", "monitoring"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Prometheus Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "prometheus_ready",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"options": {"0": {"text": "NOT READY", "color": "red"}}, "type": "value"},
+              {"options": {"1": {"text": "READY", "color": "green"}}, "type": "value"}
+            ]
+          }
+        },
+        "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Total Targets",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "count(up)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short"
+          }
+        },
+        "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Targets Up",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "count(up == 1)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "green", "value": 1}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 6, "w": 6, "x": 12, "y": 0}
+      },
+      {
+        "id": 4,
+        "title": "Targets Down",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "count(up == 0)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "red", "value": 1}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 6, "w": 6, "x": 18, "y": 0}
+      },
+      {
+        "id": 5,
+        "title": "Target Status by Job",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "up",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true, "__name__": true},
+              "indexByName": {},
+              "renameByName": {
+                "job": "Job",
+                "instance": "Instance",
+                "Value": "Status"
+              }
+            }
+          }
+        ],
+        "fieldConfig": {
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "Status"},
+              "properties": [
+                {
+                  "id": "mappings",
+                  "value": [
+                    {"options": {"0": {"text": "DOWN", "color": "red"}}, "type": "value"},
+                    {"options": {"1": {"text": "UP", "color": "green"}}, "type": "value"}
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 6}
+      },
+      {
+        "id": 6,
+        "title": "Scrape Duration",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "prometheus_target_scrape_duration_seconds",
+            "refId": "A",
+            "legendFormat": "{{job}} - {{instance}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s"
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16}
+      },
+      {
+        "id": 7,
+        "title": "Samples Scraped",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "prometheus_target_scrapes_sample_scraped",
+            "refId": "A",
+            "legendFormat": "{{job}} - {{instance}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short"
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16}
+      },
+      {
+        "id": 8,
+        "title": "Prometheus TSDB Head Samples",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "prometheus_tsdb_head_samples_appended_total",
+            "refId": "A",
+            "legendFormat": "Samples Appended"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short"
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24}
+      },
+      {
+        "id": 9,
+        "title": "Prometheus Storage Size",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "prometheus_tsdb_size_bytes",
+            "refId": "A",
+            "legendFormat": "TSDB Size"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "bytes"
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24}
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "30s"
+  }
+}

@@ -103,17 +103,13 @@ in
             resolvedModules = 
               if yamlStructure != null && cfg.resolveDependencies or true then
                 let
-                  resolver = dependencyResolver.createResolver {
-                    modules = yamlStructure.modulesConfig.modules;
-                  };
-                  resolutionResult = resolver.autoResolveDependencies {
-                    enabledModules = initialEnabledSet;
+                  resolutionResult = dependencyResolver.autoResolveDependencies {
+                    userModules = initialEnabledSet;
+                    yamlStructure = yamlStructure;
+                    platform = "linux";
                   };
                 in
-                if resolutionResult.success then
-                  resolutionResult.resolvedModules
-                else
-                  initialEnabledSet
+                resolutionResult.resolvedModules
               else
                 initialEnabledSet;
           in

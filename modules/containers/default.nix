@@ -11,6 +11,13 @@ let
 in
 
 {
+  imports = [
+    # ./k3s-monitoring.nix  # Temporarily disabled to fix build
+    ./k3s-dev.nix
+    ./argocd.nix
+    ./istio.nix
+  ];
+  
   options.modules.containers = {
     enable = mkEnableOption "container orchestration and virtualization";
     
@@ -250,9 +257,9 @@ in
     virtualisation.podman = mkIf cfg.podman.enable {
       enable = true;
       
-      # Docker compatibility
-      dockerCompat = cfg.podman.dockerCompat;
-      dockerSocket.enable = cfg.podman.dockerCompat;
+      # Docker compatibility - only enable if Docker is disabled
+      dockerCompat = cfg.podman.dockerCompat && !cfg.docker.enable;
+      dockerSocket.enable = cfg.podman.dockerCompat && !cfg.docker.enable;
       
       # Default network settings
       defaultNetwork.settings.dns_enabled = true;
@@ -266,57 +273,11 @@ in
       ]);
     };
     
-    # Podman storage configuration
-    environment.etc."containers/storage.conf".text = mkIf cfg.podman.enable ''
-      [storage]
-      driver = "${cfg.podman.storage.driver}"
-      runroot = "${cfg.podman.storage.runRoot}"
-      graphroot = "${cfg.podman.storage.graphRoot}"
-      
-      [storage.options]
-      additionalimagestores = []
-      
-      [storage.options.overlay]
-      mountopt = "nodev,metacopy=on"
-    '';
+    # Skip storage.conf as it conflicts with system-wide containers module
     
-    # Container registries configuration
-    environment.etc."containers/registries.conf".text = mkIf cfg.podman.enable ''
-      unqualified-search-registries = ["docker.io", "quay.io"]
-      
-      [[registry]]
-      prefix = "docker.io"
-      location = "docker.io"
-      
-      [[registry]]
-      prefix = "quay.io"
-      location = "quay.io"
-      
-      ${optionalString cfg.registry.enable ''
-      [[registry]]
-      prefix = "localhost:${toString cfg.registry.port}"
-      location = "localhost:${toString cfg.registry.port}"
-      insecure = true
-      ''}
-    '';
+    # Skip registries.conf as it conflicts with system-wide containers module
     
-    # Podman policy configuration
-    environment.etc."containers/policy.json".text = mkIf cfg.podman.enable (builtins.toJSON {
-      default = [
-        {
-          type = "insecureAcceptAnything";
-        }
-      ];
-      transports = {
-        docker-daemon = {
-          "" = [
-            {
-              type = "insecureAcceptAnything";
-            }
-          ];
-        };
-      };
-    });
+    # Skip policy.json as it conflicts with system-wide containers module
     
     # Docker configuration (alternative to Podman)
     virtualisation.docker = mkIf cfg.docker.enable {
@@ -334,14 +295,13 @@ in
     # K3s Kubernetes configuration
     services.k3s = mkIf (cfg.kubernetes.enable && cfg.kubernetes.distribution == "k3s") {
       enable = true;
-      role = cfg.kubernetes.role;
+      role = if cfg.kubernetes.role == "single" then "server" else cfg.kubernetes.role;
       
       extraFlags = concatStringsSep " " ([
         "--cluster-cidr=${cfg.kubernetes.networking.clusterCIDR}"
         "--service-cidr=${cfg.kubernetes.networking.serviceCIDR}"
         "--flannel-backend=vxlan"
         "--write-kubeconfig-mode=644"
-        "--container-runtime-endpoint=unix:///run/k3s/containerd/containerd.sock"
       ] ++ optional (!cfg.kubernetes.features.traefik) "--disable=traefik"
         ++ optional (!cfg.kubernetes.features.servicelb) "--disable=servicelb"
         ++ optional (!cfg.kubernetes.features.localStorage) "--disable=local-storage"
@@ -460,7 +420,7 @@ in
         runc
         slirp4netns
         fuse-overlayfs
-        containers-common
+        # containers-common  # Package not available
       ])
       
       # Podman Compose
@@ -595,50 +555,14 @@ in
     security.unprivilegedUsernsClone = mkIf (cfg.podman.enable && cfg.podman.rootless) true;
     
     # Configure subuid and subgid for rootless containers
-    users.users = mkIf cfg.enable (
-      let
-        containerUsers = filterAttrs (n: u: u.isNormalUser) config.users.users;
-        mkContainerUser = name: user: {
-          subUidRanges = mkIf cfg.podman.rootless [
-            { startUid = 100000; count = 65536; }
-          ];
-          subGidRanges = mkIf cfg.podman.rootless [
-            { startGid = 100000; count = 65536; }
-          ];
-          extraGroups = user.extraGroups 
-            ++ optional cfg.podman.enable "podman" 
-            ++ optional cfg.docker.enable "docker";
-        };
-      in
-      mapAttrs mkContainerUser containerUsers // {
-        root.extraGroups = 
-          optional cfg.podman.enable "podman" 
-          ++ optional cfg.docker.enable "docker";
-      }
-    );
+    users.users.root = mkIf cfg.enable {
+      extraGroups = 
+        optional cfg.podman.enable "podman" 
+        ++ optional cfg.docker.enable "docker";
+    };
     
-    # Rootless container environment setup
-    environment.etc."containers/containers.conf".text = mkIf (cfg.podman.enable && cfg.podman.rootless) ''
-      [containers]
-      netns="host"
-      userns="host"
-      ipcns="host"
-      utsns="host"
-      cgroupns="host"
-      cgroups="disabled"
-      log_driver = "journald"
-      
-      [engine]
-      cgroup_manager = "systemd"
-      events_logger="journald"
-      runtime="crun"
-      
-      [network]
-      network_backend="netavark"
-    '';
+    # Skip containers.conf as it conflicts with system-wide containers module
     
-    # Enable cgroup v2 for rootless containers
-    systemd.enableUnifiedCgroupHierarchy = mkIf cfg.podman.rootless true;
     
     # Systemd services for container management
     systemd.services.container-cleanup = {

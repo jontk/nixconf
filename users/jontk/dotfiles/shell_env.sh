@@ -65,7 +65,7 @@ export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:-\
   --layout=reverse \
   --border \
   --inline-info \
-  --preview 'bat --style=numbers --color=always --line-range :500 {}' \
+  --preview 'cat {}' \
   --preview-window=right:50%:hidden \
   --bind='ctrl-/:toggle-preview' \
   --bind='ctrl-u:preview-page-up' \

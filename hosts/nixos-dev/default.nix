@@ -1,6 +1,7 @@
 { config, pkgs, lib, inputs, ... }:
 
 {
+  
   # NixOS base configuration for development machine
   
   # System identification
@@ -48,14 +49,55 @@
     };
   };
   
-  # Hardware configuration import
+  # Hardware configuration and service imports
   imports = [
     ./hardware-configuration.nix
+    ./services.nix
     ../../modules/common
     ../../modules/development
     ../../modules/desktop
     ../../modules/remote-access
+    ../../modules/secrets
+    # ../../modules/backup.nix  # TODO: Fix flake path issues
+    ../../modules/containers
   ];
+  
+  # Enable secrets management
+  modules.secrets = {
+    enable = true;
+    # defaultSopsFile = ../../secrets/secrets.yaml;
+    # secrets = {
+    #   "monitoring/grafana/admin_password" = {
+    #     owner = "grafana";
+    #     group = "grafana";
+    #     mode = "0400";
+    #   };
+    #   "database/postgresql/password" = {
+    #     owner = "postgres";
+    #     group = "postgres";
+    #     mode = "0400";
+    #   };
+    #   "database/redis/password" = {
+    #     owner = "redis";
+    #     group = "redis";
+    #     mode = "0400";
+    #   };
+    #   "monitoring/alertmanager/slack_webhook_url" = {
+    #     owner = "root";
+    #     group = "root";
+    #     mode = "0400";
+    #   };
+    # };
+  };
+  
+  # TODO: Enable comprehensive backup system once flake path issues are resolved
+  # modules.backup = {
+  #   enable = true;
+  #   strategies.rsync.enable = true;
+  #   strategies.borg.enable = true;
+  #   database.enable = true;
+  #   monitoring.enable = true;
+  # };
   
   # Enable desktop environment
   desktop = {
@@ -172,6 +214,13 @@
         3001  # Development servers
         8080  # Alternative HTTP
         8081  # Alternative HTTP
+        8888  # Jupyter notebooks
+        9090  # Prometheus
+        9999  # Development profiling
+        5000  # Docker registry
+        5001  # Docker registry UI
+        6443  # k3s API server
+        10250 # Kubelet metrics
       ];
       allowedUDPPorts = [
         # mDNS
@@ -187,6 +236,202 @@
       "127.0.0.1" = [ "localhost" "dev.local" ];
       "::1" = [ "localhost" "dev.local" ];
     };
+  };
+  
+  # Enable enhanced development features
+  modules.development = {
+    # Container development - temporarily disabled
+    containers = {
+      enable = false;
+      docker = {
+        enable = false; # Using Podman with Docker compatibility
+        buildkit = true;
+        compose.enable = true;
+      };
+      devcontainers.enable = true;
+      tools = {
+        dive = true;
+        lazydocker = true;
+        ctop = true;
+        hadolint = true;
+      };
+    };
+    
+    # Code quality and security - temporarily disabled
+    codeQuality = {
+      enable = false;
+      linting.enable = true;
+      formatting = {
+        enable = true;
+        prettier.enable = true;
+      };
+      security = {
+        enable = true;
+        gitSecrets = true;
+        gitleaks = true;
+        trivy = true;
+        semgrep = true;
+      };
+      preCommit.enable = true;
+    };
+    
+    # Performance profiling - temporarily disabled
+    profiling = {
+      enable = false;
+      systemProfilers.enable = true;
+      languageProfilers.enable = true;
+      debuggers.enable = true;
+      benchmarking = {
+        enable = true;
+        hyperfine = true;
+        wrk = true;
+        vegeta = true;
+      };
+      visualization = {
+        enable = true;
+        flamegraph = true;
+      };
+    };
+    
+    # Remote development - temporarily disabled
+    remoteDev = {
+      enable = false;
+      ssh = {
+        enable = true;
+        forwardAgent = true;
+      };
+      vscodeServer = {
+        enable = true;
+        extensions = [
+          "ms-python.python"
+          "rust-lang.rust-analyzer"
+          "golang.go"
+          "dbaeumer.vscode-eslint"
+        ];
+      };
+      collaboration = {
+        enable = true;
+        tmux.enable = true;
+        tmate = true;
+      };
+      tools = {
+        mosh = true;
+        eternal-terminal = true;
+        asciinema = true;
+      };
+    };
+  };
+  
+  # Enable Kubernetes (k3s) with advanced features
+  modules.containers = {
+    enable = true;
+    
+    
+    # Local container registry for development
+    registry = {
+      enable = true;
+      port = 5000;
+      storage = "/var/lib/registry";
+    };
+    
+    # Kubernetes (k3s) configuration
+    kubernetes = {
+      enable = true;
+      distribution = "k3s";
+      role = "single"; # All-in-one for development
+      
+      # Network configuration
+      networking = {
+        serviceCIDR = "10.43.0.0/16";
+        clusterCIDR = "10.42.0.0/16";
+      };
+      
+      # Features
+      features = {
+        traefik = true;        # Ingress controller
+        servicelb = true;      # Load balancer
+        metrics = true;        # Resource metrics
+        localStorage = true;   # Local path provisioner
+      };
+      
+      
+      
+      # GitOps with ArgoCD
+      argocd = {
+        enable = true;
+        adminPassword = "argocd-admin"; # Change this in production!
+        applications = [ "sample-app" ];
+        sealedSecrets = {
+          enable = true;
+          namespace = "kube-system";
+        };
+        notifications = {
+          enable = true;
+          slack = {
+            enable = false; # Enable when you have a webhook
+            webhook = "";
+            channel = "#deployments";
+          };
+        };
+      };
+      
+      # Service Mesh with Istio - temporarily disabled to fix build issues
+      # istio = {
+      #   enable = true;
+      #   profile = "demo"; # Full feature set for development
+      #   version = "1.20.0";
+      #   
+      #   security = {
+      #     mtls = {
+      #       enable = true;
+      #       mode = "PERMISSIVE"; # Allow both mTLS and plain text
+      #     };
+      #     authz = {
+      #       enable = true;
+      #       defaultDeny = false; # Start permissive, tighten later
+      #     };
+      #   };
+      #   
+      #   observability = {
+      #     tracing = {
+      #       enable = true;
+      #       jaeger = {
+      #         enable = true;
+      #         sampling = 1; # 1% sampling for development
+      #       };
+      #     };
+      #     kiali = {
+      #       enable = true;
+      #     };
+      #     prometheus = {
+      #       enable = true;
+      #     };
+      #   };
+      #   
+      #   gateway = {
+      #     enable = true;
+      #     replicas = 1;
+      #     loadBalancer = false; # Use NodePort for development
+      #   };
+      #   
+      #   trafficManagement = {
+      #     canary.enable = true;
+      #     circuitBreaker.enable = true;
+      #     retries = {
+      #       enable = true;
+      #       attempts = 3;
+      #     };
+      #   };
+      #   
+      #   namespaces = [ "development" "staging" "production" ];
+      # };
+    };
+    
+    # Development tools
+    tools = {
+      enable = true;
+    };
+    
   };
   
   # Time zone and locale

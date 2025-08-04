@@ -1,0 +1,240 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Service Topology & Dependencies",
+    "tags": ["topology", "dependencies", "architecture"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Service Health Overview",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "count(up == 1)",
+            "refId": "A",
+            "legendFormat": "Services Up"
+          },
+          {
+            "expr": "count(up == 0)",
+            "refId": "B", 
+            "legendFormat": "Services Down"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short"
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byFrameRefID", "options": "A"},
+              "properties": [
+                {"id": "color", "value": {"mode": "fixed", "fixedColor": "green"}}
+              ]
+            },
+            {
+              "matcher": {"id": "byFrameRefID", "options": "B"},
+              "properties": [
+                {"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}
+              ]
+            }
+          ]
+        },
+        "gridPos": {"h": 6, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Service Status Matrix",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "up",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true, "__name__": true},
+              "indexByName": {},
+              "renameByName": {
+                "job": "Service",
+                "instance": "Instance",
+                "Value": "Status"
+              }
+            }
+          }
+        ],
+        "fieldConfig": {
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "Status"},
+              "properties": [
+                {
+                  "id": "mappings",
+                  "value": [
+                    {"options": {"0": {"text": "DOWN", "color": "red"}}, "type": "value"},
+                    {"options": {"1": {"text": "UP", "color": "green"}}, "type": "value"}
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {"h": 6, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Database Layer Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "pg_up",
+            "refId": "A",
+            "legendFormat": "PostgreSQL"
+          },
+          {
+            "expr": "redis_up",
+            "refId": "B",
+            "legendFormat": "Redis"
+          },
+          {
+            "expr": "mongodb_up",
+            "refId": "C",
+            "legendFormat": "MongoDB"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"options": {"0": {"text": "DOWN", "color": "red"}}, "type": "value"},
+              {"options": {"1": {"text": "UP", "color": "green"}}, "type": "value"}
+            ]
+          }
+        },
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 6}
+      },
+      {
+        "id": 4,
+        "title": "Web Layer Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "nginx_up",
+            "refId": "A",
+            "legendFormat": "Nginx"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"options": {"0": {"text": "DOWN", "color": "red"}}, "type": "value"},
+              {"options": {"1": {"text": "UP", "color": "green"}}, "type": "value"}
+            ]
+          }
+        },
+        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 6}
+      },
+      {
+        "id": 5,
+        "title": "Monitoring Layer Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "prometheus_ready",
+            "refId": "A",
+            "legendFormat": "Prometheus"
+          },
+          {
+            "expr": "up{job=\"grafana\"}",
+            "refId": "B",
+            "legendFormat": "Grafana"
+          },
+          {
+            "expr": "up{job=\"loki\"}",
+            "refId": "C",
+            "legendFormat": "Loki"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"options": {"0": {"text": "DOWN", "color": "red"}}, "type": "value"},
+              {"options": {"1": {"text": "UP", "color": "green"}}, "type": "value"}
+            ]
+          }
+        },
+        "gridPos": {"h": 8, "w": 8, "x": 16, "y": 6}
+      },
+      {
+        "id": 6,
+        "title": "Service Dependencies Flow",
+        "type": "text",
+        "gridPos": {"h": 12, "w": 24, "x": 0, "y": 14},
+        "options": {
+          "mode": "html",
+          "content": "\n<div style=\"text-align: center; font-family: Arial, sans-serif;\">\n  <h3>Service Architecture & Dependencies</h3>\n  <div style=\"display: flex; justify-content: center; align-items: center; gap: 30px; margin: 20px 0;\">\n    \n    <!-- User Traffic -->\n    <div style=\"text-align: center;\">\n      <div style=\"background: #f0f0f0; padding: 10px; border-radius: 5px; border: 2px solid #333;\">\n        <strong>User Traffic</strong>\n      </div>\n      <div style=\"margin: 10px 0; font-size: 20px;\">↓</div>\n    </div>\n    \n    <!-- Web Layer -->\n    <div style=\"text-align: center;\">\n      <div style=\"background: #e6f3ff; padding: 10px; border-radius: 5px; border: 2px solid #0066cc;\">\n        <strong>Nginx</strong><br>\n        <small>Load Balancer & Reverse Proxy</small>\n      </div>\n      <div style=\"margin: 10px 0; font-size: 20px;\">↓</div>\n    </div>\n    \n    <!-- Application Layer -->\n    <div style=\"text-align: center;\">\n      <div style=\"background: #fff2e6; padding: 10px; border-radius: 5px; border: 2px solid #ff8c00;\">\n        <strong>Application Servers</strong><br>\n        <small>Backend Services</small>\n      </div>\n      <div style=\"margin: 10px 0; font-size: 20px;\">↓</div>\n    </div>\n    \n  </div>\n  \n  <!-- Database Layer -->\n  <div style=\"display: flex; justify-content: center; gap: 20px; margin: 20px 0;\">\n    <div style=\"text-align: center;\">\n      <div style=\"background: #e6ffe6; padding: 10px; border-radius: 5px; border: 2px solid #00cc00;\">\n        <strong>PostgreSQL</strong><br>\n        <small>Primary Database</small>\n      </div>\n    </div>\n    <div style=\"text-align: center;\">\n      <div style=\"background: #ffe6e6; padding: 10px; border-radius: 5px; border: 2px solid #cc0000;\">\n        <strong>Redis</strong><br>\n        <small>Cache & Sessions</small>\n      </div>\n    </div>\n    <div style=\"text-align: center;\">\n      <div style=\"background: #f0e6ff; padding: 10px; border-radius: 5px; border: 2px solid #9900cc;\">\n        <strong>MongoDB</strong><br>\n        <small>Document Store</small>\n      </div>\n    </div>\n  </div>\n  \n  <!-- Monitoring Layer -->\n  <div style=\"margin-top: 30px; padding-top: 20px; border-top: 2px dashed #ccc;\">\n    <h4>Monitoring & Observability</h4>\n    <div style=\"display: flex; justify-content: center; gap: 20px;\">\n      <div style=\"text-align: center;\">\n        <div style=\"background: #fff5e6; padding: 10px; border-radius: 5px; border: 2px solid #ffaa00;\">\n          <strong>Prometheus</strong><br>\n          <small>Metrics Collection</small>\n        </div>\n      </div>\n      <div style=\"text-align: center;\">\n        <div style=\"background: #e6f7ff; padding: 10px; border-radius: 5px; border: 2px solid #00aaff;\">\n          <strong>Grafana</strong><br>\n          <small>Dashboards & Alerts</small>\n        </div>\n      </div>\n      <div style=\"text-align: center;\">\n        <div style=\"background: #f5f5f5; padding: 10px; border-radius: 5px; border: 2px solid #666;\">\n          <strong>Loki</strong><br>\n          <small>Log Aggregation</small>\n        </div>\n      </div>\n    </div>\n  </div>\n  \n  <div style=\"margin-top: 20px; font-size: 12px; color: #666;\">\n    <p><strong>Data Flow:</strong> Nginx → Application → Databases</p>\n    <p><strong>Monitoring:</strong> All services expose metrics to Prometheus, logs to Loki</p>\n  </div>\n</div>\n"
+        }
+      },
+      {
+        "id": 7,
+        "title": "Service Response Times",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "nginx_http_request_duration_seconds{quantile=\"0.5\"}",
+            "refId": "A",
+            "legendFormat": "Nginx (p50)"
+          },
+          {
+            "expr": "prometheus_http_request_duration_seconds{quantile=\"0.5\"}",
+            "refId": "B",
+            "legendFormat": "Prometheus (p50)"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s"
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 26}
+      },
+      {
+        "id": 8,
+        "title": "Cross-Service Communication",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(nginx_http_requests_total[5m])",
+            "refId": "A",
+            "legendFormat": "Nginx Requests/sec"
+          },
+          {
+            "expr": "rate(postgres_connections_total[5m])",
+            "refId": "B",
+            "legendFormat": "PostgreSQL Connections/sec"
+          },
+          {
+            "expr": "rate(redis_commands_processed_total[5m])",
+            "refId": "C",
+            "legendFormat": "Redis Commands/sec"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqps"
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 26}
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "30s"
+  }
+}

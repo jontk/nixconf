@@ -3,7 +3,11 @@
 
 with lib;
 
+# Add find function that's missing from lib
 let
+  find = pred: list: 
+    let result = filter pred list;
+    in if result == [] then null else head result;
   cfg = userDotfilesConfig;
   fileManager = import ./file-manager.nix { inherit lib pkgs; };
   yamlParser = import ./yaml-parser-simple.nix { inherit lib; };

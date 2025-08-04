@@ -8,6 +8,10 @@ in
   imports = [
     ./languages.nix
     ./tools.nix
+    ./containers.nix
+    ./code-quality.nix
+    ./profiling.nix
+    ./remote-dev.nix
   ];
 
   # Development environment configuration
@@ -256,31 +260,33 @@ in
   services = lib.mkMerge [
     {
       # PostgreSQL for development
-      postgresql = {
-        enable = true;
-        package = pkgs.postgresql_15;
-        enableTCPIP = true;
-        authentication = pkgs.lib.mkOverride 10 ''
-          local all all trust
-          host all all 127.0.0.1/32 trust
-          host all all ::1/128 trust
-        '';
-        initialScript = pkgs.writeText "postgres-init.sql" ''
-          CREATE ROLE developer WITH LOGIN PASSWORD 'developer' CREATEDB;
-          CREATE DATABASE development;
-          GRANT ALL PRIVILEGES ON DATABASE development TO developer;
-        '';
-      };
+      # Disabled - now configured via nixconf.services.databases
+      # postgresql = {
+      #   enable = true;
+      #   package = pkgs.postgresql_15;
+      #   enableTCPIP = true;
+      #   authentication = pkgs.lib.mkOverride 10 ''
+      #     local all all trust
+      #     host all all 127.0.0.1/32 trust
+      #     host all all ::1/128 trust
+      #   '';
+      #   initialScript = pkgs.writeText "postgres-init.sql" ''
+      #     CREATE ROLE developer WITH LOGIN PASSWORD 'developer' CREATEDB;
+      #     CREATE DATABASE development;
+      #     GRANT ALL PRIVILEGES ON DATABASE development TO developer;
+      #   '';
+      # };
       
       # Redis for development
-      redis = {
-        servers."development" = {
-          enable = true;
-          port = 6379;
-          bind = "127.0.0.1";
-          save = [];
-        };
-      };
+      # Disabled - now configured via nixconf.services.databases
+      # redis = {
+      #   servers."development" = {
+      #     enable = true;
+      #     port = 6379;
+      #     bind = "127.0.0.1";
+      #     save = [];
+      #   };
+      # };
     }
     
     # macOS specific services

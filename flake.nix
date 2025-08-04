@@ -149,6 +149,11 @@
         ./modules/networking
         ./modules/maintenance
       ];
+      
+      # Service modules (NixOS only)
+      serviceModules = [
+        ./modules/services
+      ];
 
       # Host-specific configurations
       hostConfigs = {
@@ -159,7 +164,7 @@
             ./hosts/nixos-dev
             home-manager.nixosModules.home-manager
             hyprland.nixosModules.default
-          ] ++ commonModules ++ developmentModules ++ desktopModules ++ remoteAccessModules ++ securityModules;
+          ] ++ commonModules ++ developmentModules ++ desktopModules ++ remoteAccessModules ++ securityModules ++ serviceModules;
           specialArgs = { inherit hyprland; };
         };
 
@@ -169,7 +174,7 @@
             ./hosts/devbox
             home-manager.nixosModules.home-manager
             hyprland.nixosModules.default
-          ] ++ commonModules ++ developmentModules ++ desktopModules ++ remoteAccessModules ++ securityModules;
+          ] ++ commonModules ++ developmentModules ++ desktopModules ++ remoteAccessModules ++ securityModules ++ serviceModules;
           specialArgs = { inherit hyprland; };
         };
 

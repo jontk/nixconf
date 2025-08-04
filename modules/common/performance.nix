@@ -128,11 +128,11 @@ in
     
     # System limits and kernel parameters
     systemd = lib.mkIf isNixOS {
-      extraConfig = ''
+      settings.Manager = {
         # Increase default limits
-        DefaultLimitNOFILE=1048576
-        DefaultLimitSTACK=16M
-      '';
+        DefaultLimitNOFILE = 1048576;
+        DefaultLimitSTACK = "16M";
+      };
       
       # Tmpfs for /tmp
       tmpfiles.rules = [

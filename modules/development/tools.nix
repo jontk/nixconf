@@ -222,11 +222,11 @@ in
   
   # Tool-specific environment variables
   environment.variables = {
-    # FZF configuration
-    FZF_DEFAULT_COMMAND = "fd --type f --hidden --follow --exclude .git";
-    FZF_DEFAULT_OPTS = "--height 40% --layout=reverse --border --inline-info";
-    FZF_CTRL_T_COMMAND = "$FZF_DEFAULT_COMMAND";
-    FZF_ALT_C_COMMAND = "fd --type d --hidden --follow --exclude .git";
+    # FZF configuration - disabled to avoid conflicts with dotfiles
+    # FZF_DEFAULT_COMMAND = "fd --type f --hidden --follow --exclude .git";
+    # FZF_DEFAULT_OPTS = "--height 40% --layout=reverse --border --inline-info";
+    # FZF_CTRL_T_COMMAND = "$FZF_DEFAULT_COMMAND";
+    # FZF_ALT_C_COMMAND = "fd --type d --hidden --follow --exclude .git";
     
     # Ripgrep configuration
     RIPGREP_CONFIG_PATH = "$HOME/.config/ripgrep/config";
@@ -243,14 +243,14 @@ in
   # Tool-specific aliases
   environment.shellAliases = {
     # Modern replacements
-    cat = "bat";
+    # cat = "bat"; # Commented out - causes color issues, use bat explicitly when needed
     ls = "eza";
     ll = "eza -l";
     la = "eza -la";
     tree = "eza --tree";
     find = "fd";
     grep = "rg";
-    sed = "sd";
+    # sed = "sd"; # Commented out - sd has different syntax than sed, causes issues
     ps = "procs";
     du = "dust";
     df = "duf";
@@ -271,7 +271,7 @@ in
     dpsa = "docker ps -a";
     di = "docker images";
     drm = "docker rm";
-    drmi = "docker rmi";
+    drmi = lib.mkDefault "docker rmi";
     dex = "docker exec -it";
     dlog = "docker logs -f";
     dprune = "docker system prune -a";

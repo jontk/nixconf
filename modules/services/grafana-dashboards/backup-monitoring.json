@@ -1,0 +1,537 @@
+{
+  "id": null,
+  "title": "Backup & Recovery Monitoring",
+  "tags": ["backup", "recovery", "monitoring"],
+  "style": "dark",
+  "timezone": "browser",
+  "refresh": "30s",
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Backup Status Overview",
+      "type": "stat",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "backup_system_last_success",
+          "legendFormat": "System Backup Last Success",
+          "refId": "A"
+        },
+        {
+          "expr": "backup_databases_last_success",
+          "legendFormat": "Database Backup Last Success",
+          "refId": "B"
+        },
+        {
+          "expr": "backup_cloud_sync_last_success",
+          "legendFormat": "Cloud Sync Last Success",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 86400
+              },
+              {
+                "color": "green",
+                "value": 43200
+              }
+            ]
+          },
+          "unit": "dateTimeFromNow"
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"],
+          "fields": ""
+        },
+        "textMode": "auto",
+        "colorMode": "background"
+      }
+    },
+    {
+      "id": 2,
+      "title": "Backup Health Status",
+      "type": "stat",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "backup_verification_verified",
+          "legendFormat": "Verified Backups",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "green",
+                "value": 3
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Backup Failures",
+      "type": "stat",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "backup_verification_failed",
+          "legendFormat": "Failed Backups",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 2
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Backup Age Trend",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "targets": [
+        {
+          "expr": "(time() - backup_system_last_success) / 3600",
+          "legendFormat": "System Backup Age (hours)",
+          "refId": "A"
+        },
+        {
+          "expr": "(time() - backup_databases_last_success) / 3600",
+          "legendFormat": "Database Backup Age (hours)",
+          "refId": "B"
+        },
+        {
+          "expr": "(time() - backup_cloud_sync_last_success) / 3600",
+          "legendFormat": "Cloud Sync Age (hours)",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "h",
+          "min": 0
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Database Backup Details",
+      "type": "table",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "targets": [
+        {
+          "expr": "backup_postgresql_size_bytes",
+          "legendFormat": "PostgreSQL Size",
+          "refId": "A",
+          "format": "table"
+        },
+        {
+          "expr": "backup_redis_size_bytes",
+          "legendFormat": "Redis Size",
+          "refId": "B",
+          "format": "table"
+        },
+        {
+          "expr": "backup_mongodb_size_bytes",
+          "legendFormat": "MongoDB Size",
+          "refId": "C",
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        }
+      },
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Backup Storage Usage",
+      "type": "piechart",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      },
+      "targets": [
+        {
+          "expr": "backup_storage_used_bytes{type=\"system\"}",
+          "legendFormat": "System Backups",
+          "refId": "A"
+        },
+        {
+          "expr": "backup_storage_used_bytes{type=\"database\"}",
+          "legendFormat": "Database Backups",
+          "refId": "B"
+        },
+        {
+          "expr": "backup_storage_used_bytes{type=\"application\"}",
+          "legendFormat": "Application Data",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"],
+          "fields": ""
+        },
+        "pieType": "pie",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "legend": {
+          "displayMode": "table",
+          "placement": "right"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Backup Operation Duration",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "targets": [
+        {
+          "expr": "backup_duration_seconds{job=\"backup-system\"}",
+          "legendFormat": "System Backup Duration",
+          "refId": "A"
+        },
+        {
+          "expr": "backup_duration_seconds{job=\"backup-databases\"}",
+          "legendFormat": "Database Backup Duration",
+          "refId": "B"
+        },
+        {
+          "expr": "backup_duration_seconds{job=\"backup-cloud-sync\"}",
+          "legendFormat": "Cloud Sync Duration",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "s"
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Recovery Time Objectives (RTO)",
+      "type": "bargauge",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      },
+      "targets": [
+        {
+          "expr": "4*3600",
+          "legendFormat": "Critical System Recovery (4h)",
+          "refId": "A"
+        },
+        {
+          "expr": "2*3600",
+          "legendFormat": "Database Recovery (2h)",
+          "refId": "B"
+        },
+        {
+          "expr": "8*3600",
+          "legendFormat": "Full System Rebuild (8h)",
+          "refId": "C"
+        },
+        {
+          "expr": "1*3600",
+          "legendFormat": "Application Data Recovery (1h)",
+          "refId": "D"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "unit": "s",
+          "min": 0,
+          "max": 28800
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "basic"
+      }
+    },
+    {
+      "id": 9,
+      "title": "Backup Schedule Compliance",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "targets": [
+        {
+          "expr": "increase(backup_system_total[24h])",
+          "legendFormat": "System Backups (24h)",
+          "refId": "A"
+        },
+        {
+          "expr": "increase(backup_databases_total[24h])",
+          "legendFormat": "Database Backups (24h)",
+          "refId": "B"
+        },
+        {
+          "expr": "increase(backup_cloud_sync_total[24h])",
+          "legendFormat": "Cloud Syncs (24h)",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "min": 0,
+          "thresholds": {
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.8
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 10,
+      "title": "System Resource Usage During Backups",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 28
+      },
+      "targets": [
+        {
+          "expr": "rate(node_cpu_seconds_total{mode!=\"idle\"}[5m]) * 100",
+          "legendFormat": "CPU Usage %",
+          "refId": "A"
+        },
+        {
+          "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100",
+          "legendFormat": "Memory Usage %",
+          "refId": "B"
+        },
+        {
+          "expr": "rate(node_disk_io_time_seconds_total[5m]) * 100",
+          "legendFormat": "Disk I/O %",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 11,
+      "title": "Backup Alerts & Notifications",
+      "type": "logs",
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 32
+      },
+      "targets": [
+        {
+          "expr": "{job=\"systemd-journal\", unit=~\"backup.*\\.service\"}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": true,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Descending"
+      }
+    }
+  ],
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "refresh": "30s",
+  "schemaVersion": 27,
+  "version": 0,
+  "links": []
+}

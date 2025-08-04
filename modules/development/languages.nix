@@ -38,7 +38,7 @@ in
     ruff # Fast Python linter
     
     # Node.js / JavaScript / TypeScript
-    nodejs_20
+    nodejs_22
     nodePackages.npm
     nodePackages.yarn
     nodePackages.pnpm
@@ -226,8 +226,8 @@ in
     
     # Docker for different languages
     dpy = "docker run -it --rm -v \${PWD}:/app -w /app python:3.11";
-    dnode = "docker run -it --rm -v \${PWD}:/app -w /app node:20";
-    dgo = "docker run -it --rm -v \${PWD}:/app -w /app golang:1.21";
+    dnode = "docker run -it --rm -v \${PWD}:/app -w /app node:22";
+    dgo = "docker run -it --rm -v \${PWD}:/app -w /app golang:1.24";
   };
   
   # macOS specific configuration for languages
