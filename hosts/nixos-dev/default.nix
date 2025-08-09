@@ -236,6 +236,16 @@
       "127.0.0.1" = [ "localhost" "dev.local" ];
       "::1" = [ "localhost" "dev.local" ];
     };
+    
+    # Override the firewall extraCommands to remove SSH rate limiting
+    firewall.extraCommands = lib.mkForce ''
+      # Drop invalid packets
+      iptables -A INPUT -m conntrack --ctstate INVALID -j DROP
+      
+      # Allow loopback
+      iptables -A INPUT -i lo -j ACCEPT
+      iptables -A OUTPUT -o lo -j ACCEPT
+    '';
   };
   
   # Enable enhanced development features

@@ -99,6 +99,9 @@ in
     nixpkgs.config = {
       allowUnfree = cfg.security.allowUnfreePackages;
       allowUnsupportedSystem = true;
+      permittedInsecurePackages = [
+        "libsoup-2.74.3"  # Required for webex and citrix_workspace
+      ];
     };
 
     # Time and locale configuration

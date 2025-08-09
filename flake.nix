@@ -91,6 +91,10 @@
         config = {
           allowUnfree = true;
           allowUnsupportedSystem = true;
+          permittedInsecurePackages = [
+            "libsoup-2.74.3"  # Required for webex and citrix_workspace
+            "libxml2-2.13.8"  # Required dependency
+          ];
         };
       };
       

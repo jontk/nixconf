@@ -42,7 +42,7 @@ let
         priority = "dotfiles";
         config = {
           user = {
-            name = "Jon TK";
+            name = "Jon Thor K";
             email = "git@jontk.com";
           };
           aliases = {

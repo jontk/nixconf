@@ -8,6 +8,7 @@
       # Web browsers
       firefox
       chromium
+      google-chrome
       
       # Communication
       thunderbird
@@ -15,6 +16,8 @@
       slack
       teams-for-linux
       zoom-us
+      webex
+      citrix_workspace
       
       # Office and productivity
       libreoffice-fresh
