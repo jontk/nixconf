@@ -79,7 +79,17 @@
 
       # Monitor configuration
       # monitor=,preferred,auto,auto
-      monitor=,2560x1440@75,auto,1
+      monitor=DP-1,3840x2160@60.00Hz,-1730x0,1.25,transform,1
+      monitor=DP-2,3840x2160@60.00Hz,0x0,1
+      monitor=HDMI-A-1,2560x1440@75.00Hz,3840x0,1,transform,3
+
+      # Workspace rules - distribute workspaces across monitors
+      workspace=1,monitor:DP-1,persistent:true
+      workspace=2,monitor:DP-2,persistent:true
+      workspace=3,monitor:DP-2,persistent:true
+      workspace=4,monitor:DP-2,persistent:true
+      workspace=5,monitor:HDMI-A-1,persistent:true
+      workspace=6,monitor:DP-1,persistent:true
 
       # Execute at launch
       #exec-once = waybar
@@ -96,7 +106,7 @@
 
       # Input configuration
       input {
-          kb_layout = us
+          kb_layout = gb
           kb_variant =
           kb_model =
           kb_options = caps:escape

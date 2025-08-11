@@ -467,7 +467,7 @@
   console = {
     packages = with pkgs; [ terminus_font ];
     font = "ter-v16b";
-    keyMap = "us";
+    keyMap = "uk";
   };
   
   # Users configuration
@@ -556,6 +556,7 @@
     smartmontools
   ];
   
+  
   # Programs configuration
   programs = {
     # Enable zsh system-wide
@@ -609,7 +610,7 @@
       
       # Configure keyboard
       xkb = {
-        layout = "us";
+        layout = lib.mkForce "gb";
         variant = "";
         options = "caps:escape"; # Caps Lock as Escape
       };
@@ -833,6 +834,8 @@
     tmpfiles.rules = [
       "d /var/cache/nixos 0755 root root -"
       "d /var/log/journal 0755 root root -"
+      # Create /bin/bash symlink for script compatibility
+      "L+ /bin/bash - - - - ${pkgs.bash}/bin/bash"
     ];
   };
   

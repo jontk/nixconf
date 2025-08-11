@@ -232,7 +232,7 @@ in
     RIPGREP_CONFIG_PATH = "$HOME/.config/ripgrep/config";
     
     # Less configuration
-    LESS = "-FRX";
+    LESS = "-R --use-color -Dd+r$Du+b$";
     LESSHISTFILE = "-";
     
     # Man pager with syntax highlighting

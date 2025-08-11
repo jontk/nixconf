@@ -1493,6 +1493,10 @@
         HostName gitlab.com
         User git
         IdentityFile ~/.ssh/id_github_jontk
+
+      # AR JonTK servers
+      Host *.ar.jontk.com
+        IdentityFile ~/.ssh/id_github_jontk
     '';
   };
 
@@ -2877,9 +2881,9 @@
         height = 35;
         spacing = 4;
 
-        modules-left = [ "hyprland/workspaces" "hyprland/mode" "hyprland/scratchpad" "custom/media" ];
-        modules-center = [ "hyprland/window" ];
-        modules-right = [ "pulseaudio" "network" "cpu" "memory" "temperature" "backlight" "keyboard-state" "battery" "clock" "tray" ];
+        modules-left = [ "hyprland/workspaces" "hyprland/window" ];
+        modules-center = [ "clock" ];
+        modules-right = [ "pulseaudio" "network" "cpu" "memory" "keyboard-state" "tray" ];
 
         "hyprland/workspaces" = {
           disable-scroll = true;
@@ -2924,7 +2928,7 @@
         };
 
         clock = {
-          timezone = "America/New_York";
+          timezone = "Europe/London";
           tooltip-format = "<big>{:%Y %B}</big>\\n<tt><small>{calendar}</small></tt>";
           format-alt = "{:%Y-%m-%d}";
         };
@@ -3005,14 +3009,13 @@
 
     style = ''
       * {
-        font-family: "JetBrains Mono", "Font Awesome 6 Free", "Font Awesome 6 Brands";
+        font-family: "JetBrains Mono", FontAwesome, sans-serif;
         font-size: 13px;
       }
 
       window#waybar {
-        background-color: rgba(40, 42, 54, 0.9);
-        border-bottom: 3px solid rgba(189, 147, 249, 0.8);
-        color: #f8f8f2;
+        background-color: rgba(26, 27, 38, 0.9);
+        color: #cdd6f4;
         transition-property: background-color;
         transition-duration: .5s;
       }
@@ -3029,13 +3032,13 @@
 
       button:hover {
         background: inherit;
-        box-shadow: inset 0 -3px #f8f8f2;
+        box-shadow: inset 0 -3px #cdd6f4;
       }
 
       #workspaces button {
         padding: 0 5px;
         background-color: transparent;
-        color: #f8f8f2;
+        color: #cdd6f4;
       }
 
       #workspaces button:hover {
@@ -3043,18 +3046,12 @@
       }
 
       #workspaces button.focused {
-        background-color: #44475a;
-        box-shadow: inset 0 -3px #bd93f9;
+        background-color: #313244;
+        box-shadow: inset 0 -3px #cdd6f4;
       }
 
       #workspaces button.urgent {
-        background-color: #ff5555;
-      }
-
-      #mode {
-        background-color: #bd93f9;
-        color: #282a36;
-        border-bottom: 3px solid #f8f8f2;
+        background-color: #f38ba8;
       }
 
       #clock,
@@ -3066,13 +3063,17 @@
       #backlight,
       #network,
       #pulseaudio,
+      #wireplumber,
+      #custom-media,
       #tray,
       #mode,
       #idle_inhibitor,
       #scratchpad,
-      #mpd {
+      #power-profiles-daemon,
+      #mpd,
+      #keyboard-state {
         padding: 0 10px;
-        color: #f8f8f2;
+        color: #cdd6f4;
       }
 
       #window,
@@ -3084,34 +3085,32 @@
         margin-left: 0;
       }
 
-      .modules-right > widget:last-child > #workspaces {
+      .modules-right > widget:last-child > * {
         margin-right: 0;
       }
 
       #clock {
-        background-color: #8be9fd;
-        color: #282a36;
+        background-color: #313244;
       }
 
       #battery {
-        background-color: #50fa7b;
-        color: #282a36;
+        background-color: #313244;
       }
 
       #battery.charging, #battery.plugged {
-        background-color: #50fa7b;
+        color: #a6e3a1;
       }
 
       @keyframes blink {
         to {
-          background-color: #ffffff;
-          color: #000000;
+          background-color: #cdd6f4;
+          color: #313244;
         }
       }
 
       #battery.critical:not(.charging) {
-        background-color: #ff5555;
-        color: #f8f8f2;
+        background-color: #f38ba8;
+        color: #313244;
         animation-name: blink;
         animation-duration: 0.5s;
         animation-timing-function: linear;
@@ -3119,60 +3118,53 @@
         animation-direction: alternate;
       }
 
-      label:focus {
-        background-color: #000000;
-      }
-
       #cpu {
-        background-color: #ffb86c;
-        color: #282a36;
+        background-color: #313244;
       }
 
       #memory {
-        background-color: #ff79c6;
-        color: #282a36;
+        background-color: #313244;
       }
 
       #disk {
-        background-color: #f1fa8c;
-        color: #282a36;
+        background-color: #313244;
       }
 
       #backlight {
-        background-color: #f1fa8c;
-        color: #282a36;
+        background-color: #313244;
       }
 
       #network {
-        background-color: #bd93f9;
-        color: #282a36;
+        background-color: #313244;
       }
 
       #network.disconnected {
-        background-color: #ff5555;
+        background-color: #f38ba8;
       }
 
       #pulseaudio {
-        background-color: #8be9fd;
-        color: #282a36;
+        background-color: #313244;
       }
 
       #pulseaudio.muted {
-        background-color: #6272a4;
-        color: #f8f8f2;
+        background-color: #313244;
+        color: #a6adc8;
       }
 
       #temperature {
-        background-color: #50fa7b;
-        color: #282a36;
+        background-color: #313244;
       }
 
       #temperature.critical {
-        background-color: #ff5555;
+        background-color: #f38ba8;
       }
 
       #tray {
-        background-color: #6272a4;
+        background-color: #313244;
+      }
+
+      #keyboard-state {
+        background-color: #313244;
       }
 
       #tray > .passive {
