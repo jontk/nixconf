@@ -14,6 +14,7 @@ in
   imports = [
     # ./k3s-monitoring.nix  # Temporarily disabled to fix build
     ./k3s-dev.nix
+    ./k3s-network-policies.nix
     ./argocd.nix
     ./istio.nix
   ];
@@ -310,12 +311,32 @@ in
     };
     
     # K3s additional configuration
-    environment.etc."rancher/k3s/registries.yaml" = mkIf (cfg.kubernetes.enable && cfg.registry.enable) {
+    environment.etc."rancher/k3s/registries.yaml" = mkIf cfg.kubernetes.enable {
       text = ''
         mirrors:
-          "localhost:${toString cfg.registry.port}":
+          "nixos-dev:30080":
             endpoint:
-              - "http://localhost:${toString cfg.registry.port}"
+              - "http://nixos-dev:30080"
+          "localhost:30080":
+            endpoint:
+              - "http://nixos-dev:30080"
+          ${optionalString cfg.registry.enable ''"localhost:${toString cfg.registry.port}":
+            endpoint:
+              - "http://localhost:${toString cfg.registry.port}"''}
+        
+        configs:
+          "nixos-dev:30080":
+            auth:
+              username: admin
+              password: Harbor12345
+            tls:
+              insecure_skip_verify: true
+          "localhost:30080":
+            auth:
+              username: admin
+              password: Harbor12345
+            tls:
+              insecure_skip_verify: true
       '';
     };
     
