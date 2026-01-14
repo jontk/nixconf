@@ -15,15 +15,16 @@ let
           sourcePath = "${dotfilesPath}/modules/${moduleConfig.name}/${fileConfig.name}";
           
           # Determine target path
-          defaultTargetPath =
+          # Note: target or link_path must be specified in fileConfig
+          # Paths should be relative to $HOME (e.g., ".bashrc" or ".config/foo")
+          finalTargetPath =
             if hasAttr "target" fileConfig then
               fileConfig.target
             else if hasAttr "link_path" fileConfig then
               fileConfig.link_path
             else
-              "~/.${fileConfig.name}";
-
-          finalTargetPath = defaultTargetPath;
+              # Fallback: place in home directory
+              ".${fileConfig.name}";
           
           # File type and handling
           fileType = fileConfig.type or "file";
