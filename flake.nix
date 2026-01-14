@@ -66,9 +66,9 @@
     # Dotfiles repository for integration
     dotfiles = {
       # Using local path for development
-      url = "path:/home/jontk/src/github.com/jontk/dotfiles/nix";
+      url = "path:/home/jontk/src/github.com/jontk/dotfiles";
       # For GitHub repository (once public or with access token):
-      # url = "github:jontk/dotfiles?dir=nix";
+      # url = "github:jontk/dotfiles";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

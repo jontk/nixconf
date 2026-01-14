@@ -42,12 +42,12 @@
     # Per-module priority modes (enhanced)
     # Available modes: merge, override, nixconf, dotfiles, separate
     priorityModes = {
-      shell = "merge";         # Merge shell configurations with conflict resolution
-      git = "merge";           # Merge git configurations
+      shell = "dotfiles";      # Use portable dotfiles shell config (environment, functions, aliases)
+      git = "dotfiles";        # Use portable dotfiles git config (aliases, hooks, delta)
       tmux = "dotfiles";       # Use dotfiles tmux config completely
-      editors = "merge";       # Merge editor configurations
+      editors = "dotfiles";    # Use portable dotfiles editor config (nvim, vim)
       docker = "merge";        # Merge docker configurations
-      golang = "merge";        # Merge golang configurations
+      golang = "merge";        # Merge golang configurations  
       python = "merge";        # Merge python configurations
       nodejs = "merge";        # Merge nodejs configurations
       rust = "merge";          # Merge rust configurations
@@ -108,6 +108,7 @@
       which
       less
       most
+      stow  # GNU Stow for managing symlinks
 
       # System monitoring
       iotop
@@ -130,6 +131,10 @@
 
     # Development packages - programming languages and tools
     developmentPackages = with pkgs; [
+      # Editors
+      zed-editor
+      vscode
+      
       # Terminal utilities
       tmux
       screen
@@ -138,6 +143,10 @@
       # Text editors
       emacs
       micro # Simple terminal editor
+
+      # Development libraries
+      json_c # JSON implementation in C
+      libyaml # YAML parser and emitter in C
 
       # Git tools
       gh # GitHub CLI
@@ -187,7 +196,7 @@
       kubectl
       kubectx  # includes kubens
       k9s
-      helm
+      kubernetes-helm
       kustomize
       stern # Multi-pod logs
 
@@ -200,6 +209,9 @@
       httpie
       curlie # curl with HTTP/2 support
       xh # HTTPie in Rust
+      
+      # Secrets management
+      doppler # Doppler CLI for secrets management
     ];
 
     # Productivity packages - general productivity tools
@@ -232,6 +244,8 @@
       poppler_utils # PDF utilities
       ghostscript
       pandoc
+      texlive.combined.scheme-full # Full TeX Live with XeLaTeX
+      source-sans-pro # Font for eisvogel template
 
       # Network utilities
       mtr # Network diagnostic
@@ -572,7 +586,7 @@
     };
   };
 
-  # Git configuration
+  # Git configuration - should be overridden by dotfiles priority mode
   programs.git = {
     enable = true;
     userName = "Jon Thor Kristinsson";
@@ -909,9 +923,9 @@
       "*.temp"
       ".cache/"
     ];
-  };
+  }; # End programs.git conditional
 
-  # Zsh configuration
+  # Zsh configuration - should be overridden by dotfiles priority mode
   programs.zsh = {
     enable = true;
     enableCompletion = true;
@@ -1100,7 +1114,7 @@
         };
       }
     ];
-  };
+  }; # End programs.zsh conditional
 
   # Starship prompt
   programs.starship = {
@@ -1421,7 +1435,9 @@
       set -g renumber-windows on
 
       # Aggressive resize
-      setw -g aggressive-resize on
+      # Disabled for iTerm 2 compatibility
+      # See: https://github.com/tmux-plugins/tmux-sensible/issues/24
+      setw -g aggressive-resize off
 
       # Fix SSH agent when tmux is detached
       setenv -g SSH_AUTH_SOCK $HOME/.ssh/ssh_auth_sock
@@ -2346,10 +2362,7 @@
 
     # Git configuration files
     ".gitmessage".source = ./dotfiles/gitmessage.txt;
-    ".config/git/hooks/pre-commit" = {
-      source = ./dotfiles/git-hooks/pre-commit;
-      executable = true;
-    };
+    # Git hooks now managed by dotfiles integration (priority mode = "dotfiles")
 
     # Swaylock configuration
     ".config/swaylock/config" = lib.mkIf isNixOS {
@@ -2455,8 +2468,8 @@
 
   # Activation scripts removed for compatibility - directories will be created by file management
 
-  # macOS-specific programs
-  programs.vscode = lib.mkIf isDarwin {
+  # VSCode configuration for all platforms
+  programs.vscode = {
     enable = true;
     userSettings = {
       "editor.fontFamily" = "FiraCode Nerd Font";
@@ -2729,8 +2742,6 @@
         # Application shortcuts
         "SUPER, Return, exec, alacritty"
         "SUPER, D, exec, rofi -show drun"
-        "SUPER, V, exec, code"
-        "SUPER, F, exec, firefox"
         "SUPER, E, exec, nautilus"
 
         # Window management
@@ -3577,6 +3588,9 @@
       # Secret management paths
       SECRETS_DIR = "$HOME/.local/share/secrets";
       CONFIG_SECRETS_DIR = "$HOME/.config/secrets";
+      
+      # Kubernetes/k3s configuration
+      KUBECONFIG = "/home/jontk/.kube/config";
 
       # Security settings
       GNUPG_HOME = "$HOME/.gnupg";

@@ -69,11 +69,13 @@ in
 {
   config = mkIf (cfg != null && cfg.enable && (hasAttr "docker" enabledModules)) {
     # Shell aliases for docker (this is a home-manager module, so no system config)
-    programs.bash.shellAliases = mkIf (priorityMode != "nixconf") 
-      allDockerAliases;
-    
-    programs.zsh.shellAliases = mkIf (priorityMode != "nixconf")
-      allDockerAliases;
+    programs.bash.shellAliases = mkMerge [
+      (mkIf (priorityMode != "nixconf") allDockerAliases)
+    ];
+
+    programs.zsh.shellAliases = mkMerge [
+      (mkIf (priorityMode != "nixconf") allDockerAliases)
+    ];
     
     # Environment variables from module.yml
     home.sessionVariables = mkIf (priorityMode != "nixconf") {

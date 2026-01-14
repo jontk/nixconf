@@ -330,39 +330,11 @@ in
     ];
     
     # Shell aliases
+    # Note: Docker and Docker Compose aliases are handled by dotfiles docker module
+    # to avoid conflicts and use modern 'docker compose' command
     environment.shellAliases = mkMerge [
       {
-        # Docker shortcuts
-        d = "docker";
-        dc = "docker-compose";
-        dps = "docker ps";
-        dpsa = "docker ps -a";
-        dex = "docker exec -it";
-        dlog = "docker logs -f";
-        dimg = "docker images";
-        dvol = "docker volume ls";
-        dnet = "docker network ls";
-        
-        # Docker cleanup
-        dclean = "docker system prune -af --volumes";
-        drmi = "docker rmi $(docker images -f 'dangling=true' -q)";
-        drmv = "docker volume rm $(docker volume ls -f 'dangling=true' -q)";
-        
-        # Docker compose shortcuts
-        dcu = "docker-compose up -d";
-        dcd = "docker-compose down";
-        dcl = "docker-compose logs -f";
-        dcp = "docker-compose ps";
-        dcr = "docker-compose restart";
-        
-        # Container inspection
-        dinspect = "docker inspect";
-        dstats = "docker stats";
-        dtop = "docker top";
-        
-        # Build shortcuts
-        dbuild = "docker build -t";
-        dbuildx = "docker buildx build --platform linux/amd64,linux/arm64 -t";
+        # Container management shortcuts are now in dotfiles module
       }
       
       (mkIf cfg.podman.dockerCompat {
@@ -519,7 +491,7 @@ in
       webapp = {
         services = {
           frontend = {
-            image = "node:22-alpine";
+            image = "harbor.dev.ar.jontk.com/dockerhub-proxy/node:22-alpine";
             working_dir = "/app";
             volumes = [ "./frontend:/app" "frontend_modules:/app/node_modules" ];
             ports = [ "3000:3000" ];
@@ -530,7 +502,7 @@ in
           };
           
           backend = {
-            image = "node:22-alpine";
+            image = "harbor.dev.ar.jontk.com/dockerhub-proxy/node:22-alpine";
             working_dir = "/app";
             volumes = [ "./backend:/app" "backend_modules:/app/node_modules" ];
             ports = [ "5000:5000" ];
@@ -544,7 +516,7 @@ in
           };
           
           postgres = {
-            image = "postgres:15-alpine";
+            image = "harbor.dev.ar.jontk.com/dockerhub-proxy/postgres:15-alpine";
             environment = {
               POSTGRES_USER = "developer";
               POSTGRES_PASSWORD = "developer";
@@ -555,12 +527,12 @@ in
           };
           
           redis = {
-            image = "redis:7-alpine";
+            image = "harbor.dev.ar.jontk.com/dockerhub-proxy/redis:7-alpine";
             ports = [ "6379:6379" ];
           };
           
           nginx = {
-            image = "nginx:alpine";
+            image = "harbor.dev.ar.jontk.com/dockerhub-proxy/nginx:alpine";
             ports = [ "80:80" ];
             volumes = [ "./nginx.conf:/etc/nginx/nginx.conf:ro" ];
             depends_on = [ "frontend" "backend" ];
@@ -583,7 +555,7 @@ in
       microservices = {
         services = {
           api-gateway = {
-            image = "node:22-alpine";
+            image = "harbor.dev.ar.jontk.com/dockerhub-proxy/node:22-alpine";
             ports = [ "8080:8080" ];
             environment = {
               SERVICE_DISCOVERY = "consul:8500";
@@ -591,13 +563,13 @@ in
           };
           
           consul = {
-            image = "consul:latest";
+            image = "harbor.dev.ar.jontk.com/dockerhub-proxy/consul:latest";
             ports = [ "8500:8500" ];
             command = "agent -dev -ui -client=0.0.0.0";
           };
           
           rabbitmq = {
-            image = "rabbitmq:3-management-alpine";
+            image = "harbor.dev.ar.jontk.com/dockerhub-proxy/rabbitmq:3-management-alpine";
             ports = [ "5672:5672" "15672:15672" ];
             environment = {
               RABBITMQ_DEFAULT_USER = "developer";
@@ -627,7 +599,7 @@ in
           };
           
           postgres = {
-            image = "postgres:15";
+            image = "harbor.dev.ar.jontk.com/dockerhub-proxy/postgres:15";
             environment = {
               POSTGRES_USER = "analyst";
               POSTGRES_PASSWORD = "analyst";

@@ -158,15 +158,10 @@ in
     gca = "git commit -a";
     gp = "git push";
     gl = "git pull";
-    
-    # Docker shortcuts
-    d = "docker";
-    dc = "docker-compose";
-    dps = "docker ps";
-    dpsa = "docker ps -a";
-    dex = "docker exec -it";
-    dlog = "docker logs -f";
-    
+
+    # Docker shortcuts are handled by dotfiles docker module
+    # to avoid conflicts and use modern 'docker compose' command
+
     # Kubernetes shortcuts
     k = "kubectl";
     kgp = "kubectl get pods";
