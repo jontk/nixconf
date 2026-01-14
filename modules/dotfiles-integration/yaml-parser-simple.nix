@@ -195,10 +195,10 @@ rec {
     platforms = [ "linux" "macos" ];
     shells = [ "bash" "zsh" ];
     files = [
-      { name = "bashrc"; target = "~/.bashrc"; }
-      { name = "zshrc"; target = "~/.zshrc"; }
-      { name = "aliases"; target = "~/.shell_aliases"; }
-      { name = "functions"; target = "~/.shell_functions"; }
+      { name = "bashrc"; target = ".bashrc"; }
+      { name = "zshrc"; target = ".zshrc"; }
+      { name = "aliases"; target = ".shell_aliases"; }
+      { name = "functions"; target = ".shell_functions"; }
     ];
     dependencies = {};
     settings = {
