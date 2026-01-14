@@ -155,7 +155,7 @@ in
     # Kubernetes tools
     kubectl
     k9s
-    helm
+    kubernetes-helm
     helmfile
     kustomize
     kubeseal
@@ -267,15 +267,9 @@ in
     gdiff = "git diff";
     
     # Docker helpers
-    dps = "docker ps";
-    dpsa = "docker ps -a";
-    di = "docker images";
-    drm = "docker rm";
-    drmi = lib.mkDefault "docker rmi";
-    dex = "docker exec -it";
-    dlog = "docker logs -f";
-    dprune = "docker system prune -a";
-    
+    # Docker shortcuts are handled by dotfiles docker module
+    # to avoid conflicts and use modern 'docker compose' command
+
     # Kubernetes helpers
     k = "kubectl";
     kgp = "kubectl get pods";
