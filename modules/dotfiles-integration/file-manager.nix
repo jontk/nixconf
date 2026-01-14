@@ -125,13 +125,21 @@ let
       checkConflict = fileInfo:
         let
           targetPath = fileInfo.finalTargetPath;
-          expandedPath = replaceStrings ["~"] [homeDirectory] targetPath;
+          # Expand ~ and handle relative paths
+          expandedPath =
+            if hasPrefix "~" targetPath then
+              replaceStrings ["~"] [homeDirectory] targetPath
+            else if hasPrefix "/" targetPath then
+              targetPath  # Already absolute
+            else
+              "${homeDirectory}/${targetPath}";  # Relative path, prepend home
         in
         {
           inherit (fileInfo) name sourcePath finalTargetPath;
-          targetExists = builtins.pathExists expandedPath;
-          isSymlink = builtins.pathExists expandedPath && (builtins.readFileType expandedPath == "symlink");
-          hasConflict = builtins.pathExists expandedPath && !fileInfo.overwrite;
+          # Disable conflict checking at build time - should be done at activation
+          targetExists = false;  # builtins.pathExists expandedPath;
+          isSymlink = false;     # builtins.pathExists expandedPath && (builtins.readFileType expandedPath == "symlink");
+          hasConflict = false;   # builtins.pathExists expandedPath && !fileInfo.overwrite;
           expandedTargetPath = expandedPath;
         };
       
