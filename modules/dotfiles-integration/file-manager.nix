@@ -15,15 +15,15 @@ let
           sourcePath = "${dotfilesPath}/modules/${moduleConfig.name}/${fileConfig.name}";
           
           # Determine target path
-          defaultTargetPath = 
+          defaultTargetPath =
             if hasAttr "target" fileConfig then
               fileConfig.target
             else if hasAttr "link_path" fileConfig then
               fileConfig.link_path
             else
               "~/.${fileConfig.name}";
-          
-          finalTargetPath = targetPath or defaultTargetPath;
+
+          finalTargetPath = defaultTargetPath;
           
           # File type and handling
           fileType = fileConfig.type or "file";
