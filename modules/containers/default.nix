@@ -303,6 +303,7 @@ in
         "--service-cidr=${cfg.kubernetes.networking.serviceCIDR}"
         "--flannel-backend=vxlan"
         "--write-kubeconfig-mode=644"
+        "--kubelet-arg=max-pods=250"
       ] ++ optional (!cfg.kubernetes.features.traefik) "--disable=traefik"
         ++ optional (!cfg.kubernetes.features.servicelb) "--disable=servicelb"
         ++ optional (!cfg.kubernetes.features.localStorage) "--disable=local-storage"
@@ -314,32 +315,66 @@ in
     environment.etc."rancher/k3s/registries.yaml" = mkIf cfg.kubernetes.enable {
       text = ''
         mirrors:
-          "nixos-dev:30080":
+          "harbor.dev.ar.jontk.com":
             endpoint:
-              - "http://nixos-dev:30080"
-          "localhost:30080":
+              - "https://harbor.dev.ar.jontk.com"
+          "localhost:5000":
             endpoint:
-              - "http://nixos-dev:30080"
-          ${optionalString cfg.registry.enable ''"localhost:${toString cfg.registry.port}":
+              - "http://localhost:5000"
+          "docker.io":
             endpoint:
-              - "http://localhost:${toString cfg.registry.port}"''}
+              - "https://harbor.dev.ar.jontk.com"
         
         configs:
-          "nixos-dev:30080":
+          "harbor.dev.ar.jontk.com":
             auth:
-              username: admin
-              password: Harbor12345
+              username: "brokkr"
+              password: "REPLACE_WITH_HARBOR_PASSWORD"
             tls:
-              insecure_skip_verify: true
-          "localhost:30080":
-            auth:
-              username: admin
-              password: Harbor12345
+              insecure_skip_verify: false
+          "localhost:5000":
             tls:
               insecure_skip_verify: true
       '';
     };
     
+    # Configure kubectl access for users
+    systemd.services.k3s-user-access = mkIf cfg.kubernetes.enable {
+      description = "Configure kubectl access for users";
+      after = [ "k3s.service" ];
+      wantedBy = [ "multi-user.target" ];
+      
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+        User = "root";
+        ExecStart = pkgs.writeShellScript "k3s-user-access" ''
+          set -euo pipefail
+          
+          # Wait for k3s to be ready
+          timeout=60
+          while ! test -f /etc/rancher/k3s/k3s.yaml; do
+            sleep 1
+            timeout=$((timeout - 1))
+            if [ $timeout -eq 0 ]; then
+              echo "Timeout waiting for k3s kubeconfig"
+              exit 1
+            fi
+          done
+          
+          # Ensure jontk .kube directory exists
+          mkdir -p /home/jontk/.kube
+          
+          # Copy kubeconfig and set proper ownership
+          cp /etc/rancher/k3s/k3s.yaml /home/jontk/.kube/config
+          chown jontk:users /home/jontk/.kube/config
+          chmod 600 /home/jontk/.kube/config
+          
+          echo "kubectl access configured for jontk user"
+        '';
+      };
+    };
+
     # Kubernetes namespace and resource management
     systemd.services.k3s-setup = mkIf cfg.kubernetes.enable {
       description = "K3s cluster setup and configuration";

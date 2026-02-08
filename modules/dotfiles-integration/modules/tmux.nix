@@ -234,8 +234,15 @@ let
 in
 {
   config = mkIf (cfg != null && cfg.enable && (hasAttr "tmux" enabledModules)) {
+    # Direct file links when priority mode is "dotfiles"
+    home.file = mkIf (priorityMode == "dotfiles") {
+      ".config/tmux/tmux.conf" = mkIf (builtins.pathExists tmuxConfFile) {
+        source = tmuxConfFile;
+      };
+    };
+    
     # Tmux program configuration
-    programs.tmux = {
+    programs.tmux = mkIf (priorityMode != "dotfiles") {
       enable = true;
       
       # Base configuration from settings

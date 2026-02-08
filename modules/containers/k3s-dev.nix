@@ -130,7 +130,7 @@ in
       
       apps = mkOption {
         type = types.listOf types.str;
-        default = [ "hello-world" "redis" "postgres" ];
+        default = [ "hello-world" "postgres" ];
         description = "Sample applications to deploy";
       };
     };
@@ -235,7 +235,7 @@ in
         set -euo pipefail
         
         APP_NAME="''${1:-myapp}"
-        IMAGE="''${2:-nginx:latest}"
+        IMAGE="''${2:-harbor.dev.ar.jontk.com/dockerhub-proxy/nginx:latest}"
         PORT="''${3:-80}"
         
         export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
@@ -314,13 +314,13 @@ in
       serviceConfig = {
         Type = "simple";
         Restart = "always";
-        ExecStartPre = "${pkgs.docker}/bin/docker pull registry:2";
+        ExecStartPre = "${pkgs.docker}/bin/docker pull harbor.dev.ar.jontk.com/dockerhub-proxy/registry:2";
         ExecStart = ''
           ${pkgs.docker}/bin/docker run --rm \
             --name k3s-registry \
             -p ${toString cfg.registry.port}:5000 \
             -v /var/lib/k3s-registry:/var/lib/registry \
-            registry:2
+            harbor.dev.ar.jontk.com/dockerhub-proxy/registry:2
         '';
         ExecStop = "${pkgs.docker}/bin/docker stop k3s-registry";
       };
@@ -335,7 +335,7 @@ in
       serviceConfig = {
         Type = "simple";
         Restart = "always";
-        ExecStartPre = "${pkgs.docker}/bin/docker pull joxit/docker-registry-ui:latest";
+        ExecStartPre = "${pkgs.docker}/bin/docker pull harbor.dev.ar.jontk.com/dockerhub-proxy/joxit/docker-registry-ui:latest";
         ExecStart = ''
           ${pkgs.docker}/bin/docker run --rm \
             --name k3s-registry-ui \
@@ -343,7 +343,7 @@ in
             -e REGISTRY_URL=http://localhost:${toString cfg.registry.port} \
             -e DELETE_IMAGES=true \
             -e REGISTRY_TITLE="K3s Local Registry" \
-            joxit/docker-registry-ui:latest
+            harbor.dev.ar.jontk.com/dockerhub-proxy/joxit/docker-registry-ui:latest
         '';
         ExecStop = "${pkgs.docker}/bin/docker stop k3s-registry-ui";
       };
@@ -399,7 +399,7 @@ in
                 spec:
                   containers:
                   - name: redis
-                    image: redis:7-alpine
+                    image: harbor.dev.ar.jontk.com/dockerhub-proxy/redis:7-alpine
                     ports:
                     - containerPort: 6379
             ---
@@ -435,7 +435,7 @@ in
                 spec:
                   containers:
                   - name: postgres
-                    image: postgres:15-alpine
+                    image: harbor.dev.ar.jontk.com/dockerhub-proxy/postgres:15-alpine
                     env:
                     - name: POSTGRES_PASSWORD
                       value: postgres

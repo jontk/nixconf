@@ -247,7 +247,7 @@ in
 {
   config = mkIf (cfg != null && cfg.enable && (hasAttr "git" enabledModules)) {
     # Only configure if we're in home-manager context
-    programs.git = {
+    programs.git = mkIf (priorityMode != "dotfiles") {
       enable = true;
       
       # User configuration (let user set these in their config)
@@ -325,6 +325,35 @@ in
       ];
     };
     
+    # Git hooks integration
+    home.file = mkMerge [
+      # Git hooks
+      (mkIf (priorityMode == "dotfiles" || priorityMode == "merge") {
+        ".config/git/hooks/pre-commit" = mkIf (builtins.pathExists "${dotfilesPath}/modules/git/hooks/pre-commit") {
+          source = "${dotfilesPath}/modules/git/hooks/pre-commit";
+          executable = true;
+        };
+        ".config/git/hooks/post-commit" = mkIf (builtins.pathExists "${dotfilesPath}/modules/git/hooks/post-commit") {
+          source = "${dotfilesPath}/modules/git/hooks/post-commit"; 
+          executable = true;
+        };
+        ".config/git/hooks/pre-push" = mkIf (builtins.pathExists "${dotfilesPath}/modules/git/hooks/pre-push") {
+          source = "${dotfilesPath}/modules/git/hooks/pre-push";
+          executable = true;
+        };
+      })
+      
+      # Direct dotfiles links when priority mode is "dotfiles"
+      (mkIf (priorityMode == "dotfiles") {
+        ".gitconfig" = mkIf (builtins.pathExists gitconfigFile) {
+          source = gitconfigFile;
+        };
+        ".gitignore_global" = mkIf (builtins.pathExists gitignoreFile) {
+          source = gitignoreFile;
+        };
+      })
+    ];
+
     # Environment variables
     home.sessionVariables = mkIf (priorityMode != "nixconf") {
       DOTFILES_GIT_MODULE = "active";

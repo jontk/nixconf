@@ -31,10 +31,10 @@ with lib;
     
     # Module-specific priority configurations
     priorityMode = {
-      shell = "merge";      # Merge shell configurations
-      git = "merge";        # Merge git configurations
-      tmux = "dotfiles";    # Use dotfiles tmux config
-      editors = "merge";    # Merge editor configurations
+      shell = "dotfiles";   # Use portable dotfiles shell config
+      git = "dotfiles";     # Use portable dotfiles git config
+      tmux = "dotfiles";    # Use dotfiles tmux config completely
+      editors = "dotfiles"; # Use portable dotfiles editor config
     };
   };
   

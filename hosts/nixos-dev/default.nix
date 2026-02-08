@@ -337,9 +337,9 @@
     enable = true;
     
     
-    # Local container registry for development
+    # Local container registry for development (disabled - using Harbor)
     registry = {
-      enable = true;
+      enable = false;
       port = 5000;
       storage = "/var/lib/registry";
     };
@@ -347,6 +347,9 @@
     # Kubernetes (k3s) configuration
     kubernetes = {
       enable = true;
+      
+      # Disable development registry (using Harbor instead)
+      development.registry.enable = false;
       distribution = "k3s";
       role = "single"; # All-in-one for development
       
@@ -550,6 +553,7 @@
     # Terminal utilities
     tmux
     screen
+    ttyd
     
     # Hardware monitoring
     lm_sensors
@@ -918,6 +922,12 @@
     nixos.enable = true;
   };
   
+  # Enable dotfiles integration
+  modules.dotfilesIntegration = {
+    enable = true;
+    user = "jontk";
+  };
+
   # Home Manager integration
   home-manager = {
     useGlobalPkgs = true;

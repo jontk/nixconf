@@ -231,6 +231,22 @@ let
 in
 {
   config = mkIf (cfg != null && cfg.enable && (hasAttr "shell" enabledModules)) {
+    # Direct file links when priority mode is "dotfiles"
+    home.file = mkIf (priorityMode == "dotfiles") {
+      ".bashrc" = mkIf (builtins.pathExists bashrcFile) {
+        source = bashrcFile;
+      };
+      ".zshrc" = mkIf (builtins.pathExists zshrcFile) {
+        source = zshrcFile;
+      };
+      ".shell_aliases" = mkIf (builtins.pathExists shellAliasesFile) {
+        source = shellAliasesFile;
+      };
+      ".shell_functions" = mkIf (builtins.pathExists shellFunctionsFile) {
+        source = shellFunctionsFile;
+      };
+    };
+    
     # Platform-specific and settings-based environment variables
     home.sessionVariables = mkMerge [
       (mkIf (priorityMode != "nixconf" && platformValidation.isSupported) 
@@ -251,7 +267,7 @@ in
       })
     ];
     
-    programs = {
+    programs = mkIf (priorityMode != "dotfiles") {
       # Bash configuration
       bash = {
         enable = true;

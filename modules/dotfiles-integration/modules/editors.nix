@@ -35,8 +35,19 @@ let
 in
 {
   config = mkIf (cfg != null && cfg.enable && (hasAttr "editors" enabledModules)) {
+    # Direct file links when priority mode is "dotfiles"
+    home.file = mkIf (priorityMode == "dotfiles") {
+      ".vimrc" = mkIf (builtins.pathExists vimrcFile) {
+        source = vimrcFile;
+      };
+      ".config/nvim" = mkIf (builtins.pathExists nvimDir) {
+        source = nvimDir;
+        recursive = true;
+      };
+    };
+    
     # Vim configuration
-    programs.vim = {
+    programs.vim = mkIf (priorityMode != "dotfiles") {
       enable = true;
       
       # Extra configuration based on priority mode
@@ -68,7 +79,7 @@ in
     };
     
     # Neovim configuration
-    programs.neovim = {
+    programs.neovim = mkIf (priorityMode != "dotfiles") {
       enable = mkDefault true;
       
       # Use vim configuration as base

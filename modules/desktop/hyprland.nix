@@ -206,7 +206,7 @@
       bind = $mainMod, Q, killactive,
       bind = $mainMod, M, exit,
       bind = $mainMod, E, exec, nautilus
-      bind = $mainMod, V, togglefloating,
+      bind = $mainMod, Space, togglefloating,  # Changed from V to Space
       bind = $mainMod, D, exec, rofi -show drun
       bind = $mainMod, P, pseudo, # dwindle
       bind = $mainMod, J, togglesplit, # dwindle
@@ -272,7 +272,7 @@
       bind = CTRL SHIFT, Print, exec, grim ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png
 
       # Clipboard history
-      bind = $mainMod, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy
+      bind = $mainMod SHIFT, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy  # Changed to SHIFT+V for clipboard history
 
       # Window management
       bind = $mainMod, Tab, cyclenext,
