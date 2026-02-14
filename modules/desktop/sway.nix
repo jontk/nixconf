@@ -64,6 +64,7 @@
 
     # Environment variables for Wayland (shared between Sway and Hyprland)
     # Note: XDG_CURRENT_DESKTOP and XDG_SESSION_DESKTOP are set by the session itself
+    # Note: WLR_NO_HARDWARE_CURSORS is set by desktop/default.nix for NVIDIA GPUs
     environment.sessionVariables = {
       # Wayland support
       QT_QPA_PLATFORM = lib.mkDefault "wayland;xcb";
@@ -79,11 +80,6 @@
 
       # Enable Wayland for Mozilla apps
       MOZ_ENABLE_WAYLAND = "1";
-
-      # VM-specific settings (same as Hyprland for consistency)
-      WLR_RENDERER = lib.mkDefault "pixman";
-      WLR_NO_HARDWARE_CURSORS = lib.mkDefault "1";
-      LIBSEAT_BACKEND = lib.mkDefault "logind";
     };
 
     # Additional system packages for Sway
