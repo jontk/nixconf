@@ -223,6 +223,10 @@
         enable = true;
         wayland.enable = true;
         theme = "breeze";
+
+        # Wayland compositor for SDDM (uses kwin for the login screen)
+        wayland.compositor = "kwin";
+
         settings = {
           Theme = {
             CursorTheme = "breeze_cursors";
@@ -231,6 +235,13 @@
       };
       defaultSession = "hyprland";
     };
+
+    # Environment variables for SDDM Wayland session to prefer center monitor
+    environment.etc."sddm.conf.d/wayland-monitor.conf".text = ''
+      [General]
+      DisplayServer=wayland
+      GreeterEnvironment=WLR_DRM_DEVICES=/dev/dri/card0
+    '';
     
     # Touchpad support
     services.libinput = {
