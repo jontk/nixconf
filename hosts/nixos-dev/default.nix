@@ -179,8 +179,8 @@
       ];
     };
     
-    # Support NTFS
-    supportedFilesystems = [ "ntfs" ];
+    # Support NTFS and CIFS (for network shares)
+    supportedFilesystems = [ "ntfs" "cifs" ];
     
     # Plymouth boot splash
     plymouth = {
@@ -544,6 +544,7 @@
     e2fsprogs
     btrfs-progs
     xfsprogs
+    cifs-utils
     
     # Compression
     zip
@@ -922,11 +923,11 @@
     nixos.enable = true;
   };
   
-  # Enable dotfiles integration
-  modules.dotfilesIntegration = {
-    enable = true;
-    user = "jontk";
-  };
+  # Dotfiles now managed by chezmoi instead of Home Manager
+  # modules.dotfilesIntegration = {
+  #   enable = true;
+  #   user = "jontk";
+  # };
 
   # Home Manager integration
   home-manager = {
