@@ -79,6 +79,11 @@
 
       # Enable Wayland for Mozilla apps
       MOZ_ENABLE_WAYLAND = "1";
+
+      # VM-specific settings (same as Hyprland for consistency)
+      WLR_RENDERER = lib.mkDefault "pixman";
+      WLR_NO_HARDWARE_CURSORS = lib.mkDefault "1";
+      LIBSEAT_BACKEND = lib.mkDefault "logind";
     };
 
     # Additional system packages for Sway
