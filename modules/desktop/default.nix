@@ -3,6 +3,7 @@
 {
   imports = [
     ./hyprland.nix
+    ./sway.nix
     ./applications.nix
   ];
 
