@@ -9,19 +9,17 @@
       xwayland.enable = true;
     };
 
-    # Environment variables for the system
+    # Environment variables for Wayland (shared with Sway)
+    # Note: XDG_CURRENT_DESKTOP and XDG_SESSION_DESKTOP are set by the session itself
     environment.sessionVariables = {
       NIXPKGS_ALLOW_UNFREE = "1";
-      # RustDesk Wayland support
-      QT_QPA_PLATFORM = "wayland;xcb";
-      GDK_BACKEND = "wayland,x11";
-      # Enable screensharing support
-      XDG_CURRENT_DESKTOP = "Hyprland";
-      XDG_SESSION_DESKTOP = "Hyprland";
+      # Wayland support (use mkDefault to allow Sway to override if needed)
+      QT_QPA_PLATFORM = lib.mkDefault "wayland;xcb";
+      GDK_BACKEND = lib.mkDefault "wayland,x11";
       # VM-specific settings
-      WLR_RENDERER = "pixman";
-      WLR_NO_HARDWARE_CURSORS = "1";
-      LIBSEAT_BACKEND = "logind";
+      WLR_RENDERER = lib.mkDefault "pixman";
+      WLR_NO_HARDWARE_CURSORS = lib.mkDefault "1";
+      LIBSEAT_BACKEND = lib.mkDefault "logind";
     };
 
     # Hyprland-specific packages

@@ -62,18 +62,17 @@
       ];
     };
 
-    # Environment variables for Sway
+    # Environment variables for Wayland (shared between Sway and Hyprland)
+    # Note: XDG_CURRENT_DESKTOP and XDG_SESSION_DESKTOP are set by the session itself
     environment.sessionVariables = {
       # Wayland support
-      QT_QPA_PLATFORM = "wayland;xcb";
-      GDK_BACKEND = "wayland,x11";
-      SDL_VIDEODRIVER = "wayland";
-      CLUTTER_BACKEND = "wayland";
+      QT_QPA_PLATFORM = lib.mkDefault "wayland;xcb";
+      GDK_BACKEND = lib.mkDefault "wayland,x11";
+      SDL_VIDEODRIVER = lib.mkDefault "wayland";
+      CLUTTER_BACKEND = lib.mkDefault "wayland";
 
-      # XDG Desktop Portal
-      XDG_CURRENT_DESKTOP = "sway";
-      XDG_SESSION_DESKTOP = "sway";
-      XDG_SESSION_TYPE = "wayland";
+      # XDG Session Type
+      XDG_SESSION_TYPE = lib.mkDefault "wayland";
 
       # Fix Java apps
       _JAVA_AWT_WM_NONREPARENTING = "1";
@@ -101,10 +100,9 @@
 
     # XDG Desktop Portal for Sway (for screensharing, etc.)
     xdg.portal = {
-      enable = true;
       wlr.enable = true;
       extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
-      config.common.default = "*";
+      # Portal config is handled by desktop/default.nix
     };
 
     # Security configuration
