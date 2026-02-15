@@ -1,0 +1,3 @@
+[submodule "k8s"]
+	path = k8s
+	url = git@github.com:jontk/nixconf-k8s.git
