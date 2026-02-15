@@ -225,30 +225,22 @@
     # Enable gnome-keyring for secret management
     services.gnome.gnome-keyring.enable = true;
     
-    # Display manager (using SDDM for Wayland compatibility)
-    services.displayManager = {
-      sddm = {
-        enable = true;
-        wayland.enable = true;
-        theme = "breeze";
-
-        # Wayland compositor for SDDM (uses kwin for the login screen)
-        wayland.compositor = "kwin";
-
-        settings = {
-          Theme = {
-            CursorTheme = "breeze_cursors";
-          };
+    # Display manager - using greetd with tuigreet (recommended for Wayland/Sway)
+    # Greetd is minimal, Wayland-native, and avoids SDDM's double-login issues with Sway
+    services.greetd = {
+      enable = true;
+      settings = {
+        default_session = {
+          command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --remember --remember-session --power-shutdown --power-reboot --cmd sway";
+          user = "greeter";
         };
       };
-      defaultSession = "hyprland";
     };
 
-    # Environment variables for SDDM Wayland session to prefer center monitor
-    environment.etc."sddm.conf.d/wayland-monitor.conf".text = ''
-      [General]
-      DisplayServer=wayland
-      GreeterEnvironment=WLR_DRM_DEVICES=/dev/dri/card0
+    # Ensure greetd has access to necessary environment
+    environment.etc."greetd/environments".text = ''
+      sway
+      Hyprland
     '';
     
     # Touchpad support
