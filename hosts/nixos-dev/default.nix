@@ -6,7 +6,7 @@
   
   # System identification
   networking.hostName = "nixos-dev";
-  networking.domain = "local";
+  networking.domain = "ar.jontk.com";
   
   # System state version - IMPORTANT: Don't change after initial install
   system.stateVersion = "25.05";
