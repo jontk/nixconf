@@ -104,7 +104,10 @@
     # XDG Desktop Portal for Sway (for screensharing, etc.)
     xdg.portal = {
       wlr.enable = true;
-      extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+      extraPortals = with pkgs; [
+        xdg-desktop-portal-wlr
+        xdg-desktop-portal-gtk
+      ];
       # Portal config is handled by desktop/default.nix
     };
 

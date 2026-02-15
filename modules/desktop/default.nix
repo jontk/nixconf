@@ -196,13 +196,21 @@
       xdgOpenUsePortal = true;
       config = {
         common.default = [ "gtk" ];
+        sway = {
+          default = lib.mkForce [ "wlr" "gtk" ];
+          "org.freedesktop.impl.portal.Screenshot" = [ "wlr" ];
+          "org.freedesktop.impl.portal.ScreenCast" = [ "wlr" ];
+        };
         hyprland.default = [
           "gtk"
           "hyprland"
         ];
       };
 
-      extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+      extraPortals = with pkgs; [
+        xdg-desktop-portal-wlr
+        xdg-desktop-portal-gtk
+      ];
     };
     
     # Security for Wayland
