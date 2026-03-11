@@ -158,6 +158,9 @@
     pandoc
     poppler_utils
     ghostscript
+    (texlive.combine {
+      inherit (texlive) scheme-basic xetex collection-fontsrecommended collection-plaingeneric collection-latexextra;
+    })
 
     # System utilities
     mtr

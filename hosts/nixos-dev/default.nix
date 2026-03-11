@@ -237,15 +237,6 @@
       "::1" = [ "localhost" "dev.local" ];
     };
     
-    # Override the firewall extraCommands to remove SSH rate limiting
-    firewall.extraCommands = lib.mkForce ''
-      # Drop invalid packets
-      iptables -A INPUT -m conntrack --ctstate INVALID -j DROP
-      
-      # Allow loopback
-      iptables -A INPUT -i lo -j ACCEPT
-      iptables -A OUTPUT -o lo -j ACCEPT
-    '';
   };
   
   # Enable enhanced development features
@@ -498,8 +489,10 @@
         ];
         shell = pkgs.zsh;
         openssh.authorizedKeys.keys = [
-          # Add your SSH public key here
+          # GitHub key
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKaJLsLPvlPcHfK/PBdgI27vh6a7aOy6JWKXso6lZF5h git@jontk.com"
+          # Personal key
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGKj7IWs0Vy85Sv3uMjLrRtQ+kwC2yMNmge+svF7XPZV git@jontk.com"
         ];
       };
       
@@ -820,8 +813,6 @@
   
   # Systemd configuration
   systemd = {
-    # Faster boot
-    services.NetworkManager-wait-online.enable = false;
     
     # User services
     user.services = {
