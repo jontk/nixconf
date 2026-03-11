@@ -7,8 +7,6 @@
     programs.sway = {
       enable = true;
       wrapperFeatures.gtk = true;
-      # Required for proprietary NVIDIA drivers
-      extraOptions = [ "--unsupported-gpu" ];
       extraPackages = with pkgs; [
         # Core Sway utilities
         swaylock # Screen locker

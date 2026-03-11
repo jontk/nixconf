@@ -70,12 +70,15 @@
       );
     };
     
+    # NVIDIA container toolkit for GPU passthrough in Podman/Docker
+    hardware.nvidia-container-toolkit.enable = lib.mkIf (lib.hasInfix "nvidia" config.desktop.graphics.driver) true;
+
     # NVIDIA-specific configuration
     hardware.nvidia = lib.mkIf (lib.hasInfix "nvidia" config.desktop.graphics.driver) {
       modesetting.enable = true;
       powerManagement.enable = true;
       powerManagement.finegrained = lib.mkIf (lib.hasPrefix "hybrid-" config.desktop.graphics.driver) true;
-      open = false;
+      open = true;
       nvidiaSettings = true;
       package = config.boot.kernelPackages.nvidiaPackages.stable;
       
