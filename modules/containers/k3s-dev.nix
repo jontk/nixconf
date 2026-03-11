@@ -354,19 +354,30 @@ in
       description = "Deploy k3s sample applications";
       after = [ "k3s.service" "k3s-setup.service" ];
       wantedBy = [ "multi-user.target" ];
-      
+      restartIfChanged = false;
+
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
         User = "root";
         ExecStart = pkgs.writeShellScript "k3s-samples-deploy" ''
           set -euo pipefail
-          
+
           export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-          
+
+          # Skip if samples already deployed
+          if ${pkgs.kubectl}/bin/kubectl get namespace dev >/dev/null 2>&1 && \
+             ${pkgs.kubectl}/bin/kubectl get deployment hello-world -n dev >/dev/null 2>&1; then
+            echo "Sample applications already deployed, skipping"
+            exit 0
+          fi
+
           # Wait for cluster
           ${pkgs.kubectl}/bin/kubectl wait --for=condition=Ready nodes --all --timeout=60s
-          
+
+          # Ensure dev namespace exists
+          ${pkgs.kubectl}/bin/kubectl create namespace dev --dry-run=client -o yaml | ${pkgs.kubectl}/bin/kubectl apply -f -
+
           # Deploy samples
           ${optionalString (elem "hello-world" cfg.samples.apps) ''
             echo "Deploying hello-world..."

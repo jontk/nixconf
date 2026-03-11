@@ -287,20 +287,27 @@ in
       description = "Deploy ArgoCD GitOps";
       after = [ "k3s.service" "k3s-setup.service" ];
       wantedBy = [ "multi-user.target" ];
-      
+      restartIfChanged = false;
+
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
         User = "root";
         ExecStart = pkgs.writeShellScript "argocd-setup" ''
           set -euo pipefail
-          
+
           export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-          
+
+          # Skip if ArgoCD is already deployed
+          if ${pkgs.kubectl}/bin/kubectl get deployment argocd-server -n argocd >/dev/null 2>&1; then
+            echo "ArgoCD already deployed, skipping"
+            exit 0
+          fi
+
           # Wait for cluster
           echo "Waiting for k3s cluster..."
           ${pkgs.kubectl}/bin/kubectl wait --for=condition=Ready nodes --all --timeout=120s
-          
+
           # Create ArgoCD namespace
           ${pkgs.kubectl}/bin/kubectl create namespace argocd --dry-run=client -o yaml | ${pkgs.kubectl}/bin/kubectl apply -f -
           

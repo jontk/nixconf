@@ -105,16 +105,23 @@ in
       after = [ "k3s.service" ];
       wants = [ "k3s.service" ];
       wantedBy = [ "multi-user.target" ];
-      
+      restartIfChanged = false;
+
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
         User = "root";
         ExecStart = pkgs.writeShellScript "k3s-network-policies-apply" ''
           set -euo pipefail
-          
+
           export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-          
+
+          # Skip if network policies already applied
+          if ${pkgs.kubectl}/bin/kubectl get networkpolicies -n kube-system 2>/dev/null | grep -q .; then
+            echo "Network policies already applied, skipping"
+            exit 0
+          fi
+
           # Wait for cluster to be ready
           echo "Waiting for k3s cluster to be ready..."
           for i in {1..60}; do

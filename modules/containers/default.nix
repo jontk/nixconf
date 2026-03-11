@@ -380,13 +380,22 @@ in
       description = "K3s cluster setup and configuration";
       after = [ "k3s.service" ];
       wantedBy = [ "multi-user.target" ];
+      restartIfChanged = false;
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
         User = "root";
         ExecStart = pkgs.writeShellScript "k3s-setup" ''
           set -euo pipefail
-          
+
+          export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
+          # Skip if already set up (namespaces exist)
+          if ${pkgs.kubectl}/bin/kubectl get namespace development >/dev/null 2>&1; then
+            echo "K3s setup already completed, skipping"
+            exit 0
+          fi
+
           # Wait for k3s to be ready
           timeout=60
           while [ $timeout -gt 0 ]; do
@@ -396,22 +405,22 @@ in
             sleep 2
             ((timeout--))
           done
-          
+
           if [ $timeout -eq 0 ]; then
             echo "Timeout waiting for k3s to be ready"
             exit 1
           fi
-          
+
           echo "K3s cluster is ready"
-          
+
           # Create development namespace
           ${pkgs.kubectl}/bin/kubectl create namespace development || true
-          
+
           # Create monitoring namespace if monitoring is enabled
           ${optionalString cfg.monitoring.enable ''
             ${pkgs.kubectl}/bin/kubectl create namespace monitoring || true
           ''}
-          
+
           # Apply any additional configurations
           echo "K3s setup completed"
         '';
