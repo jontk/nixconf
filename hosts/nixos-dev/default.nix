@@ -552,6 +552,10 @@
     # Hardware monitoring
     lm_sensors
     smartmontools
+
+    # Cryptography and password tools
+    openssl
+    pwgen
   ];
   
   

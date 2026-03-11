@@ -118,7 +118,7 @@ in
           # Wait for cluster to be ready
           echo "Waiting for k3s cluster to be ready..."
           for i in {1..60}; do
-            if kubectl get nodes >/dev/null 2>&1; then
+            if ${pkgs.kubectl}/bin/kubectl get nodes >/dev/null 2>&1; then
               break
             fi
             sleep 2
@@ -127,12 +127,12 @@ in
           # Ensure namespaces exist before applying policies
           echo "Creating system namespaces if they don't exist..."
           ${concatMapStrings (ns: ''
-            kubectl create namespace ${ns} --dry-run=client -o yaml | kubectl apply -f - || true
+            ${pkgs.kubectl}/bin/kubectl create namespace ${ns} --dry-run=client -o yaml | ${pkgs.kubectl}/bin/kubectl apply -f - || true
           '') cfg.systemNamespaces}
           
           # Apply network policies
           echo "Applying network policies for system namespaces..."
-          kubectl apply -f - <<EOF
+          ${pkgs.kubectl}/bin/kubectl apply -f - <<EOF
           ${systemNetworkPoliciesManifest}
           EOF
           
@@ -147,7 +147,7 @@ in
           
           echo "Removing network policies..."
           ${concatMapStrings (ns: ''
-            kubectl delete networkpolicy --all -n ${ns} --ignore-not-found=true || true
+            ${pkgs.kubectl}/bin/kubectl delete networkpolicy --all -n ${ns} --ignore-not-found=true || true
           '') cfg.systemNamespaces}
         '';
       };
@@ -167,7 +167,7 @@ in
         for ns in ${concatStringsSep " " cfg.systemNamespaces}; do
           echo ""
           echo "Namespace: $ns"
-          kubectl get networkpolicies -n "$ns" 2>/dev/null || echo "  No network policies found"
+          ${pkgs.kubectl}/bin/kubectl get networkpolicies -n "$ns" 2>/dev/null || echo "  No network policies found"
         done
       '')
       
@@ -184,7 +184,7 @@ in
         echo "Testing egress from namespace: $NAMESPACE to $TARGET"
         
         # Create test pod
-        kubectl run test-egress-$RANDOM \
+        ${pkgs.kubectl}/bin/kubectl run test-egress-$RANDOM \
           --namespace="$NAMESPACE" \
           --image=curlimages/curl:latest \
           --rm -it --restart=Never \

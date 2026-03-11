@@ -157,7 +157,7 @@ in
       kubespy
       kubeval
       kube-score
-      
+
       # Debugging tools
       # kubectl-debug  # Package might not be available
       # kubectl-trace  # Package might not be available
@@ -173,12 +173,12 @@ in
         echo "Setting up k3s development environment..."
         
         # Create development namespace
-        kubectl apply -f - <<EOF
+        ${pkgs.kubectl}/bin/kubectl apply -f - <<EOF
         ${devNamespaceManifest}
         EOF
         
         # Set default namespace to dev
-        kubectl config set-context --current --namespace=dev
+        ${pkgs.kubectl}/bin/kubectl config set-context --current --namespace=dev
         
         echo "Development environment ready!"
         echo ""
@@ -240,7 +240,7 @@ in
         
         export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
         
-        cat <<EOF | kubectl apply -f -
+        cat <<EOF | ${pkgs.kubectl}/bin/kubectl apply -f -
         apiVersion: apps/v1
         kind: Deployment
         metadata:
@@ -278,7 +278,7 @@ in
         
         echo "Application deployed: $APP_NAME"
         echo "Getting service info..."
-        kubectl get svc $APP_NAME -n dev
+        ${pkgs.kubectl}/bin/kubectl get svc $APP_NAME -n dev
       '')
       
       (pkgs.writeShellScriptBin "k3s-dev-forward" ''
@@ -294,14 +294,14 @@ in
           echo "Usage: k3s-dev-forward <service> [local-port] [remote-port]"
           echo ""
           echo "Available services in dev namespace:"
-          kubectl get svc -n dev
+          ${pkgs.kubectl}/bin/kubectl get svc -n dev
           exit 1
         fi
         
         export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
         
         echo "Forwarding $SERVICE:$REMOTE_PORT to localhost:$LOCAL_PORT"
-        kubectl port-forward -n dev "svc/$SERVICE" "$LOCAL_PORT:$REMOTE_PORT"
+        ${pkgs.kubectl}/bin/kubectl port-forward -n dev "svc/$SERVICE" "$LOCAL_PORT:$REMOTE_PORT"
       '')
     ];
     
@@ -365,24 +365,24 @@ in
           export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
           
           # Wait for cluster
-          kubectl wait --for=condition=Ready nodes --all --timeout=60s
+          ${pkgs.kubectl}/bin/kubectl wait --for=condition=Ready nodes --all --timeout=60s
           
           # Deploy samples
           ${optionalString (elem "hello-world" cfg.samples.apps) ''
             echo "Deploying hello-world..."
-            kubectl create deployment hello-world \
+            ${pkgs.kubectl}/bin/kubectl create deployment hello-world \
               --image=gcr.io/google-samples/hello-app:1.0 \
               --namespace=dev \
-              --dry-run=client -o yaml | kubectl apply -f -
-            kubectl expose deployment hello-world \
+              --dry-run=client -o yaml | ${pkgs.kubectl}/bin/kubectl apply -f -
+            ${pkgs.kubectl}/bin/kubectl expose deployment hello-world \
               --port=8080 \
               --namespace=dev \
-              --dry-run=client -o yaml | kubectl apply -f -
+              --dry-run=client -o yaml | ${pkgs.kubectl}/bin/kubectl apply -f -
           ''}
           
           ${optionalString (elem "redis" cfg.samples.apps) ''
             echo "Deploying Redis..."
-            kubectl apply -n dev -f - <<EOF
+            ${pkgs.kubectl}/bin/kubectl apply -n dev -f - <<EOF
             apiVersion: apps/v1
             kind: Deployment
             metadata:
@@ -418,7 +418,7 @@ in
           
           ${optionalString (elem "postgres" cfg.samples.apps) ''
             echo "Deploying PostgreSQL..."
-            kubectl apply -n dev -f - <<EOF
+            ${pkgs.kubectl}/bin/kubectl apply -n dev -f - <<EOF
             apiVersion: apps/v1
             kind: Deployment
             metadata:
@@ -460,7 +460,7 @@ in
           ''}
           
           echo "Sample applications deployed to 'dev' namespace"
-          kubectl get all -n dev
+          ${pkgs.kubectl}/bin/kubectl get all -n dev
         '';
       };
     };

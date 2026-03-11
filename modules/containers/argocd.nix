@@ -299,17 +299,17 @@ in
           
           # Wait for cluster
           echo "Waiting for k3s cluster..."
-          kubectl wait --for=condition=Ready nodes --all --timeout=120s
+          ${pkgs.kubectl}/bin/kubectl wait --for=condition=Ready nodes --all --timeout=120s
           
           # Create ArgoCD namespace
-          kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+          ${pkgs.kubectl}/bin/kubectl create namespace argocd --dry-run=client -o yaml | ${pkgs.kubectl}/bin/kubectl apply -f -
           
           # Add ArgoCD Helm repository
-          helm repo add argo https://argoproj.github.io/argo-helm
-          helm repo update
+          ${pkgs.kubernetes-helm}/bin/helm repo add argo https://argoproj.github.io/argo-helm
+          ${pkgs.kubernetes-helm}/bin/helm repo update
           
           # Generate bcrypt password hash for admin
-          ADMIN_PASSWORD_HASH=$(${pkgs.python3}/bin/python3 -c "import bcrypt; print(bcrypt.hashpw('${cfg.adminPassword}'.encode('utf-8'), bcrypt.gensalt()).decode('utf-8'))")
+          ADMIN_PASSWORD_HASH=$(${pkgs.python3.withPackages (ps: [ ps.bcrypt ])}/bin/python3 -c "import bcrypt; print(bcrypt.hashpw('${cfg.adminPassword}'.encode('utf-8'), bcrypt.gensalt()).decode('utf-8'))")
           
           # Install ArgoCD
           echo "Installing ArgoCD..."
@@ -323,7 +323,7 @@ in
           # Substitute the password hash
           sed -i "s|\$ADMIN_PASSWORD_HASH|$ADMIN_PASSWORD_HASH|g" /tmp/argocd-values.yaml
           
-          helm upgrade --install argocd argo/argo-cd \
+          ${pkgs.kubernetes-helm}/bin/helm upgrade --install argocd argo/argo-cd \
             --namespace argocd \
             --values /tmp/argocd-values.yaml \
             --wait \
@@ -332,16 +332,16 @@ in
           # Install Sealed Secrets if enabled
           ${optionalString cfg.sealedSecrets.enable ''
             echo "Installing Sealed Secrets..."
-            helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets
-            helm repo update
+            ${pkgs.kubernetes-helm}/bin/helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets
+            ${pkgs.kubernetes-helm}/bin/helm repo update
             
-            helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets \
+            ${pkgs.kubernetes-helm}/bin/helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets \
               --namespace ${cfg.sealedSecrets.namespace} \
               --set-string fullnameOverride=sealed-secrets-controller \
               --wait
             
             # Wait for sealed secrets controller
-            kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=sealed-secrets -n ${cfg.sealedSecrets.namespace} --timeout=120s
+            ${pkgs.kubectl}/bin/kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=sealed-secrets -n ${cfg.sealedSecrets.namespace} --timeout=120s
           ''}
           
           # Create App of Apps if configured
@@ -350,7 +350,7 @@ in
             cat > /tmp/app-of-apps.yaml << 'EOF'
             ${appOfAppsManifest}
             EOF
-            kubectl apply -f /tmp/app-of-apps.yaml
+            ${pkgs.kubectl}/bin/kubectl apply -f /tmp/app-of-apps.yaml
           ''}
           
           # Create individual application manifests
@@ -359,14 +359,14 @@ in
             cat > /tmp/app-${app}.yaml << 'EOF'
             ${sampleAppManifest app}
             EOF
-            kubectl apply -f /tmp/app-${app}.yaml
+            ${pkgs.kubectl}/bin/kubectl apply -f /tmp/app-${app}.yaml
           '') cfg.applications}
           
           # Configure notifications if enabled
           ${optionalString (cfg.notifications.enable && cfg.notifications.slack.enable) ''
-            kubectl create secret generic argocd-notifications-secret \
+            ${pkgs.kubectl}/bin/kubectl create secret generic argocd-notifications-secret \
               --from-literal=slack-webhook='${cfg.notifications.slack.webhook}' \
-              -n argocd --dry-run=client -o yaml | kubectl apply -f -
+              -n argocd --dry-run=client -o yaml | ${pkgs.kubectl}/bin/kubectl apply -f -
           ''}
           
           echo ""
@@ -427,7 +427,7 @@ in
           exit 1
         fi
         
-        cat << EOF | kubectl apply -f -
+        cat << EOF | ${pkgs.kubectl}/bin/kubectl apply -f -
         apiVersion: argoproj.io/v1alpha1
         kind: Application
         metadata:
