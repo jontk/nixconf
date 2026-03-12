@@ -7,6 +7,8 @@
     programs.sway = {
       enable = true;
       wrapperFeatures.gtk = true;
+      # Still required - Sway blocks all nvidia drivers regardless of open/proprietary
+      extraOptions = [ "--unsupported-gpu" ];
       extraPackages = with pkgs; [
         # Core Sway utilities
         swaylock # Screen locker
