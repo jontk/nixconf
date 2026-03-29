@@ -181,12 +181,23 @@
     
     # Support NTFS and CIFS (for network shares)
     supportedFilesystems = [ "ntfs" "cifs" ];
-    
+
     # Plymouth boot splash
     plymouth = {
       enable = true;
       theme = "breeze";
     };
+  };
+
+  # NFS network share from macrack1
+  fileSystems."/mnt/export" = {
+    device = "macrack1:/Users/Shared/export";
+    fsType = "nfs";
+    options = [
+      "nofail"
+      "x-systemd.automount"
+      "noatime"
+    ];
   };
   
   # Networking configuration
