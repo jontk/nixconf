@@ -200,6 +200,13 @@
     ];
   };
   
+  # Local SLURM cluster for s9s testing
+  services.slurm-local = {
+    enable = true;
+    gpu.enable = true;
+    gpu.deviceFile = "/dev/nvidia0";
+  };
+
   # Networking configuration
   networking = {
     # Enable NetworkManager (desktop-friendly)
@@ -374,7 +381,7 @@
       # GitOps with ArgoCD
       argocd = {
         enable = true;
-        adminPassword = "argocd-admin"; # Change this in production!
+        adminPassword = "change-me"; # Override in /etc/nixos/secrets or via sops
         applications = [ "sample-app" ];
         sealedSecrets = {
           enable = true;
@@ -485,7 +492,7 @@
       jontk = {
         isNormalUser = true;
         description = "Jon Thor Kristinsson";
-        hashedPassword = "REDACTED_PASSWORD_HASH"; # Use mkpasswd -m sha-512 to generate
+        hashedPasswordFile = "/etc/nixos/secrets/jontk-password-hash";
         extraGroups = [
           "wheel"
           "networkmanager"
@@ -509,7 +516,7 @@
       
       # Root user configuration
       root = {
-        hashedPassword = "REDACTED_PASSWORD_HASH"; # Disable root login
+        hashedPasswordFile = "/etc/nixos/secrets/root-password-hash";
       };
     };
   };

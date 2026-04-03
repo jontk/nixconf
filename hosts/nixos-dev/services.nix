@@ -135,7 +135,7 @@
       
       grafana = {
         enable = true;
-        adminPassword = "changeme";  # Change this!
+        adminPassword = "change-me"; # Override in /etc/nixos/secrets or via sops
         theme = "dark";
       };
       

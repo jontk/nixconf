@@ -224,7 +224,7 @@
       jontk = {
         isNormalUser = true;
         description = "Jon Thor Kristinsson";
-        hashedPassword = "REDACTED_PASSWORD_HASH";
+        hashedPasswordFile = "/etc/nixos/secrets/jontk-password-hash";
         extraGroups = [
           "wheel"
           "networkmanager"
