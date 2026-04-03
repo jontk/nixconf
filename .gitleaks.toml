@@ -1,0 +1,9 @@
+title = "nixconf gitleaks config"
+
+[allowlist]
+  description = "Global allowlist"
+  paths = [
+    '''\.lock$''',
+    '''node_modules/''',
+    '''\.git/''',
+  ]

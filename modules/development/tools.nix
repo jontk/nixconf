@@ -181,18 +181,13 @@
     dool # 'dstat' has been removed because it has been unmaintained since 2020. Use 'dool' instead.
   ];
   
-  # Tool-specific configurations
-  programs = {
-    # Tmux configuration is handled in home-manager
-    
-    # Enable direnv
-    direnv = {
+  } // lib.optionalAttrs isNixOS {
+    # NixOS system-level program configs (not available on Darwin)
+    programs.direnv = {
       enable = true;
       nix-direnv.enable = true;
     };
-    
-    # Git configuration
-    git = {
+    programs.git = {
       enable = true;
       lfs.enable = true;
       config = {
@@ -213,7 +208,7 @@
         };
       };
     };
-  };
+  } // {
   
   # Tool-specific environment variables
   environment.variables = {

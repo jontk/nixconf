@@ -1,13 +1,12 @@
 # Advanced Networking and VPN Configuration Module
 # Provides WireGuard VPN, service discovery, and advanced networking features
 
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, isNixOS ? pkgs.stdenv.isLinux, isDarwin ? pkgs.stdenv.isDarwin, ... }:
 
 with lib;
 
 let
   cfg = config.modules.networking;
-  isNixOS = pkgs.stdenv.isLinux;
 in
 
 {

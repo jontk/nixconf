@@ -428,31 +428,14 @@
   
   # Power management settings
   power = {
-    # Sleep settings
     sleep = {
-      computer = 15; # Minutes until computer sleep
-      display = 10; # Minutes until display sleep
-      harddisk = 10; # Minutes until hard disk sleep
+      computer = 15;
+      display = 10;
+      harddisk = 10;
+      allowSleepByPowerButton = true;
     };
-    
-    # Power adapter settings
-    powerAdapter = {
-      sleep = 0; # Never sleep when plugged in
-      display = 30; # Display sleep after 30 minutes
-      disksleep = 0; # Never spin down disks
-    };
-    
-    # Battery settings
-    battery = {
-      sleep = 15;
-      display = 5;
-      disksleep = 10;
-    };
-    
-    # Other power settings
     restartAfterPowerFailure = true;
     restartAfterFreeze = true;
-    allowPowerButtonToSleepComputer = true;
   };
   
   # System packages
