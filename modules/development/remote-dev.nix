@@ -1,14 +1,12 @@
 # Remote Development Module
 # Provides comprehensive remote development capabilities including VS Code Server, SSH, and cloud IDE support
 
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, isNixOS ? pkgs.stdenv.isLinux, isDarwin ? pkgs.stdenv.isDarwin, ... }:
 
 with lib;
 
 let
   cfg = config.modules.development.remoteDev;
-  isDarwin = pkgs.stdenv.isDarwin;
-  isNixOS = pkgs.stdenv.isLinux;
 
   # VS Code Server setup script
   vscodeServerSetup = pkgs.writeShellScript "vscode-server-setup" ''
@@ -264,7 +262,7 @@ in
     };
   };
 
-  config = mkIf cfg.enable {
+  config = mkIf cfg.enable ({
     # Remote development packages
     environment.systemPackages = with pkgs; [
       # SSH tools
@@ -485,63 +483,6 @@ in
       ''))
     ];
     
-    # SSH configuration
-    services.openssh = mkIf (cfg.ssh.enable && isNixOS) {
-      enable = true;
-      settings = {
-        PermitRootLogin = mkDefault "no";
-        PasswordAuthentication = mkDefault false;
-        X11Forwarding = cfg.ssh.forwardX11;
-        GatewayPorts = "yes";
-        StreamLocalBindUnlink = true;
-      };
-      
-      ports = cfg.ssh.ports;
-      
-      extraConfig = ''
-        # VS Code Server support
-        AcceptEnv LANG LC_* NIX_*
-        
-        # Allow port forwarding
-        AllowTcpForwarding yes
-        AllowAgentForwarding ${if cfg.ssh.forwardAgent then "yes" else "no"}
-        AllowStreamLocalForwarding yes
-        
-        # Client keep-alive
-        ClientAliveInterval 60
-        ClientAliveCountMax 10
-        
-        # Performance
-        UseDNS no
-        Compression yes
-      '';
-    };
-    
-    # Enable nix-ld for VS Code Server compatibility (NixOS)
-    programs.nix-ld = mkIf (cfg.vscodeServer.enable && isNixOS) {
-      enable = true;
-      libraries = cfg.vscodeServer.libraries;
-    };
-    
-    # Code-server service (NixOS)
-    systemd.services.code-server = mkIf (cfg.codeServer.enable && isNixOS) {
-      description = "VS Code Server";
-      after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-      
-      serviceConfig = {
-        Type = "simple";
-        User = config.users.primaryUser.username or "jontk";
-        ExecStart = ''
-          ${pkgs.code-server}/bin/code-server \
-            --bind-addr 0.0.0.0:${toString cfg.codeServer.port} \
-            --auth ${cfg.codeServer.auth} \
-            ${optionalString cfg.codeServer.cert "--cert"}
-        '';
-        Restart = "on-failure";
-      };
-    };
-    
     # Environment variables
     environment.variables = {
       # VS Code Server support
@@ -582,18 +523,76 @@ in
       dev-init = "remote-dev-init";
     };
     
+  } // lib.optionalAttrs isNixOS {
+    # SSH configuration
+    services.openssh = mkIf cfg.ssh.enable {
+      enable = true;
+      settings = {
+        PermitRootLogin = mkDefault "no";
+        PasswordAuthentication = mkDefault false;
+        X11Forwarding = cfg.ssh.forwardX11;
+        GatewayPorts = "yes";
+        StreamLocalBindUnlink = true;
+      };
+
+      ports = cfg.ssh.ports;
+
+      extraConfig = ''
+        # VS Code Server support
+        AcceptEnv LANG LC_* NIX_*
+
+        # Allow port forwarding
+        AllowTcpForwarding yes
+        AllowAgentForwarding ${if cfg.ssh.forwardAgent then "yes" else "no"}
+        AllowStreamLocalForwarding yes
+
+        # Client keep-alive
+        ClientAliveInterval 60
+        ClientAliveCountMax 10
+
+        # Performance
+        UseDNS no
+        Compression yes
+      '';
+    };
+
+    # Enable nix-ld for VS Code Server compatibility
+    programs.nix-ld = mkIf cfg.vscodeServer.enable {
+      enable = true;
+      libraries = cfg.vscodeServer.libraries;
+    };
+
+    # Code-server service
+    systemd.services.code-server = mkIf cfg.codeServer.enable {
+      description = "VS Code Server";
+      after = [ "network.target" ];
+      wantedBy = [ "multi-user.target" ];
+
+      serviceConfig = {
+        Type = "simple";
+        User = config.users.primaryUser.username or "jontk";
+        ExecStart = ''
+          ${pkgs.code-server}/bin/code-server \
+            --bind-addr 0.0.0.0:${toString cfg.codeServer.port} \
+            --auth ${cfg.codeServer.auth} \
+            ${optionalString cfg.codeServer.cert "--cert"}
+        '';
+        Restart = "on-failure";
+      };
+    };
+
     # User configuration
-    users.users = mkIf isNixOS {
+    users.users = {
       "${config.users.primaryUser.username or "jontk"}" = {
         openssh.authorizedKeys.keys = cfg.ssh.allowedUsers;
       };
     };
-    
-    # Firewall rules (NixOS)
-    networking.firewall = mkIf isNixOS {
+
+    # Firewall rules
+    networking.firewall = {
       allowedTCPPorts = cfg.ssh.ports
         ++ optional cfg.codeServer.enable cfg.codeServer.port
         ++ [ 8443 ]; # Common HTTPS alternative port
     };
-  };
+  });
 }

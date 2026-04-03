@@ -99,15 +99,17 @@
       };
       
       # Helper function to create system configurations
-      mkSystem = { system, modules, specialArgs ? {} }: 
+      mkSystem = { system, modules, specialArgs ? {} }:
         let
           pkgs = mkPkgs system;
+          isDarwin = nixpkgs.lib.hasInfix "darwin" system;
+          isNixOS = !isDarwin;
         in
-        if nixpkgs.lib.hasInfix "darwin" system then
+        if isDarwin then
           nix-darwin.lib.darwinSystem {
             inherit system modules;
-            specialArgs = specialArgs // { 
-              inherit self nixpkgs nixpkgs-stable pkgs;
+            specialArgs = specialArgs // {
+              inherit self nixpkgs nixpkgs-stable pkgs isDarwin isNixOS;
               inputs = { inherit rust-overlay nix-vscode-extensions firefox-addons sops-nix dotfiles; };
             };
           }
@@ -115,7 +117,7 @@
           nixpkgs.lib.nixosSystem {
             inherit system modules;
             specialArgs = specialArgs // {
-              inherit self nixpkgs nixpkgs-stable nixos-hardware pkgs;
+              inherit self nixpkgs nixpkgs-stable nixos-hardware pkgs isDarwin isNixOS;
               inputs = { inherit hyprland rust-overlay nix-vscode-extensions firefox-addons sops-nix dotfiles; };
             };
           };

@@ -47,8 +47,23 @@ jobs:
           nix build .#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel \
             --dry-run --show-trace
 
-  # Darwin build skipped: modules/development/profiling.nix sets NixOS-only
-  # options (boot.*) that fail on Darwin. Fix in a separate PR.
+  build-darwin:
+    name: Build Darwin (macos-laptop)
+    runs-on: macos-latest
+    needs: flake-check
+    continue-on-error: true # Darwin host config needs updates for latest nix-darwin API
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: DeterminateSystems/nix-installer-action@main
+        with:
+          extra-conf: |
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build macos-laptop
+        run: |
+          nix build .#darwinConfigurations.macos-laptop.system \
+            --dry-run --show-trace
 
   secret-scan:
     name: Secret Scan

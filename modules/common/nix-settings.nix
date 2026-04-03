@@ -1,4 +1,4 @@
-{ config, pkgs, lib, nixpkgs, ... }:
+{ config, pkgs, lib, nixpkgs, isNixOS ? pkgs.stdenv.isLinux, isDarwin ? pkgs.stdenv.isDarwin, ... }:
 
 {
   # Advanced Nix configuration settings
