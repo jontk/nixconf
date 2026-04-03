@@ -51,14 +51,12 @@ jobs:
     name: Build Darwin (macos-laptop)
     runs-on: macos-latest
     needs: flake-check
-    continue-on-error: true # macOS runners have intermittent Nix install issues
     steps:
       - uses: actions/checkout@v4
 
-      - uses: cachix/install-nix-action@v27
+      - uses: DeterminateSystems/nix-installer-action@main
         with:
-          extra_nix_config: |
-            experimental-features = nix-command flakes
+          extra-conf: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
 
       - name: Build macos-laptop
