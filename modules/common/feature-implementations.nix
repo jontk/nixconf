@@ -1,9 +1,7 @@
-{ config, pkgs, lib, inputs, ... }:
+{ config, pkgs, lib, inputs, isNixOS ? pkgs.stdenv.isLinux, isDarwin ? pkgs.stdenv.isDarwin, ... }:
 
 let
   cfg = config.nixconf.features;
-  isDarwin = pkgs.stdenv.isDarwin;
-  isNixOS = !isDarwin;
 in
 {
   # Implementation of feature flags - this module applies the actual configurations
@@ -135,8 +133,10 @@ in
       nextcloud-client
     ]));
 
+    # macOS-specific feature implementations - disabled temporarily
+} // lib.optionalAttrs isNixOS {
     # Docker configuration
-    virtualisation.docker = lib.mkIf (isNixOS && cfg.development.docker) {
+    virtualisation.docker = lib.mkIf cfg.development.docker {
       enable = true;
       enableOnBoot = true;
       autoPrune = {
@@ -146,14 +146,14 @@ in
     };
 
     # Podman as Docker alternative
-    virtualisation.podman = lib.mkIf (isNixOS && cfg.virtualization.podman) {
+    virtualisation.podman = lib.mkIf cfg.virtualization.podman {
       enable = true;
       dockerCompat = true;
       defaultNetwork.settings.dns_enabled = true;
     };
 
     # KVM/libvirt virtualization
-    virtualisation.libvirtd = lib.mkIf (isNixOS && cfg.virtualization.libvirt) {
+    virtualisation.libvirtd = lib.mkIf cfg.virtualization.libvirt {
       enable = true;
       qemu = {
         package = pkgs.qemu_kvm;
@@ -167,13 +167,13 @@ in
     };
 
     # VirtualBox support
-    virtualisation.virtualbox.host = lib.mkIf (isNixOS && cfg.virtualization.virtualbox) {
+    virtualisation.virtualbox.host = lib.mkIf cfg.virtualization.virtualbox {
       enable = true;
       enableExtensionPack = true;
     };
 
     # Network services
-    services = lib.mkIf isNixOS {
+    services = {
       # SSH configuration
       openssh = lib.mkIf cfg.remote.ssh {
         enable = true;
@@ -291,7 +291,7 @@ in
     };
 
     # Kernel hardening via boot.kernel.sysctl
-    boot.kernel.sysctl = lib.mkIf (isNixOS && cfg.security.hardening) {
+    boot.kernel.sysctl = lib.mkIf cfg.security.hardening {
       # Network security
       "net.ipv4.conf.default.rp_filter" = 1;
       "net.ipv4.conf.all.rp_filter" = 1;
@@ -303,21 +303,19 @@ in
       "net.ipv4.conf.all.secure_redirects" = 0;
       "net.ipv4.icmp_echo_ignore_broadcasts" = 1;
       "net.ipv4.icmp_ignore_bogus_error_responses" = 1;
-      
+
       # Memory protection
       "kernel.dmesg_restrict" = 1;
       "kernel.kptr_restrict" = 2;
       "kernel.yama.ptrace_scope" = 1;
-      
+
       # File system security
       "fs.protected_hardlinks" = 1;
       "fs.protected_symlinks" = 1;
     };
 
     # Security hardening
-    security = lib.mkIf (isNixOS && cfg.security.hardening) {
-      # Kernel hardening - moved to boot.kernel.sysctl (see below)
-
+    security = lib.mkIf cfg.security.hardening {
       # AppArmor
       apparmor = {
         enable = true;
@@ -335,24 +333,20 @@ in
       ];
     };
 
-    # YubiKey packages are included in main systemPackages above
-
     # WireGuard VPN
-    networking.wireguard = lib.mkIf (isNixOS && cfg.network.wireguard) {
+    networking.wireguard = lib.mkIf cfg.network.wireguard {
       enable = true;
     };
 
-    # Tor support is configured in services block above
-
     # Gaming support and development tools (NixOS only)
-    programs = lib.mkIf isNixOS (lib.mkMerge [
+    programs = lib.mkMerge [
       (lib.mkIf cfg.desktop.gaming {
         steam = {
           enable = true;
           remotePlay.openFirewall = true;
           dedicatedServer.openFirewall = true;
         };
-        
+
         gamemode.enable = true;
       })
       (lib.mkIf cfg.development.enable {
@@ -361,9 +355,9 @@ in
           nix-direnv.enable = true;
         };
       })
-    ]);
+    ];
 
-    hardware = lib.mkIf (isNixOS && cfg.desktop.gaming) {
+    hardware = lib.mkIf cfg.desktop.gaming {
       opengl = {
         enable = true;
         driSupport = true;
@@ -371,11 +365,6 @@ in
       };
     };
 
-    # Office, multimedia, and backup packages are included in main systemPackages above
-
-    # Development shell integration is configured in programs block above
-
-    # macOS-specific feature implementations - disabled temporarily
 } // lib.optionalAttrs false {
   homebrew = {
       enable = true;

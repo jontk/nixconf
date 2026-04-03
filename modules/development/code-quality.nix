@@ -1,14 +1,12 @@
 # Code Quality and Security Scanning Module
 # Provides comprehensive code quality, security scanning, and static analysis tools
 
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, isNixOS ? pkgs.stdenv.isLinux, isDarwin ? pkgs.stdenv.isDarwin, ... }:
 
 with lib;
 
 let
   cfg = config.modules.development.codeQuality;
-  isDarwin = pkgs.stdenv.isDarwin;
-  isNixOS = pkgs.stdenv.isLinux;
 
   # Pre-commit hook configuration generator
   generatePreCommitConfig = hooks: ''

@@ -1,14 +1,12 @@
 # Performance Profiling and Debugging Module
 # Provides comprehensive performance analysis, profiling, and debugging tools
 
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, isNixOS ? pkgs.stdenv.isLinux, isDarwin ? pkgs.stdenv.isDarwin, ... }:
 
 with lib;
 
 let
   cfg = config.modules.development.profiling;
-  isDarwin = pkgs.stdenv.isDarwin;
-  isNixOS = pkgs.stdenv.isLinux;
 
   # Flamegraph generation script
   generateFlamegraph = pkgs.writeShellScript "generate-flamegraph" ''
@@ -225,7 +223,7 @@ in
     };
   };
 
-  config = mkIf cfg.enable {
+  config = mkIf cfg.enable ({
     # Performance profiling and debugging packages
     environment.systemPackages = with pkgs; [
       # System profilers
@@ -557,21 +555,22 @@ in
       trace-mem = "strace -f -e trace=memory";
     };
     
-    # Kernel parameters for better profiling (NixOS)
-    boot = mkIf isNixOS {
+  } // lib.optionalAttrs isNixOS {
+    # Kernel parameters for better profiling
+    boot = {
       kernel.sysctl = {
         # Allow perf for non-root users
         "kernel.perf_event_paranoid" = mkDefault 1;
         "kernel.kptr_restrict" = mkDefault 0;
-        
+
         # Enable core dumps
         "kernel.core_uses_pid" = 1;
         "kernel.core_pattern" = "/tmp/core-%e-%p-%t";
-        
+
         # Increase limits for profiling
         "fs.file-max" = 2097152;
         "vm.max_map_count" = 262144;
       };
     };
-  };
+  });
 }

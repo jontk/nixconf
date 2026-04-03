@@ -1,12 +1,6 @@
-{ config, pkgs, lib, options, ... }:
+{ config, pkgs, lib, options, isNixOS ? pkgs.stdenv.isLinux, isDarwin ? pkgs.stdenv.isDarwin, ... }:
 
 let
-  # Helper function to check if running on Darwin
-  isDarwin = pkgs.stdenv.isDarwin;
-  
-  # Helper function to check if running on NixOS
-  isNixOS = !isDarwin;
-  
   # Common configuration options with sensible defaults
   cfg = config.nixconf.common;
 in
@@ -104,49 +98,6 @@ in
       ];
     };
 
-    # Time and locale configuration
-    time.timeZone = lib.mkIf isNixOS cfg.locale.timeZone;
-    
-    # NixOS-specific locale configuration
-    i18n = lib.mkIf isNixOS {
-      defaultLocale = cfg.locale.defaultLocale;
-      extraLocaleSettings = {
-        LC_ADDRESS = cfg.locale.defaultLocale;
-        LC_IDENTIFICATION = cfg.locale.defaultLocale;
-        LC_MEASUREMENT = cfg.locale.defaultLocale;
-        LC_MONETARY = cfg.locale.defaultLocale;
-        LC_NAME = cfg.locale.defaultLocale;
-        LC_NUMERIC = cfg.locale.defaultLocale;
-        LC_PAPER = cfg.locale.defaultLocale;
-        LC_TELEPHONE = cfg.locale.defaultLocale;
-        LC_TIME = cfg.locale.defaultLocale;
-      };
-    };
-
-    # Networking configuration (NixOS only)
-    networking = lib.mkIf isNixOS {
-      networkmanager.enable = cfg.networking.enableNetworkManager;
-      firewall.enable = cfg.security.enableFirewall;
-      
-      # DNS configuration - commented out to use DHCP-provided DNS
-      # nameservers = [ "8.8.8.8" "8.8.4.4" "1.1.1.1" ];
-    };
-
-    # Security configuration
-    security = lib.mkIf isNixOS {
-      # sudo configuration
-      sudo = {
-        enable = true;
-        wheelNeedsPassword = true;
-      };
-      
-      # Polkit for privilege escalation
-      polkit.enable = true;
-      
-      # rtkit for real-time audio
-      rtkit.enable = true;
-    };
-
     # Common system packages - essential tools for all systems
     environment.systemPackages = with pkgs; [
       # Essential command line tools
@@ -228,6 +179,112 @@ in
       };
     };
 
+    # NixOS-specific configuration
+  } // lib.optionalAttrs isNixOS {
+    # Time and locale configuration
+    time.timeZone = cfg.locale.timeZone;
+
+    # NixOS-specific locale configuration
+    i18n = {
+      defaultLocale = cfg.locale.defaultLocale;
+      extraLocaleSettings = {
+        LC_ADDRESS = cfg.locale.defaultLocale;
+        LC_IDENTIFICATION = cfg.locale.defaultLocale;
+        LC_MEASUREMENT = cfg.locale.defaultLocale;
+        LC_MONETARY = cfg.locale.defaultLocale;
+        LC_NAME = cfg.locale.defaultLocale;
+        LC_NUMERIC = cfg.locale.defaultLocale;
+        LC_PAPER = cfg.locale.defaultLocale;
+        LC_TELEPHONE = cfg.locale.defaultLocale;
+        LC_TIME = cfg.locale.defaultLocale;
+      };
+    };
+
+    # Networking configuration
+    networking = {
+      networkmanager.enable = cfg.networking.enableNetworkManager;
+      firewall.enable = cfg.security.enableFirewall;
+    };
+
+    # Security configuration
+    security = {
+      sudo = {
+        enable = true;
+        wheelNeedsPassword = true;
+      };
+      polkit.enable = true;
+      rtkit.enable = true;
+    };
+
+    # Font configuration
+    fonts = {
+      packages = with pkgs; [
+        noto-fonts
+        noto-fonts-cjk-sans
+        noto-fonts-emoji
+        liberation_ttf
+        fira-code
+        fira-code-symbols
+        nerd-fonts.jetbrains-mono
+        nerd-fonts.fira-code
+      ];
+
+      fontconfig = {
+        enable = true;
+        defaultFonts = {
+          monospace = [ "Fira Code" "Liberation Mono" ];
+          sansSerif = [ "Noto Sans" "Liberation Sans" ];
+          serif = [ "Noto Serif" "Liberation Serif" ];
+        };
+      };
+    };
+
+    # Services configuration
+    services = {
+      printing.enable = true;
+      pipewire = {
+        enable = true;
+        alsa.enable = true;
+        alsa.support32Bit = true;
+        pulse.enable = true;
+        jack.enable = true;
+      };
+      udisks2.enable = true;
+      dbus.enable = true;
+      fwupd.enable = true;
+    };
+
+    # Hardware configuration
+    hardware = {
+      bluetooth = {
+        enable = true;
+        powerOnBoot = true;
+      };
+      pulseaudio.enable = false;
+      graphics = {
+        enable = true;
+        enable32Bit = true;
+      };
+    };
+
+    # User configuration
+    users = {
+      defaultUserShell = pkgs.zsh;
+      users.jontk = {
+        isNormalUser = true;
+        description = "Jon Thor Kristinsson";
+        extraGroups = [
+          "wheel"
+          "networkmanager"
+          "audio"
+          "video"
+          "docker"
+          "plugdev"
+        ];
+        shell = pkgs.zsh;
+      };
+    };
+
     # macOS-specific configuration
   } // lib.optionalAttrs isDarwin {
     system = {
@@ -284,88 +341,6 @@ in
           # Show status bar
           ShowStatusBar = true;
         };
-      };
-    };
-
-    # Font configuration
-    fonts = lib.mkIf isNixOS {
-      packages = with pkgs; [
-        noto-fonts
-        noto-fonts-cjk-sans
-        noto-fonts-emoji
-        liberation_ttf
-        fira-code
-        fira-code-symbols
-        nerd-fonts.jetbrains-mono
-        nerd-fonts.fira-code
-      ];
-      
-      fontconfig = {
-        enable = true;
-        defaultFonts = {
-          monospace = [ "Fira Code" "Liberation Mono" ];
-          sansSerif = [ "Noto Sans" "Liberation Sans" ];
-          serif = [ "Noto Serif" "Liberation Serif" ];
-        };
-      };
-    };
-
-    # Services configuration (NixOS only)
-    services = lib.mkIf isNixOS {
-      # Enable printing support
-      printing.enable = true;
-      
-      # Enable sound with pipewire
-      pipewire = {
-        enable = true;
-        alsa.enable = true;
-        alsa.support32Bit = true;
-        pulse.enable = true;
-        jack.enable = true;
-      };
-      
-      # Hardware services
-      udisks2.enable = true; # Auto-mounting
-      dbus.enable = true;
-      
-      # Firmware updates
-      fwupd.enable = true;
-    };
-
-    # Hardware configuration (NixOS only)
-    hardware = lib.mkIf isNixOS {
-      # Bluetooth
-      bluetooth = {
-        enable = true;
-        powerOnBoot = true;
-      };
-      
-      # Pulse audio (disabled in favor of pipewire)
-      pulseaudio.enable = false;
-      
-      # Graphics acceleration (updated API)
-      graphics = {
-        enable = true;
-        enable32Bit = true;
-      };
-    };
-
-    # User configuration
-    users = lib.mkIf isNixOS {
-      defaultUserShell = pkgs.zsh;
-      
-      users.jontk = {
-        isNormalUser = true;
-        description = "Jon Thor Kristinsson";
-        extraGroups = [ 
-          "wheel" 
-          "networkmanager" 
-          "audio" 
-          "video" 
-          "docker" 
-          "plugdev"
-        ];
-        shell = pkgs.zsh;
       };
     };
   };

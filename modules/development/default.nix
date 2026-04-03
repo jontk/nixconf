@@ -1,9 +1,5 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, isNixOS ? pkgs.stdenv.isLinux, isDarwin ? pkgs.stdenv.isDarwin, ... }:
 
-let
-  isDarwin = pkgs.stdenv.isDarwin;
-  isNixOS = !isDarwin;
-in
 {
   imports = [
     ./languages.nix

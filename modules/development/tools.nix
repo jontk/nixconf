@@ -1,9 +1,4 @@
-{ config, pkgs, lib, ... }:
-
-let
-  isDarwin = pkgs.stdenv.isDarwin;
-  isNixOS = !isDarwin;
-in
+{ config, pkgs, lib, isNixOS ? pkgs.stdenv.isLinux, isDarwin ? pkgs.stdenv.isDarwin, ... }:
 {
   # Development tools configuration
   environment.systemPackages = with pkgs; [

@@ -1,14 +1,12 @@
 # Container Development Workflows Module
 # Provides comprehensive container development with Docker, Podman, and development containers
 
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, isNixOS ? pkgs.stdenv.isLinux, isDarwin ? pkgs.stdenv.isDarwin, ... }:
 
 with lib;
 
 let
   cfg = config.modules.development.containers;
-  isDarwin = pkgs.stdenv.isDarwin;
-  isNixOS = pkgs.stdenv.isLinux;
 
   # Devcontainer configuration generator
   generateDevcontainerJson = { name, image, features ? {}, customizations ? {}, extensions ? [], settings ? {}, forwardPorts ? [], postCreateCommand ? "" }: ''
@@ -223,7 +221,7 @@ in
     };
   };
 
-  config = mkIf cfg.enable {
+  config = mkIf cfg.enable ({
     # Container tools packages
     environment.systemPackages = with pkgs; [
       # Docker tools
@@ -343,41 +341,6 @@ in
         docker-compose = "podman-compose";
       })
     ];
-    
-    # Docker daemon configuration (NixOS)
-    virtualisation = mkIf (isNixOS && cfg.docker.enable) {
-      docker = {
-        enable = true;
-        enableOnBoot = true;
-        autoPrune = {
-          enable = true;
-          dates = "weekly";
-          flags = [ "--all" "--volumes" ];
-        };
-        
-        daemon.settings = {
-          features = {
-            buildkit = cfg.docker.buildkit;
-          };
-          registry-mirrors = cfg.docker.registry.mirrors;
-          insecure-registries = cfg.docker.registry.insecureRegistries;
-          log-driver = "json-file";
-          log-opts = {
-            max-size = "10m";
-            max-file = "3";
-          };
-        };
-      };
-      
-      # Podman configuration
-      podman = mkIf cfg.podman.enable {
-        enable = true;
-        dockerCompat = cfg.podman.dockerCompat;
-        defaultNetwork.settings = {
-          dns_enabled = true;
-        };
-      };
-    };
     
     # Pre-configured devcontainer templates
     modules.development.containers.devcontainers.templates = {
@@ -630,11 +593,47 @@ in
       };
     };
     
+  } // lib.optionalAttrs isNixOS {
+    # Docker daemon configuration
+    virtualisation = mkIf cfg.docker.enable {
+      docker = {
+        enable = true;
+        enableOnBoot = true;
+        autoPrune = {
+          enable = true;
+          dates = "weekly";
+          flags = [ "--all" "--volumes" ];
+        };
+
+        daemon.settings = {
+          features = {
+            buildkit = cfg.docker.buildkit;
+          };
+          registry-mirrors = cfg.docker.registry.mirrors;
+          insecure-registries = cfg.docker.registry.insecureRegistries;
+          log-driver = "json-file";
+          log-opts = {
+            max-size = "10m";
+            max-file = "3";
+          };
+        };
+      };
+
+      # Podman configuration
+      podman = mkIf cfg.podman.enable {
+        enable = true;
+        dockerCompat = cfg.podman.dockerCompat;
+        defaultNetwork.settings = {
+          dns_enabled = true;
+        };
+      };
+    };
+
     # User configuration
-    users.users = mkIf isNixOS {
+    users.users = {
       "${config.users.primaryUser.username or "jontk"}" = {
         extraGroups = [ "docker" ] ++ (if cfg.podman.enable then [ "podman" ] else []);
       };
     };
-  };
+  });
 }

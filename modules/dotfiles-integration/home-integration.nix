@@ -1,5 +1,5 @@
 # This module is meant to be imported within home-manager context
-{ config, lib, pkgs, inputs, ... }:
+{ config, lib, pkgs, inputs, isNixOS ? pkgs.stdenv.isLinux, isDarwin ? pkgs.stdenv.isDarwin, ... }:
 
 with lib;
 

@@ -1,9 +1,7 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, isNixOS ? pkgs.stdenv.isLinux, isDarwin ? pkgs.stdenv.isDarwin, ... }:
 
 let
   cfg = config.nixconf.performance;
-  isDarwin = pkgs.stdenv.isDarwin;
-  isNixOS = !isDarwin;
 in
 {
   options.nixconf.performance = with lib; {
@@ -43,32 +41,34 @@ in
     };
   };
   
-  config = lib.mkIf cfg.enable {
-    # CPU performance tuning (NixOS only)
-    powerManagement = lib.mkIf isNixOS {
+  config = lib.mkIf cfg.enable ({
+    # macOS performance optimizations
+  } // lib.optionalAttrs isNixOS {
+    # CPU performance tuning
+    powerManagement = {
       enable = true;
       cpuFreqGovernor = cfg.cpu.governor;
     };
-    
+
     # Microcode updates
-    hardware.cpu.intel.updateMicrocode = lib.mkIf (isNixOS && cfg.cpu.enableMicrocode) (
+    hardware.cpu.intel.updateMicrocode = lib.mkIf cfg.cpu.enableMicrocode (
       lib.mkDefault config.hardware.enableRedistributableFirmware
     );
-    hardware.cpu.amd.updateMicrocode = lib.mkIf (isNixOS && cfg.cpu.enableMicrocode) (
+    hardware.cpu.amd.updateMicrocode = lib.mkIf cfg.cpu.enableMicrocode (
       lib.mkDefault config.hardware.enableRedistributableFirmware
     );
-    
+
     # Memory management
-    boot = lib.mkIf isNixOS {
+    boot = {
       # Kernel parameters for performance (boot-time only)
       kernelParams = [
         # I/O scheduler
         "elevator=${cfg.storage.scheduler}"
       ];
-      
+
       # Kernel modules for performance
       kernelModules = lib.optionals cfg.network.enableBbr [ "tcp_bbr" ];
-      
+
       # Sysctl parameters (runtime kernel settings)
       kernel.sysctl = {
         # Memory management
@@ -83,25 +83,25 @@ in
         "net.ipv4.tcp_congestion_control" = "bbr";
       };
     };
-    
+
     # Zram configuration
-    zramSwap = lib.mkIf (isNixOS && cfg.memory.enableZram) {
+    zramSwap = lib.mkIf cfg.memory.enableZram {
       enable = true;
       memoryPercent = 25;
       algorithm = "zstd";
     };
-    
+
     # SSD optimization
-    services = lib.mkIf isNixOS {
+    services = {
       # TRIM support for SSDs
       fstrim = lib.mkIf cfg.storage.enableFstrim {
         enable = true;
         interval = "weekly";
       };
-      
+
       # Thermald for Intel thermal management
       thermald.enable = lib.mkDefault true;
-      
+
       # Power management
       power-profiles-daemon.enable = lib.mkDefault false;
       tlp = {
@@ -110,46 +110,35 @@ in
           # CPU performance
           CPU_SCALING_GOVERNOR_ON_AC = cfg.cpu.governor;
           CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
-          
+
           # Energy savings
           ENERGY_PERF_POLICY_ON_AC = "performance";
           ENERGY_PERF_POLICY_ON_BAT = "power";
-          
+
           # Platform profile
           PLATFORM_PROFILE_ON_AC = "performance";
           PLATFORM_PROFILE_ON_BAT = "low-power";
-          
+
           # USB autosuspend
           USB_AUTOSUSPEND = 1;
           USB_BLACKLIST_PHONE = 1;
         };
       };
     };
-    
+
     # System limits and kernel parameters
-    systemd = lib.mkIf isNixOS {
+    systemd = {
       settings.Manager = {
         # Increase default limits
         DefaultLimitNOFILE = 1048576;
         DefaultLimitSTACK = "16M";
       };
-      
+
       # Tmpfs for /tmp
       tmpfiles.rules = [
         "D /tmp 1777 root root 10d"
       ];
     };
-    
-    # Security and performance balance - disabled as options don't exist in this NixOS version
-    # security = lib.mkIf isNixOS {
-    #   # Mitigations can impact performance
-    #   mitigations = "auto";
-    #   
-    #   # Allow performance monitoring
-    #   allowUserPerfEvents = true;
-    # };
-    
-    # macOS performance optimizations
   } // lib.optionalAttrs isDarwin {
     system = {
       defaults = {
@@ -179,5 +168,5 @@ in
         };
       };
     };
-  };
+  });
 }
