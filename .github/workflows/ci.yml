@@ -20,7 +20,7 @@ jobs:
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
 
       - name: Check flake
-        run: nix flake check --no-build --show-trace
+        run: nix flake check --show-trace
 
       - name: Show flake outputs
         run: nix flake show
