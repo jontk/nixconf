@@ -103,7 +103,7 @@
         let
           pkgs = mkPkgs system;
         in
-        if nixpkgs.lib.hasPrefix "darwin" system then
+        if nixpkgs.lib.hasInfix "darwin" system then
           nix-darwin.lib.darwinSystem {
             inherit system modules;
             specialArgs = specialArgs // { 
@@ -114,7 +114,7 @@
         else
           nixpkgs.lib.nixosSystem {
             inherit system modules;
-            specialArgs = specialArgs // { 
+            specialArgs = specialArgs // {
               inherit self nixpkgs nixpkgs-stable nixos-hardware pkgs;
               inputs = { inherit hyprland rust-overlay nix-vscode-extensions firefox-addons sops-nix dotfiles; };
             };
@@ -216,14 +216,14 @@
     in
     {
       # NixOS configurations
-      nixosConfigurations = nixpkgs.lib.mapAttrs 
+      nixosConfigurations = nixpkgs.lib.mapAttrs
         (name: config: mkSystem config)
-        (nixpkgs.lib.filterAttrs (name: config: !nixpkgs.lib.hasPrefix "darwin" config.system) hostConfigs);
+        (nixpkgs.lib.filterAttrs (name: config: !nixpkgs.lib.hasInfix "darwin" config.system) hostConfigs);
 
       # Darwin configurations
-      darwinConfigurations = nixpkgs.lib.mapAttrs 
+      darwinConfigurations = nixpkgs.lib.mapAttrs
         (name: config: mkSystem config)
-        (nixpkgs.lib.filterAttrs (name: config: nixpkgs.lib.hasPrefix "darwin" config.system) hostConfigs);
+        (nixpkgs.lib.filterAttrs (name: config: nixpkgs.lib.hasInfix "darwin" config.system) hostConfigs);
 
       # Home Manager configurations (standalone)
       homeConfigurations = {
