@@ -58,7 +58,8 @@ in
     # Enhanced firewall rules
     networking.firewall = lib.mkIf isNixOS {
       extraCommands = ''
-        # Rate limiting for SSH
+        # Rate limiting for SSH (exempt local network)
+        iptables -A INPUT -p tcp --dport ssh -s 192.168.1.0/24 -m conntrack --ctstate NEW -j ACCEPT
         iptables -A INPUT -p tcp --dport ssh -m conntrack --ctstate NEW -m recent --set
         iptables -A INPUT -p tcp --dport ssh -m conntrack --ctstate NEW -m recent --update --seconds 60 --hitcount 4 -j REJECT --reject-with tcp-reset
         

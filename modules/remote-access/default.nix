@@ -341,8 +341,9 @@ in
         extraCommands = ''
           # Drop invalid packets
           iptables -A INPUT -m state --state INVALID -j DROP
-          
-          # Limit new SSH connections
+
+          # Limit new SSH connections (exempt local network)
+          iptables -A INPUT -p tcp --dport ${toString cfg.ssh.port} -s 192.168.1.0/24 -m state --state NEW -j ACCEPT
           iptables -A INPUT -p tcp --dport ${toString cfg.ssh.port} -m state --state NEW -m recent --set
           iptables -A INPUT -p tcp --dport ${toString cfg.ssh.port} -m state --state NEW -m recent --update --seconds 60 --hitcount 10 -j DROP
         '';
