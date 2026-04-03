@@ -84,7 +84,8 @@ generated/
 docs/_build/
 docs/.jekyll-cache/
 
-# Test outputs
+# Test projects and outputs
+test-*/
 test-results/
 coverage/
 

@@ -152,6 +152,7 @@
         ./modules/containers
         ./modules/networking
         ./modules/maintenance
+        ./modules/slurm-local
       ];
       
       # Service modules (NixOS only)
