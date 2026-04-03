@@ -152,35 +152,27 @@ in
       gawk
     ];
 
-    # Shell configuration
-    programs = {
-      # Enable zsh system-wide
-      zsh = {
-        enable = true;
-        enableCompletion = true;
-        autosuggestions.enable = true;
-        syntaxHighlighting.enable = true;
-      };
-      
-      # Git system configuration
-      git = {
-        enable = true;
-        config = {
-          init.defaultBranch = "main";
-          pull.rebase = true;
-          push.autoSetupRemote = true;
-        };
-      };
-      
-      # Direnv for development environments
-      direnv = {
-        enable = true;
-        nix-direnv.enable = true;
-      };
-    };
-
     # NixOS-specific configuration
   } // lib.optionalAttrs isNixOS {
+    # System-level programs (NixOS module structure differs from Darwin)
+    programs.zsh = {
+      enable = true;
+      enableCompletion = true;
+      autosuggestions.enable = true;
+      syntaxHighlighting.enable = true;
+    };
+    programs.git = {
+      enable = true;
+      config = {
+        init.defaultBranch = "main";
+        pull.rebase = true;
+        push.autoSetupRemote = true;
+      };
+    };
+    programs.direnv = {
+      enable = true;
+      nix-direnv.enable = true;
+    };
     # Time and locale configuration
     time.timeZone = cfg.locale.timeZone;
 

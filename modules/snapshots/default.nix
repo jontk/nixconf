@@ -1,13 +1,12 @@
 # Filesystem Snapshots Module
 # Provides system state snapshots using BTRFS or ZFS
 
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, isNixOS ? pkgs.stdenv.isLinux, isDarwin ? pkgs.stdenv.isDarwin, ... }:
 
 with lib;
 
 let
   cfg = config.modules.snapshots;
-  isNixOS = pkgs.stdenv.isLinux;
 in
 
 {

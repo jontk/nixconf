@@ -1,9 +1,7 @@
 # System Monitoring and Observability Module
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, isNixOS ? pkgs.stdenv.isLinux, isDarwin ? pkgs.stdenv.isDarwin, ... }:
 
 let
-  isDarwin = pkgs.stdenv.isDarwin;
-  isNixOS = !isDarwin;
   cfg = config.modules.monitoring;
 in
 {

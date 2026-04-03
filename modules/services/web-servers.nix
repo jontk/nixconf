@@ -1,10 +1,8 @@
 # Web Server Services Configuration
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, isNixOS ? pkgs.stdenv.isLinux, isDarwin ? pkgs.stdenv.isDarwin, ... }:
 
 let
   cfg = config.nixconf.services.webServers;
-  isDarwin = pkgs.stdenv.isDarwin;
-  isNixOS = !isDarwin;
 in
 {
   options.nixconf.services.webServers = with lib; {

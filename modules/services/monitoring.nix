@@ -1,10 +1,8 @@
 # Monitoring Services Configuration
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, isNixOS ? pkgs.stdenv.isLinux, isDarwin ? pkgs.stdenv.isDarwin, ... }:
 
 let
   cfg = config.nixconf.services.monitoring;
-  isDarwin = pkgs.stdenv.isDarwin;
-  isNixOS = !isDarwin;
 in
 {
   options.nixconf.services.monitoring = with lib; {

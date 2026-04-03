@@ -1,13 +1,12 @@
 # Comprehensive Backup Module
 # Provides automated backup strategies with multiple tools and destinations
 
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, isNixOS ? pkgs.stdenv.isLinux, isDarwin ? pkgs.stdenv.isDarwin, ... }:
 
 with lib;
 
 let
   cfg = config.modules.backup;
-  isNixOS = pkgs.stdenv.isLinux;
   
   # Backup tools
   backupTools = with pkgs; [

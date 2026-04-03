@@ -1,13 +1,12 @@
 # Backup Scheduler Module
 # Provides automated backup scheduling with systemd timers
 
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, isNixOS ? pkgs.stdenv.isLinux, isDarwin ? pkgs.stdenv.isDarwin, ... }:
 
 with lib;
 
 let
   cfg = config.modules.backup-scheduler;
-  isNixOS = pkgs.stdenv.isLinux;
   
   # Script paths
   backupScript = "${pkgs.bash}/bin/bash ${../../../scripts/backup.sh}";

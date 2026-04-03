@@ -1,9 +1,7 @@
 # Secrets Management Module
-{ config, lib, pkgs, inputs, ... }:
+{ config, lib, pkgs, inputs, isNixOS ? pkgs.stdenv.isLinux, isDarwin ? pkgs.stdenv.isDarwin, ... }:
 
 let
-  isDarwin = pkgs.stdenv.isDarwin;
-  isNixOS = !isDarwin;
   cfg = config.modules.secrets;
 in
 {

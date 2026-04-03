@@ -188,64 +188,48 @@
     xcclean = "rm -rf ~/Library/Developer/Xcode/DerivedData";
   };
   
-  # Programs configuration
-  programs = lib.mkMerge [
-    {
-      # Enable adb for Android development
-      adb.enable = true;
-      
-      # Enable mtr with GUI support
-      mtr.enable = true;
-      
-      # Enable wireshark
-      wireshark = {
-        enable = true;
-        package = pkgs.wireshark;
-      };
-    }
-    
-    # NixOS specific programs
-    (lib.mkIf isNixOS {
-      # Enable nix-ld for running unpatched dynamic binaries (e.g., VSCode Server)
-      nix-ld = {
-        enable = true;
-        libraries = with pkgs; [
-          # Common libraries needed by VSCode Server and other binaries
-          stdenv.cc.cc.lib
-          zlib
-          fuse3
-          icu
-          nss
-          openssl
-          curl
-          expat
-          # X11 libraries that might be needed
-          xorg.libX11
-          xorg.libXcomposite
-          xorg.libXcursor
-          xorg.libXdamage
-          xorg.libXext
-          xorg.libXfixes
-          xorg.libXi
-          xorg.libXrandr
-          xorg.libXrender
-          xorg.libXtst
-          xorg.libxcb
-          xorg.libxkbfile
-          # Additional libraries
-          glib
-          gtk3
-          libnotify
-          libsecret
-          libuuid
-          libgcc
-          libglvnd
-          libbsd
-          libmd
-        ];
-      };
-    })
-  ];
+  # NixOS-only programs (adb, mtr, wireshark, nix-ld don't exist on Darwin)
+  } // lib.optionalAttrs isNixOS {
+    programs.adb.enable = true;
+    programs.mtr.enable = true;
+    programs.wireshark = {
+      enable = true;
+      package = pkgs.wireshark;
+    };
+    programs.nix-ld = {
+      enable = true;
+      libraries = with pkgs; [
+        stdenv.cc.cc.lib
+        zlib
+        fuse3
+        icu
+        nss
+        openssl
+        curl
+        expat
+        xorg.libX11
+        xorg.libXcomposite
+        xorg.libXcursor
+        xorg.libXdamage
+        xorg.libXext
+        xorg.libXfixes
+        xorg.libXi
+        xorg.libXrandr
+        xorg.libXrender
+        xorg.libXtst
+        xorg.libxcb
+        xorg.libxkbfile
+        glib
+        gtk3
+        libnotify
+        libsecret
+        libuuid
+        libgcc
+        libglvnd
+        libbsd
+        libmd
+      ];
+    };
   
   # Services configuration
   services = lib.mkMerge [

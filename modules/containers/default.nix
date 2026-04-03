@@ -1,13 +1,12 @@
 # Container Orchestration and Virtualization Module
 # Provides Podman, Docker compatibility, and Kubernetes support
 
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, isNixOS ? pkgs.stdenv.isLinux, isDarwin ? pkgs.stdenv.isDarwin, ... }:
 
 with lib;
 
 let
   cfg = config.modules.containers;
-  isNixOS = pkgs.stdenv.isLinux;
 in
 
 {

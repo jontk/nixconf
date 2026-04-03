@@ -245,8 +245,8 @@ let
     else existing;  # separate mode
 in
 {
-  config = mkIf (cfg != null && cfg.enable && (hasAttr "git" enabledModules)) {
-    # Only configure if we're in home-manager context
+  config = mkIf (cfg != null && cfg.enable && (hasAttr "git" enabledModules)) (lib.optionalAttrs isNixOS {
+    # Only configure if we're in NixOS context (programs.git not available on Darwin system level)
     programs.git = mkIf (priorityMode != "dotfiles") {
       enable = true;
       
@@ -359,5 +359,5 @@ in
       DOTFILES_GIT_MODULE = "active";
       DOTFILES_GIT_VERSION = gitModuleConfig.version or "unknown";
     };
-  };
+  });
 }
