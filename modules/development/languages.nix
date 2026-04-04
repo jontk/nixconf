@@ -16,24 +16,24 @@
     sccache # Shared compilation cache
     
     # Python
-    python311
-    python311Packages.pip
-    python311Packages.virtualenv
-    python311Packages.black
-    python311Packages.flake8
-    python311Packages.mypy
-    python311Packages.pytest
-    python311Packages.ipython
-    python311Packages.jupyter
-    python311Packages.pandas
-    python311Packages.numpy
+    python313
+    python313Packages.pip
+    python313Packages.virtualenv
+    python313Packages.black
+    python313Packages.flake8
+    python313Packages.mypy
+    python313Packages.pytest
+    python313Packages.ipython
+    python313Packages.jupyter
+    python313Packages.pandas
+    python313Packages.numpy
     poetry
     pipenv
     pyright # Python LSP
     ruff # Fast Python linter
     
     # Node.js / JavaScript / TypeScript
-    nodejs_22
+    nodejs_24
     nodePackages.npm
     nodePackages.yarn
     nodePackages.pnpm
@@ -55,7 +55,7 @@
     bun
     
     # Go
-    go_1_24
+    go_1_25
     gopls
     golangci-lint
     go-tools
@@ -67,7 +67,7 @@
     air # Live reload for Go apps
     
     # Java / JVM
-    jdk17
+    jdk21
     gradle
     maven
     sbt # Scala build tool
@@ -78,8 +78,8 @@
     
     # C/C++
     gcc
-    clang_16
-    llvmPackages_16.clang-unwrapped
+    clang_19
+    llvmPackages_19.clang-unwrapped
     cmake
     ninja
     ccache
@@ -94,10 +94,10 @@
     # msbuild # May pull in dotnet-sdk-6.0
     
     # Ruby
-    ruby_3_2
-    rubyPackages_3_2.solargraph # Ruby LSP
-    rubyPackages_3_2.rubocop
-    rubyPackages_3_2.rake
+    ruby_3_4
+    rubyPackages_3_4.solargraph # Ruby LSP
+    rubyPackages_3_4.rubocop
+    rubyPackages_3_4.rake
     bundler
     
     # PHP
@@ -176,7 +176,7 @@
     GOPRIVATE = "github.com/jontk/*";
     
     # Java
-    JAVA_HOME = "${pkgs.jdk17}";
+    JAVA_HOME = "${pkgs.jdk21}";
     
     # .NET
     DOTNET_CLI_TELEMETRY_OPTOUT = "1";

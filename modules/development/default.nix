@@ -69,7 +69,7 @@
     insomnia
     
     # Database Tools
-    postgresql_15
+    postgresql_17
     mysql80
     redis
     sqlite
