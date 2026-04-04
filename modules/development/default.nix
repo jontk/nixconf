@@ -172,7 +172,6 @@
     
     # Code navigation
     ff = "find . -type f -name";
-    fd = "find . -type d -name";
     
     # macOS specific aliases
   } // lib.optionalAttrs isDarwin {

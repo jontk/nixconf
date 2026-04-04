@@ -134,7 +134,6 @@ final: prev: {
       echo "Useful aliases:"
       echo "  - ll='eza -la'"
       echo "  - cat='bat'"
-      echo "  - find='fd'"
       echo "  - grep='rg'"
       
       # Set up aliases

@@ -238,7 +238,6 @@
     ll = "eza -l";
     la = "eza -la";
     tree = "eza --tree";
-    find = "fd";
     grep = "rg";
     # sed = "sd"; # Commented out - sd has different syntax than sed, causes issues
     ps = "procs";
