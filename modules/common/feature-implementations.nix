@@ -28,11 +28,8 @@ in
       direnv
       nix-direnv
       
-      # Debugging and profiling
-      gdb
-      valgrind
-      strace
-      ltrace
+      # Debugging and profiling (cross-platform)
+      lldb
     ] ++ lib.optionals cfg.development.rust [
       # Rust toolchain via rust-overlay
       (rust-bin.stable.latest.default.override {

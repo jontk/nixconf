@@ -101,21 +101,20 @@
     mtr
     iperf3
     
-    # Debugging Tools
-    gdb
+    # Debugging Tools (cross-platform)
     lldb
-    valgrind
-    strace
     
     # macOS specific development tools
   ] ++ lib.optionals isDarwin [
     xcodes # Manage multiple Xcode versions
     cocoapods
-    carthage
     swiftformat
     swiftlint
   ] ++ lib.optionals isNixOS [
     # Linux specific tools
+    gdb
+    valgrind
+    strace
     perf-tools
     bpftools
   ];
@@ -285,16 +284,13 @@
       NSGlobalDomain = {
         # Show all file extensions (important for development)
         AppleShowAllExtensions = true;
-        
-        # Enable developer extras in Safari
-        WebKitDeveloperExtras = true;
-        
-        # Show full POSIX path in Finder title
-        _FXShowPosixPathInTitle = true;
       };
-      
+
       # Custom user preferences for development apps
       CustomUserPreferences = {
+        "NSGlobalDomain" = {
+          WebKitDeveloperExtras = true;
+        };
         # Xcode
         "com.apple.dt.Xcode" = {
           ShowBuildOperationDuration = true;
@@ -332,14 +328,6 @@
           ShowLineNumbers = true;
         };
       };
-    };
-  };
-  
-  # User configuration for development
-  users.users = {
-    # Add user to development-related groups
-    "${config.users.primaryUser.username or "jontk"}" = {
-      extraGroups = [ "docker" ];
     };
   };
   

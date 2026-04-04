@@ -64,12 +64,10 @@
     };
     
     # Dotfiles repository for integration
+    # Point to local chezmoi dotfiles; set flake=false since it's not a flake
     dotfiles = {
-      # Using local path for development
-      url = "path:/home/jontk/src/github.com/jontk/dotfiles";
-      # For GitHub repository (once public or with access token):
-      # url = "github:jontk/dotfiles";
-      inputs.nixpkgs.follows = "nixpkgs";
+      url = "path:/Users/jontk/src/github.com/jontk/dotfiles-chezmoi";
+      flake = false;
     };
   };
 
@@ -187,10 +185,9 @@
 
         # macOS configurations  
         macos-laptop = {
-          system = "aarch64-darwin";
+          system = "x86_64-darwin";
           modules = [
             ./hosts/macos-laptop
-            home-manager.darwinModules.home-manager
           ] ++ commonModules ++ developmentModules;
           specialArgs = {};
         };

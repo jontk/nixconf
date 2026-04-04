@@ -310,9 +310,7 @@ in
             ;;
         esac
       ''))
-    ] ++ lib.flatten (builtins.attrValues {
-      inherit (pkgs) dive lazydocker ctop hadolint;
-    });
+    ];
     
     # Environment variables
     environment.variables = mkMerge [

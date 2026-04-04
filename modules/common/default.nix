@@ -50,7 +50,7 @@ in
         experimental-features = [ "nix-command" "flakes" ];
         
         # Performance optimizations
-        auto-optimise-store = lib.mkIf cfg.performanceOptimizations true;
+        auto-optimise-store = lib.mkIf (cfg.performanceOptimizations && !isDarwin) true;
         max-jobs = lib.mkIf cfg.performanceOptimizations "auto";
         cores = lib.mkIf cfg.performanceOptimizations 0; # Use all available cores
         
@@ -77,9 +77,12 @@ in
       # Garbage collection
       gc = {
         automatic = true;
-        dates = if isDarwin then "weekly" else "weekly";
         options = "--delete-older-than 30d";
-      };
+      } // (if isDarwin then {
+        interval = { Hour = 3; Minute = 0; Weekday = 0; };
+      } else {
+        dates = "weekly";
+      });
       
       # Additional nix configuration for performance
       extraOptions = lib.mkIf cfg.performanceOptimizations ''
@@ -136,7 +139,8 @@ in
       bat
       eza
       
-      # System utilities
+    ] ++ lib.optionals isNixOS [
+      # Linux-only system utilities
       pciutils
       usbutils
     ] ++ lib.optionals isNixOS [
@@ -147,8 +151,8 @@ in
       # Darwin-specific packages
       coreutils
       findutils
-      gnu-sed
-      gnu-tar
+      gnused
+      gnutar
       gawk
     ];
 

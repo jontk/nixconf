@@ -34,19 +34,15 @@
       }
     },
     "dotfiles": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
+      "flake": false,
       "locked": {
-        "lastModified": 1768407457,
-        "narHash": "sha256-S1hpv7BQZwRimu4aknjQHd+gPEohwAacr35BSnb7x9g=",
-        "path": "/home/jontk/src/github.com/jontk/dotfiles",
+        "lastModified": 1775314801,
+        "narHash": "sha256-i6diNLHqD4+XANVXmkU4DzpKXcHIxvjZ3QET8np41MI=",
+        "path": "/Users/jontk/src/github.com/jontk/dotfiles-chezmoi",
         "type": "path"
       },
       "original": {
-        "path": "/home/jontk/src/github.com/jontk/dotfiles",
+        "path": "/Users/jontk/src/github.com/jontk/dotfiles-chezmoi",
         "type": "path"
       }
     },

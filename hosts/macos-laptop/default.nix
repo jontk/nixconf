@@ -5,11 +5,11 @@
   
   # Enable nix-darwin
   system.stateVersion = 4;
+  system.primaryUser = "jontk";
   
   # Nix configuration
   nix = {
-    # Use the Nix daemon for multi-user support
-    useDaemon = true;
+    # nix-darwin only supports multi-user daemon installations
     
     # Enable flakes and other experimental features
     settings = {
@@ -17,8 +17,7 @@
       # Keep derivations and outputs for better caching
       keep-outputs = true;
       keep-derivations = true;
-      # Automatic store optimization
-      auto-optimise-store = true;
+      # Store optimization is done via nix.optimise.automatic below
       # Build in parallel
       max-jobs = "auto";
       cores = 0;
@@ -45,75 +44,53 @@
       "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
       "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw="
     ];
+
+    # Automatic store optimization (replaces auto-optimise-store)
+    optimise.automatic = true;
   };
-  
+
   # macOS system defaults
   system.defaults = {
-    # Global macOS defaults
+    # Global macOS defaults (only nix-darwin supported options)
     NSGlobalDomain = {
       # Appearance
-      AppleInterfaceStyle = "Dark"; # Dark mode
+      AppleInterfaceStyle = "Dark";
       AppleInterfaceStyleSwitchesAutomatically = false;
-      AppleHighlightColor = "0.764700 0.976500 0.568600";
-      AppleAquaColorVariant = 1; # Blue appearance
-      AppleAccentColor = 0; # Blue accent color
-      
+
       # Keyboard
-      InitialKeyRepeat = 14; # Delay until repeat
-      KeyRepeat = 1; # Key repeat rate (lower = faster)
-      ApplePressAndHoldEnabled = false; # Disable press-and-hold for keys
-      AppleKeyboardUIMode = 3; # Full keyboard access
-      AppleFnUsageType = 2; # F1, F2, etc. behave as standard function keys
-      
+      InitialKeyRepeat = 14;
+      KeyRepeat = 1;
+      ApplePressAndHoldEnabled = false;
+      AppleKeyboardUIMode = 3;
+
       # Text input
       NSAutomaticCapitalizationEnabled = false;
       NSAutomaticDashSubstitutionEnabled = false;
       NSAutomaticPeriodSubstitutionEnabled = false;
       NSAutomaticQuoteSubstitutionEnabled = false;
       NSAutomaticSpellingCorrectionEnabled = false;
-      NSAutomaticTextCompletionEnabled = false;
-      NSAutomaticInlinePredictionEnabled = false;
-      NSUserDictionaryReplacementItems = [];
-      
+
       # UI behavior
       AppleShowAllExtensions = true;
       AppleShowScrollBars = "WhenScrolling";
       NSDocumentSaveNewDocumentsToCloud = false;
       NSNavPanelExpandedStateForSaveMode = true;
       NSNavPanelExpandedStateForSaveMode2 = true;
-      NSTableViewDefaultSizeMode = 2; # Medium sidebar icons
-      NSToolbarTitleViewRolloverDelay = 0; # Reduce toolbar title rollover delay
-      NSWindowResizeTime = 0.001; # Speed up window resize animations
-      NSAutomaticWindowAnimationsEnabled = false; # Disable window animations
-      NSScrollAnimationEnabled = false; # Disable smooth scrolling
-      NSUseAnimatedFocusRing = false; # Disable animated focus ring
-      
+      NSTableViewDefaultSizeMode = 2;
+      NSWindowResizeTime = 0.001;
+      NSAutomaticWindowAnimationsEnabled = false;
+      NSScrollAnimationEnabled = false;
+
       # Window behavior
-      AppleActionOnDoubleClick = "Maximize"; # Maximize windows on double click
-      AppleWindowTabbingMode = "manual"; # Don't tab windows by default
-      NSWindowShouldDragOnGesture = true; # Enable window dragging gestures
-      
+      AppleWindowTabbingMode = "manual";
+
       # Sound
       "com.apple.sound.beep.feedback" = 0;
       "com.apple.sound.beep.volume" = 0.0;
-      "com.apple.sound.uiaudio.enabled" = 0; # Disable UI sound effects
-      
-      # Mouse
-      AppleEnableMouseSwipeNavigateWithScrolls = false;
-      AppleEnableSwipeNavigateWithScrolls = false;
-      "com.apple.mouse.scaling" = 1.0;
-      
-      # Screenshots
-      "com.apple.screencapture.location" = "~/Desktop/Screenshots";
-      "com.apple.screencapture.type" = "png";
-      "com.apple.screencapture.disable-shadow" = true;
-      
+
       # Misc
       PMPrintingExpandedStateForPrint = true;
       PMPrintingExpandedStateForPrint2 = true;
-      NSDisableAutomaticTermination = true; # Don't terminate inactive apps
-      NSQuitAlwaysKeepsWindows = false; # Don't restore windows when quitting and reopening apps
-      WebKitDeveloperExtras = true; # Enable Safari developer menu
     };
     
     # Dock settings
@@ -145,28 +122,20 @@
       AppleShowAllExtensions = true;
       AppleShowAllFiles = true;
       CreateDesktop = true;
-      FXDefaultSearchScope = "SCcf"; # Search current folder by default
+      FXDefaultSearchScope = "SCcf";
       FXEnableExtensionChangeWarning = false;
-      FXPreferredViewStyle = "Nlsv"; # List view
-      QuitMenuItem = true; # Allow quitting Finder
+      FXPreferredViewStyle = "Nlsv";
+      QuitMenuItem = true;
       ShowPathbar = true;
       ShowStatusBar = true;
       _FXShowPosixPathInTitle = true;
-      _FXSortFoldersFirst = true; # Sort folders before files
-      ShowRecentTags = false; # Don't show recent tags
-      NewWindowTarget = "Home"; # New windows open in home directory
+      _FXSortFoldersFirst = true;
+      NewWindowTarget = "Other";
       NewWindowTargetPath = "file://$HOME/";
-      ShowHardDrivesOnDesktop = false;
-      ShowMountedServersOnDesktop = true;
-      ShowRemovableMediaOnDesktop = true;
       ShowExternalHardDrivesOnDesktop = true;
-      DisableAllAnimations = true; # Disable Finder animations
-      WarnOnEmptyTrash = false; # Don't warn when emptying trash
-      FXInfoPanesExpanded = {
-        General = true;
-        OpenWith = true;
-        Privileges = true;
-      };
+      ShowRemovableMediaOnDesktop = true;
+      ShowMountedServersOnDesktop = true;
+      ShowHardDrivesOnDesktop = false;
     };
     
     # Login window settings
@@ -181,28 +150,15 @@
       spans-displays = false; # Each display has separate spaces
     };
     
-    # Trackpad settings
+    # Trackpad settings (nix-darwin supported subset)
     trackpad = {
       Clicking = true;
       TrackpadRightClick = true;
       TrackpadThreeFingerDrag = true;
       FirstClickThreshold = 1;
       SecondClickThreshold = 1;
-      TrackpadScroll = true;
-      TrackpadHorizScroll = true;
       ActuationStrength = 0; # Silent clicking
-      Dragging = false; # Tap to drag (separate from three finger drag)
-      DragLock = false;
-      TrackpadPinch = true;
-      TrackpadRotate = true;
-      TrackpadTwoFingerDoubleTapGesture = true;
-      TrackpadTwoFingerFromRightEdgeSwipeGesture = 0; # Disable notification center swipe
-      TrackpadFiveFingerPinchGesture = true;
-      TrackpadFourFingerPinchGesture = true;
-      TrackpadFourFingerHorizSwipeGesture = 2; # Switch between spaces
-      TrackpadFourFingerVertSwipeGesture = 2; # Mission control and app expose
-      TrackpadMomentumScroll = true;
-      TrackpadCornerSecondaryClick = 0; # Right-click in bottom right corner
+      Dragging = false;
     };
     
     # Screen saver settings
@@ -239,31 +195,55 @@
     
     # Menu extras
     menuExtraClock = {
-      DateFormat = "EEE d MMM HH:mm:ss";
-      ShowDate = 1; # Show date
-      ShowDayOfWeek = true;
-      ShowAMPM = false; # 24-hour time
+      Show24Hour = true;
       ShowSeconds = true;
     };
     
-    # Hot corners (already disabled above, but for completeness)
-    # 1: No action, 2: Mission Control, 3: Show application windows
-    # 4: Desktop, 5: Start screen saver, 6: Disable screen saver
-    # 10: Put display to sleep, 11: Launchpad, 12: Notification Center
-    # 13: Lock Screen, 14: Quick Note
-    "com.apple.dock" = {
-      wvous-tl-corner = 1; # Top left: disabled
-      wvous-tl-modifier = 0;
-      wvous-tr-corner = 1; # Top right: disabled
-      wvous-tr-modifier = 0;
-      wvous-bl-corner = 1; # Bottom left: disabled
-      wvous-bl-modifier = 0;
-      wvous-br-corner = 1; # Bottom right: disabled
-      wvous-br-modifier = 0;
-    };
+    # Hot corner modifiers (set via CustomUserPreferences below)
     
     # Other settings
     CustomUserPreferences = {
+      # NSGlobalDomain keys not directly supported by nix-darwin
+      "NSGlobalDomain" = {
+        AppleHighlightColor = "0.764700 0.976500 0.568600";
+        AppleAquaColorVariant = 1;
+        AppleAccentColor = 0;
+        AppleFnUsageType = 2;
+        NSAutomaticTextCompletionEnabled = false;
+        NSAutomaticInlinePredictionEnabled = false;
+        NSToolbarTitleViewRolloverDelay = 0;
+        NSUseAnimatedFocusRing = false;
+        NSWindowShouldDragOnGesture = true;
+        AppleActionOnDoubleClick = "Maximize";
+        AppleEnableMouseSwipeNavigateWithScrolls = false;
+        AppleEnableSwipeNavigateWithScrolls = false;
+        NSDisableAutomaticTermination = true;
+        NSQuitAlwaysKeepsWindows = false;
+        WebKitDeveloperExtras = true;
+        "com.apple.sound.uiaudio.enabled" = 0;
+        "com.apple.mouse.scaling" = 1.0;
+      };
+
+      # Finder settings not directly supported by nix-darwin
+      "com.apple.finder" = {
+        ShowRecentTags = false;
+        WarnOnEmptyTrash = false;
+        DisableAllAnimations = true;
+        FXInfoPanesExpanded = {
+          General = true;
+          OpenWith = true;
+          Privileges = true;
+        };
+      };
+
+      # Hot corner modifiers
+      "com.apple.dock" = {
+        wvous-tl-modifier = 0;
+        wvous-tr-modifier = 0;
+        wvous-bl-modifier = 0;
+        wvous-br-modifier = 0;
+      };
+
       # Disable Spotlight keyboard shortcuts
       "com.apple.symbolichotkeys" = {
         AppleSymbolicHotKeys = {
@@ -387,7 +367,7 @@
   };
   
   # Enable Touch ID for sudo authentication
-  security.pam.enableSudoTouchIdAuth = true;
+  security.pam.services.sudo_local.touchIdAuth = true;
   
   # Additional security settings
   system.defaults.SoftwareUpdate = {
@@ -410,33 +390,16 @@
   
   # Networking configuration
   networking = {
-    hostName = "macos-laptop";
-    computerName = "macOS Laptop";
-    localHostName = "macos-laptop";
-    
-    # DNS configuration
-    dns = [
-      "1.1.1.1"
-      "1.0.0.1"
-      "8.8.8.8"
-      "8.8.4.4"
-    ];
-    
-    # Enable mDNS
-    # Note: This is typically enabled by default on macOS
+    hostName = "refur";
+    computerName = "refur";
+    localHostName = "refur";
+
+    # DNS — let DHCP provide DNS (typically 192.168.1.1)
+    # Uncomment to override with custom DNS:
+    # dns = [ "192.168.1.1" ];
   };
   
-  # Power management settings
-  power = {
-    sleep = {
-      computer = 15;
-      display = 10;
-      harddisk = 10;
-      allowSleepByPowerButton = true;
-    };
-    restartAfterPowerFailure = true;
-    restartAfterFreeze = true;
-  };
+  # Power management is configured via pmset in the activation script below
   
   # System packages
   environment.systemPackages = with pkgs; [
@@ -446,14 +409,12 @@
     terminal-notifier
     dockutil
     pngpaste # Paste images from clipboard
-    pbcopy # Command line clipboard utilities
-    pbpaste
+    # pbcopy/pbpaste are macOS builtins, no nix package needed
     
     # System utilities
     coreutils-full
     moreutils
     watch
-    psutil
     lsof
     file
     which
@@ -489,7 +450,6 @@
     xz
     
     # Development tools (basic, more in development module)
-    xcode-install
     xcodes
     
     # System maintenance
@@ -516,6 +476,108 @@
     wget
     httpie
     
+    # Network utilities (extended)
+    nmap
+    netcat
+    traceroute
+    dig
+    whois
+    speedtest-cli
+    iperf
+
+    # Version control extras
+    tig
+    gitui
+    lazygit
+    delta
+
+    # Terminal multiplexers
+    tmux
+    zellij
+
+    # Editors
+    micro
+    zed-editor
+
+    # Build tools
+    gnumake
+    cmake
+    pkg-config
+    autoconf
+    automake
+    libtool
+
+    # Cloud/infra tools
+    google-cloud-sdk
+    azure-cli
+    doctl
+    terraform
+    terragrunt
+    pulumi
+    ansible
+
+    # Kubernetes extras
+    kubectl
+    kubectx
+    k9s
+    kubernetes-helm
+    kustomize
+    stern
+    fluxcd
+    argocd
+
+    # Productivity/backup
+    taskwarrior3
+    timewarrior
+    pass
+    gopass
+    rclone
+    restic
+    borgbackup
+    syncthing
+
+    # Document tools
+    pandoc
+    poppler_utils
+    ghostscript
+    (texlive.combine {
+      inherit (texlive) scheme-basic xetex collection-fontsrecommended collection-plaingeneric collection-latexextra;
+    })
+
+    # System utilities (extended)
+    choose # cut alternative
+    miller # CSV/JSON/tabular data tool
+
+    # Media tools
+    yt-dlp
+    ffmpeg
+    imagemagick
+    exiftool
+    mediainfo
+
+    # Secrets management
+    doppler
+
+    # Tools previously only in brew
+    chezmoi
+    hugo
+    tesseract # OCR engine
+    sox # Audio processing
+    reattach-to-user-namespace # tmux clipboard on macOS
+    clisp # Common Lisp
+    xcodegen # Generate Xcode projects from YAML
+    plotutils # Vector graphics tools
+    pstoedit # PostScript conversion
+
+    # Database clients
+    postgresql
+    redis
+    sqlite
+
+    # HTTP clients
+    curlie
+    xh
+
     # Misc utilities
     neofetch
     cowsay
@@ -533,34 +595,27 @@
       autoUpdate = true;
     };
     
-    # Taps
-    taps = [
-      "homebrew/services"
-      "homebrew/cask-versions"
-      "homebrew/cask-fonts"
-    ];
+    # Taps — homebrew/services, cask-versions, cask-fonts are now built-in/merged
+    taps = [ ];
     
-    # Brews (command-line tools not available in nixpkgs)
+    # Brews — only things that need brew (services, macOS-specific)
+    # CLI tools go in environment.systemPackages via nix instead
     brews = [
-      # Tools that require macOS-specific features
-      "pinentry-mac"
-      "trash"
-      
-      # Services
+      # Services (managed via `brew services start`)
       "postgresql@15"
       "redis"
       "nginx"
-      
-      # macOS specific tools
-      "switchaudio-osx" # Switch audio devices
-      "brightness" # Control display brightness
-      "sleepwatcher" # Run commands on sleep/wake
-      "blueutil" # Bluetooth CLI
-      "wifi-password" # Get current WiFi password
-      
-      # Development services
-      "mkcert" # Local HTTPS certificates
-      "nss" # Network Security Services (for mkcert)
+
+      # macOS-specific tools (no nix equivalent)
+      "switchaudio-osx"
+      "brightness"
+      "sleepwatcher"
+      "blueutil"
+      "wifi-password"
+
+      # Local HTTPS certificates
+      "mkcert"
+      "nss"
     ];
     
     # Casks (GUI applications)
@@ -578,6 +633,7 @@
       "visual-studio-code"
       "iterm2"
       "docker"
+      "zed"
       
       # Utilities
       "rectangle" # Window management
@@ -612,9 +668,10 @@
   
   # Enable fonts
   fonts = {
-    fontDir.enable = true;
-    fonts = with pkgs; [
-      (nerdfonts.override { fonts = [ "FiraCode" "JetBrainsMono" "Hack" ]; })
+    packages = with pkgs; [
+      nerd-fonts.fira-code
+      nerd-fonts.jetbrains-mono
+      nerd-fonts.hack
       fira-code
       fira-code-symbols
       roboto
@@ -625,17 +682,11 @@
   
   # Services
   services = {
-    # Nix daemon
-    nix-daemon.enable = true;
-    
-    # Activate system configuration on boot
-    activate-system.enable = true;
-    
     # Tailscale VPN
     tailscale = {
       enable = true;
     };
-    
+
     # Karabiner Elements for keyboard customization
     karabiner-elements.enable = true;
     
@@ -667,43 +718,15 @@
     zsh = {
       enable = true;
       enableCompletion = true;
-      enableBashCompletion = true;
-      enableFzfCompletion = true;
-      enableFzfGit = true;
-      enableFzfHistory = true;
+      enableSyntaxHighlighting = true;
     };
-    
-    # Enable bash (for compatibility)
-    bash = {
-      enable = true;
-      enableCompletion = true;
-    };
+
+    # Bash is available by default on macOS
   };
   
-  # Import common modules
-  imports = [
-    ../../modules/common
-    ../../modules/development
-  ];
+  # Common and development modules are imported via flake.nix (commonModules/developmentModules)
   
-  # Home Manager configuration
-  home-manager = {
-    useGlobalPkgs = true;
-    useUserPackages = true;
-    users.jontk = import ../../users/jontk {
-      inherit config pkgs lib;
-      isDarwin = true;
-      isNixOS = false;
-    };
-    # Extra arguments passed to home-manager modules
-    extraSpecialArgs = {
-      inherit (config.nixpkgs) overlays;
-      isDarwin = true;
-      isNixOS = false;
-    };
-    # Verbose output for debugging
-    verbose = true;
-  };
+  # Home Manager disabled — dotfiles managed by chezmoi
   
   # User configuration
   users.users.jontk = {
@@ -716,19 +739,19 @@
   launchd = {
     # User agents (run as user)
     agents = {
-      # Clean Downloads folder weekly
-      cleanup-downloads = {
-        script = ''
-          find ~/Downloads -mtime +30 -type f -delete
-          find ~/Downloads -type d -empty -delete
-        '';
-        serviceConfig = {
-          StartCalendarInterval = [
-            { Hour = 3; Minute = 0; Weekday = 0; } # Sunday at 3 AM
-          ];
-        };
-      };
-      
+      # Downloads cleanup — disabled until folder is triaged
+      # cleanup-downloads = {
+      #   script = ''
+      #     find ~/Downloads -mtime +30 -type f -delete
+      #     find ~/Downloads -type d -empty -delete
+      #   '';
+      #   serviceConfig = {
+      #     StartCalendarInterval = [
+      #       { Hour = 3; Minute = 0; Weekday = 0; }
+      #     ];
+      #   };
+      # };
+
       # Update nix-index database weekly
       update-nix-index = {
         script = ''
@@ -814,82 +837,24 @@
     COLORTERM = "truecolor";
   };
   
-  # System-wide aliases
+  # System-wide aliases — only nix/darwin-specific commands
+  # General shell aliases are managed by chezmoi (~/.config/shell/aliases.sh)
   environment.shellAliases = {
-    # Nix aliases
+    # Nix management (chezmoi can't provide these)
     rebuild = "darwin-rebuild switch --flake .";
     update = "nix flake update";
     garbage = "nix-collect-garbage -d";
-    
-    # Navigation
-    ".." = "cd ..";
-    "..." = "cd ../..";
-    "...." = "cd ../../..";
-    
-    # Safety aliases
-    rm = "rm -i";
-    cp = "cp -i";
-    mv = "mv -i";
-    
-    # Colorful output
-    ls = "eza";
-    ll = "eza -l";
-    la = "eza -la";
-    lt = "eza --tree";
-    cat = "bat";
-    
-    # Git aliases
-    g = "git";
-    gs = "git status";
-    ga = "git add";
-    gc = "git commit";
-    gp = "git push";
-    gl = "git log --oneline --graph";
-    
-    # System info
-    top = "btop";
-    ps = "procs";
-    df = "duf";
-    du = "dust";
-    
-    # Network
-    ip = "dig +short myip.opendns.com @resolver1.opendns.com";
-    localip = "ipconfig getifaddr en0";
-    flush = "dscacheutil -flushcache && killall -HUP mDNSResponder";
-    
-    # macOS specific
-    showfiles = "defaults write com.apple.finder AppleShowAllFiles -bool true && killall Finder";
-    hidefiles = "defaults write com.apple.finder AppleShowAllFiles -bool false && killall Finder";
+
+    # Spotlight (macOS-specific, not in chezmoi)
     spotoff = "sudo mdutil -a -i off";
     spoton = "sudo mdutil -a -i on";
-    
-    # Development
-    serve = "python3 -m http.server";
-    json = "jq '.'";
-    
-    # Misc
-    weather = "curl wttr.in";
-    speedtest = "curl -s https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py | python3 -";
   };
   
-  # System activation scripts
-  system.activationScripts.postUserActivation.text = ''
-    # Rebuild Spotlight index if needed
-    if [ ! -f ~/.spotlight-rebuilt ]; then
-      echo "Rebuilding Spotlight index..."
-      sudo mdutil -E /
-      touch ~/.spotlight-rebuilt
-    fi
-    
-    # Set default shell to zsh if not already
-    if [ "$SHELL" != "${pkgs.zsh}/bin/zsh" ]; then
-      echo "Setting default shell to zsh..."
-      chsh -s ${pkgs.zsh}/bin/zsh
-    fi
-    
-    # Create Screenshots directory if it doesn't exist
-    mkdir -p ~/Desktop/Screenshots
-    
+  # System activation scripts (runs as root in new nix-darwin)
+  system.activationScripts.postActivation.text = ''
+    # Create Screenshots directory
+    sudo -u jontk mkdir -p /Users/jontk/Desktop/Screenshots
+
     # Configure Rosetta 2 for Apple Silicon Macs
     if [ "$(uname -m)" = "arm64" ]; then
       if ! /usr/bin/pgrep oahd >/dev/null 2>&1; then
@@ -897,58 +862,26 @@
         softwareupdate --install-rosetta --agree-to-license
       fi
     fi
-    
-    # Set computer sleep preferences
-    sudo pmset -a sleep 0 # Never sleep while plugged in
-    sudo pmset -b sleep 15 # Sleep after 15 minutes on battery
-    
-    # Disable Gatekeeper (use with caution)
-    # sudo spctl --master-disable
-    
-    # Enable firewall
-    sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate on
-    sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setloggingmode on
-    sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setstealthmode on
-    
-    # Disable remote apple events
-    sudo systemsetup -setremoteappleevents off
-    
-    # Disable wake-on modem
-    sudo systemsetup -setwakeonmodem off
-    
-    # Disable wake-on LAN
-    sudo systemsetup -setwakeonnetworkaccess off
-    
-    # Set standby delay to 24 hours (default is 1 hour)
-    sudo pmset -a standbydelay 86400
-    
-    # Disable the sound effects on boot
-    sudo nvram SystemAudioVolume=" "
-    
-    # Menu bar: hide the Time Machine and Volume icons
-    for domain in ~/Library/Preferences/ByHost/com.apple.systemuiserver.*; do
-      defaults write "''${domain}" dontAutoLoad -array \
-        "/System/Library/CoreServices/Menu Extras/TimeMachine.menu" \
-        "/System/Library/CoreServices/Menu Extras/Volume.menu"
-    done
-    
-    # Expand save panel by default
-    defaults write -g NSNavPanelExpandedStateForSaveMode -bool true
-    defaults write -g NSNavPanelExpandedStateForSaveMode2 -bool true
-    
-    # Expand print panel by default
-    defaults write -g PMPrintingExpandedStateForPrint -bool true
-    defaults write -g PMPrintingExpandedStateForPrint2 -bool true
-    
-    # Save to disk (not to iCloud) by default
-    defaults write -g NSDocumentSaveNewDocumentsToCloud -bool false
-    
-    # Restart affected applications
-    for app in "Dock" "Finder" "SystemUIServer"; do
-      killall "''${app}" > /dev/null 2>&1 || true
-    done
-    
-    echo "System preferences have been configured. Some changes may require a logout/restart to take effect."
+
+    # Power management
+    pmset -a sleep 0
+    pmset -b sleep 15
+    pmset -a standbydelay 86400
+
+    # Firewall
+    /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate on
+    /usr/libexec/ApplicationFirewall/socketfilterfw --setloggingmode on
+    /usr/libexec/ApplicationFirewall/socketfilterfw --setstealthmode on
+
+    # Security hardening
+    systemsetup -setremoteappleevents off 2>/dev/null || true
+    systemsetup -setwakeonmodem off 2>/dev/null || true
+    systemsetup -setwakeonnetworkaccess off 2>/dev/null || true
+
+    # Disable boot sound
+    nvram SystemAudioVolume=" " 2>/dev/null || true
+
+    echo "System preferences configured."
   '';
   
   # System startup items and login items
