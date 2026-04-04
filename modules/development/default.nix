@@ -170,8 +170,6 @@
     serve = "python3 -m http.server";
     yaml = "yq";
     
-    # Code navigation
-    ff = "find . -type f -name";
     
     # macOS specific aliases
   } // lib.optionalAttrs isDarwin {
