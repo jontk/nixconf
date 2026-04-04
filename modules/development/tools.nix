@@ -295,7 +295,6 @@
     myip = "curl -s https://ifconfig.me";
     
     # System info
-    sysinfo = "neofetch";
     diskspace = "ncdu";
     
     # Quick edits
