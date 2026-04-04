@@ -6,6 +6,7 @@
   # Enable nix-darwin
   system.stateVersion = 4;
   system.primaryUser = "jontk";
+  ids.gids.nixbld = 350;
   
   # Nix configuration
   nix = {
@@ -479,7 +480,7 @@
     # Network utilities (extended)
     nmap
     netcat
-    traceroute
+    # traceroute is Linux-only; macOS has /usr/sbin/traceroute built-in
     dig
     whois
     speedtest-cli
