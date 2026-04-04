@@ -226,10 +226,7 @@ in
   config = mkIf cfg.enable ({
     # Performance profiling and debugging packages
     environment.systemPackages = with pkgs; [
-      # System profilers
-      (mkIf (cfg.systemProfilers.perf && isNixOS) linuxPackages.perf)
-      (mkIf (cfg.systemProfilers.bpf && isNixOS) bpftools)
-      (mkIf (cfg.systemProfilers.bpf && isNixOS) bpftrace)
+      # System profilers (Linux-only, in isNixOS section below)
       
       # Language-specific profilers
       (mkIf cfg.languageProfilers.go pprof)
@@ -242,20 +239,10 @@ in
       # (mkIf cfg.languageProfilers.node nodePackages.clinic)  # Package not available
       # (mkIf cfg.languageProfilers.node nodePackages."0x")  # Package not available
       
-      # Debuggers
-      (mkIf cfg.debuggers.gdb gdb)
+      # Debuggers (cross-platform)
       (mkIf cfg.debuggers.lldb lldb)
-      (mkIf (cfg.debuggers.rr && isNixOS) rr)
       
-      # Tracers
-      (mkIf (cfg.tracers.strace && isNixOS) strace)
-      (mkIf (cfg.tracers.ltrace && isNixOS) ltrace)
-      (mkIf isNixOS lsof)
-      
-      # Memory tools
-      (mkIf (cfg.memoryTools.valgrind && isNixOS) valgrind)
-      (mkIf (cfg.memoryTools.heaptrack && isNixOS) heaptrack)
-      (mkIf (cfg.memoryTools.massif && isNixOS) valgrind)
+      # Memory tools (Linux-only, in isNixOS section below)
       
       # Benchmarking tools
       (mkIf cfg.benchmarking.hyperfine hyperfine)
@@ -266,39 +253,46 @@ in
       
       # Visualization tools
       (mkIf cfg.visualization.flamegraph flamegraph)
-      (mkIf (cfg.visualization.hotspot && isNixOS) hotspot)
-      kdePackages.kcachegrind
       
       # Additional profiling tools
       gperftools
       jemalloc
-      # tcmalloc  # Package not available
       mimalloc
-      
+
       # System monitoring during profiling
       htop
       btop
+
+      # Disk I/O profiling
+      ioping
+      fio
+
+      # Network profiling
+      iperf3
+    ] ++ lib.optionals isNixOS [
+      # Linux-only tools
+      linuxPackages.perf
+      bpftools
+      bpftrace
+      gdb
+      rr
+      strace
+      ltrace
+      lsof
+      valgrind
+      heaptrack
+      hotspot
+      kdePackages.kcachegrind
       iotop
       iftop
       nethogs
       sysstat
       dool
-      
-      # CPU profiling
       cpupower-gui
-      
-      # Disk I/O profiling
-      ioping
       bonnie
-      fio
-      
-      # Network profiling
-      iperf3
       tcpdump
       wireshark-cli
       ngrep
-      
-      # Process monitoring
       procps
       psmisc
       
@@ -494,12 +488,7 @@ in
         
         echo -e "\nDebug information collected!"
       '')
-    ] ++ lib.flatten (builtins.attrValues {
-      inherit (pkgs)
-        gdb lldb valgrind hyperfine wrk vegeta
-        flamegraph htop btop iotop iftop
-        tcpdump wireshark-cli iperf3 fio;
-    });
+    ];
     
     # Environment variables for profiling
     environment.variables = {

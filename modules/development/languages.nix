@@ -83,9 +83,7 @@
     cmake
     ninja
     ccache
-    gdb
     lldb
-    valgrind
     clang-tools # clang-format, clang-tidy
     bear # Build EAR for compile_commands.json
     
@@ -128,10 +126,11 @@
     # Swift is included with Xcode on macOS
     swiftformat
     swiftlint
-    sourcery # Swift code generation
     
   ] ++ lib.optionals isNixOS [
     # Linux-specific language tools
+    gdb
+    valgrind
     swift
     swiftPackages.swift
     swiftPackages.swiftpm

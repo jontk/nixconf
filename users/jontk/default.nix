@@ -49,11 +49,7 @@
     stow
 
     # System monitoring
-    iotop
-    nethogs
-    iftop
     lsof
-    psmisc
 
     # Compression
     p7zip
@@ -105,9 +101,6 @@
 
     # Container tools
     docker-compose
-    podman-compose
-    skopeo
-    buildah
 
     # Cloud tools
     awscli2
@@ -186,6 +179,15 @@
 
     # GUI Applications (NixOS only)
   ] ++ lib.optionals isNixOS [
+    # Linux-only system tools
+    iotop
+    nethogs
+    iftop
+    psmisc
+    podman-compose
+    skopeo
+    buildah
+
     # Desktop environment
     dunst
 

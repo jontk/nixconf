@@ -480,14 +480,7 @@ in
         
         echo "Code quality reports generated in $REPORT_DIR/"
       '')
-    ] ++ lib.flatten (builtins.attrValues {
-      inherit (pkgs) 
-        shellcheck yamllint hadolint tflint actionlint
-        shfmt nixpkgs-fmt treefmt
-        git-secrets gitleaks trivy semgrep
-        pre-commit vale markdownlint-cli
-        tokei scc gource;
-    });
+    ];
     
     # Shell aliases for code quality
     environment.shellAliases = {

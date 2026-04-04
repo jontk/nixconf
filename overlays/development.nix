@@ -105,10 +105,7 @@ final: prev: {
       automake
       
       # Debugging and profiling
-      gdb
-      valgrind
-      strace
-      ltrace
+      lldb
       
       # Development utilities
       jq

@@ -18,14 +18,14 @@
     
     # Build settings for better performance
     settings = {
-      # Sandbox builds for security
-      sandbox = true;
+      # Sandbox builds for security (relaxed on Darwin due to macOS limitations)
+      sandbox = if pkgs.stdenv.isDarwin then "relaxed" else true;
       
       # Build users for parallel builds
       build-users-group = if pkgs.stdenv.isDarwin then "nixbld" else "nixbld";
       
-      # Optimize storage
-      auto-optimise-store = true;
+      # Optimize storage (on Darwin, use nix.optimise.automatic instead)
+      auto-optimise-store = lib.mkIf (!pkgs.stdenv.isDarwin) true;
       
       # Build configuration
       builders-use-substitutes = true;
@@ -40,8 +40,9 @@
       # Allow building for other architectures
       extra-platforms = lib.mkIf (pkgs.system == "x86_64-linux") [ "i686-linux" ];
       
-      # System features
-      system-features = [ "nixos-test" "benchmark" "big-parallel" "kvm" ];
+      # System features (kvm and nixos-test are Linux-only)
+      system-features = [ "benchmark" "big-parallel" ]
+        ++ lib.optionals (!pkgs.stdenv.isDarwin) [ "nixos-test" "kvm" ];
     };
     
     # Distributed builds configuration (can be extended per-host)

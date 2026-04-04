@@ -143,28 +143,18 @@ in
     system = {
       defaults = {
         NSGlobalDomain = {
-          # Disable window animations for speed
-          NSAutomaticWindowAnimationsEnabled = false;
-          
-          # Faster key repeat
-          InitialKeyRepeat = 14;
-          KeyRepeat = 1;
+          NSAutomaticWindowAnimationsEnabled = lib.mkDefault false;
+          InitialKeyRepeat = lib.mkDefault 14;
+          KeyRepeat = lib.mkDefault 1;
         };
-        
+
         dock = {
-          # Faster animations
-          autohide-time-modifier = 0.2;
-          expose-animation-duration = 0.1;
+          autohide-time-modifier = lib.mkDefault 0.2;
+          expose-animation-duration = lib.mkDefault 0.1;
         };
-        
-        finder = {
-          # Disable animations
-          DisableAllAnimations = true;
-        };
-        
+
         universalaccess = {
-          # Reduce motion for performance
-          reduceMotion = true;
+          reduceMotion = lib.mkDefault true;
         };
       };
     };
