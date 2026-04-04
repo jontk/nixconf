@@ -33,24 +33,11 @@
     ruff # Fast Python linter
     
     # Node.js / JavaScript / TypeScript
+    # nodejs_24 includes npm; other tools installed per-project or via chezmoi (fnm/bun)
+    # nodePackages.* removed — they force building Node 22 from source as a dependency
     nodejs_24
-    nodePackages.npm
-    nodePackages.yarn
-    nodePackages.pnpm
-    nodePackages.typescript
-    nodePackages.typescript-language-server
-    nodePackages.eslint
-    nodePackages.prettier
-    nodePackages.nodemon
-    nodePackages.pm2
-    nodePackages.webpack
-    nodePackages.webpack-cli
-    nodePackages."@angular/cli"
-    # nodePackages."@vue/cli"
-    # nodePackages.create-react-app
-    nodePackages.vercel
-    # nodePackages.netlify-cli
-    # nodePackages.claude-code # Not available in nixpkgs
+    yarn
+    pnpm
     deno
     bun
     
