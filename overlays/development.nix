@@ -141,7 +141,6 @@ final: prev: {
       alias ll='eza -la'
       alias la='eza -la'
       alias cat='bat'
-      alias find='fd'
       alias grep='rg'
     '';
   };
