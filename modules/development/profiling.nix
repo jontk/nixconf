@@ -233,9 +233,9 @@ in
       (mkIf cfg.languageProfilers.rust cargo-flamegraph)
       # (mkIf cfg.languageProfilers.rust cargo-profiling)  # Package not available
       (mkIf cfg.languageProfilers.python py-spy)
-      (mkIf cfg.languageProfilers.python python311Packages.memory_profiler)
-      (mkIf cfg.languageProfilers.python python311Packages.line_profiler)
-      (mkIf cfg.languageProfilers.python python311Packages.snakeviz)
+      (mkIf cfg.languageProfilers.python python313Packages.memory_profiler)
+      (mkIf cfg.languageProfilers.python python313Packages.line_profiler)
+      (mkIf cfg.languageProfilers.python python313Packages.snakeviz)
       # (mkIf cfg.languageProfilers.node nodePackages.clinic)  # Package not available
       # (mkIf cfg.languageProfilers.node nodePackages."0x")  # Package not available
       

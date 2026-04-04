@@ -298,7 +298,7 @@ in
       (mkIf cfg.security.gitleaks gitleaks)
       (mkIf cfg.security.trivy trivy)
       (mkIf cfg.security.semgrep semgrep)
-      (mkIf cfg.security.bandit python311Packages.bandit)
+      (mkIf cfg.security.bandit python313Packages.bandit)
       (mkIf cfg.security.gosec gosec)
       
       # Static analysis tools
