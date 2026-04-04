@@ -54,14 +54,8 @@ in
       python3Packages.pylsp
     ] ++ lib.optionals cfg.development.nodejs [
       nodejs
-      npm
       yarn
       pnpm
-      nodePackages.typescript
-      nodePackages.ts-node
-      nodePackages.eslint
-      nodePackages.prettier
-      nodePackages.typescript-language-server
     ] ++ lib.optionals cfg.development.go [
       go
       gopls

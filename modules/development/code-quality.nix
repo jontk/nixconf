@@ -289,7 +289,8 @@ in
       
       # Formatting tools
       (mkIf cfg.formatting.enable shfmt)
-      (mkIf cfg.formatting.prettier.enable nodePackages.prettier)
+      # prettier installed per-project via npm to avoid building Node 22
+      # (mkIf cfg.formatting.prettier.enable nodePackages.prettier)
       nixpkgs-fmt
       treefmt
       
