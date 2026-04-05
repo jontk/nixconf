@@ -176,6 +176,8 @@
     };
     
     # Universal Access settings
+    # Requires Full Disk Access for terminal app in
+    # System Settings > Privacy & Security > Full Disk Access
     universalaccess = {
       reduceMotion = true; # Reduce animations
       reduceTransparency = false; # Keep transparency
@@ -360,6 +362,7 @@
       };
       
       # Music/iTunes settings
+      # Requires Full Disk Access and Media & Apple Music access for terminal app
       "com.apple.Music" = {
         userWantsPlaybackNotifications = false;
         dontAutomaticallySyncIPods = true;
@@ -633,7 +636,7 @@
       # Development
       "visual-studio-code"
       "iterm2"
-      "docker"
+      "docker-desktop"
       "zed"
       
       # Utilities
@@ -658,13 +661,15 @@
     ];
     
     # Mac App Store apps
-    masApps = {
-      "Amphetamine" = 937984704;
-      "Xcode" = 497799835;
-      "Keynote" = 409183694;
-      "Numbers" = 409203825;
-      "Pages" = 409201541;
-    };
+    # Disabled: brew bundle uses `mas get` which was removed in mas 2.x.
+    # Waiting on upstream Homebrew Bundle fix. Install manually via `mas install <id>`.
+    # masApps = {
+    #   "Amphetamine" = 937984704;
+    #   "Xcode" = 497799835;
+    #   "Keynote" = 409183694;
+    #   "Numbers" = 409203825;
+    #   "Pages" = 409201541;
+    # };
   };
   
   # Enable fonts
@@ -689,7 +694,9 @@
     };
 
     # Karabiner Elements for keyboard customization
-    karabiner-elements.enable = true;
+    # Disabled: nix-darwin service module is incompatible with karabiner 15.x
+    # (plist paths were restructured). Karabiner manages its own launch agents.
+    # karabiner-elements.enable = true;
     
     # Yabai window manager (optional, disabled by default)
     # yabai = {
@@ -866,12 +873,12 @@
 
     # Power management
     pmset -a sleep 0
+    pmset -b displaysleep 10
     pmset -b sleep 15
     pmset -a standbydelay 86400
 
     # Firewall
     /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate on
-    /usr/libexec/ApplicationFirewall/socketfilterfw --setloggingmode on
     /usr/libexec/ApplicationFirewall/socketfilterfw --setstealthmode on
 
     # Security hardening
