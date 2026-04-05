@@ -8,7 +8,7 @@ NixOS and macOS system configurations managed with Nix flakes, Home Manager, and
 |------|--------|-------------|
 | `nixos-dev` | x86_64-linux | Primary NixOS workstation (Sway, NVIDIA RTX 4060, SLURM) |
 | `devbox` | x86_64-linux | Secondary NixOS machine |
-| `macos-laptop` | aarch64-darwin | macOS laptop via nix-darwin |
+| `macos-laptop` | x86_64-darwin | macOS laptop via nix-darwin |
 
 ## Quick Start
 
@@ -20,8 +20,11 @@ cd nixconf
 # Setup secrets (NixOS only, required before first build)
 sudo ./scripts/setup-secrets.sh
 
-# Build and switch
+# Build and switch (NixOS)
 sudo nixos-rebuild switch --flake '.#nixos-dev'
+
+# Build and switch (macOS via nix-darwin)
+darwin-rebuild switch --flake '.#macos-laptop'
 
 # Or for Home Manager only
 home-manager switch --flake '.#jontk@nixos-dev'
@@ -123,6 +126,9 @@ services.slurm-local.enable = true;
 # Rebuild NixOS
 sudo nixos-rebuild switch --flake '.#nixos-dev'
 
+# Rebuild macOS (nix-darwin)
+darwin-rebuild switch --flake '.#macos-laptop'
+
 # Home Manager only
 home-manager switch --flake '.#jontk@nixos-dev'
 
@@ -140,10 +146,12 @@ nix flake check
 
 ```bash
 # Build without switching (test first)
-sudo nixos-rebuild build --flake '.#nixos-dev'
+sudo nixos-rebuild build --flake '.#nixos-dev'    # NixOS
+darwin-rebuild build --flake '.#macos-laptop'      # macOS
 
 # Switch to new configuration
-sudo nixos-rebuild switch --flake '.#nixos-dev'
+sudo nixos-rebuild switch --flake '.#nixos-dev'    # NixOS
+darwin-rebuild switch --flake '.#macos-laptop'      # macOS
 
 # Update all flake inputs
 nix flake update
