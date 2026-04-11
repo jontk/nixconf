@@ -275,71 +275,41 @@ in
 
   config = mkIf cfg.enable {
     # Code quality tools packages
-    environment.systemPackages = with pkgs; [
-      # Linting tools
-      (mkIf cfg.linting.languages.shell shellcheck)
-      (mkIf cfg.linting.languages.shell bashate)
-      (mkIf cfg.linting.languages.yaml yamllint)
-      # (mkIf cfg.linting.languages.json jsonlint)  # Package not available
-      (mkIf cfg.linting.languages.markdown mdl)
-      (mkIf cfg.linting.languages.dockerfile hadolint)
-      (mkIf cfg.linting.languages.terraform tflint)
-      (mkIf cfg.linting.languages.terraform checkov)
-      (mkIf cfg.linting.languages.github actionlint)
-      
-      # Formatting tools
-      (mkIf cfg.formatting.enable shfmt)
-      # prettier installed per-project via npm to avoid building Node 22
-      # (mkIf cfg.formatting.prettier.enable nodePackages.prettier)
-      nixpkgs-fmt
-      treefmt
-      
-      # Security scanning tools
-      (mkIf cfg.security.gitSecrets git-secrets)
-      (mkIf cfg.security.gitleaks gitleaks)
-      (mkIf cfg.security.trivy trivy)
-      (mkIf cfg.security.semgrep semgrep)
-      (mkIf cfg.security.bandit python313Packages.bandit)
-      (mkIf cfg.security.gosec gosec)
-      
-      # Static analysis tools
-      (mkIf cfg.staticAnalysis.enable sonar-scanner-cli)
-      (mkIf cfg.staticAnalysis.codeql codeql)
-      
-      # Pre-commit framework
-      (mkIf cfg.preCommit.enable pre-commit)
-      
-      # Documentation tools
-      (mkIf cfg.documentation.enable vale)
-      (mkIf cfg.documentation.docLinters markdownlint-cli)
-      
-      # Additional quality tools
-      tokei # Code statistics
-      # loc # Lines of code counter - removed due to lack of maintenance
-      scc # Fast code counter
-      # gitinspector # Git history analyzer - package not available
-      gource # Version control visualization
-      
-      # Dependency checking
-      cargo-audit
-      cargo-outdated
-      bundler-audit
-      python3Packages.safety # Python dependency checker
-      npm-check
-      pnpm-audit
-      
-      # License checking
-      license-scanner
-      
-      # Complexity analysis
-      lizard # Cyclomatic complexity analyzer
-      
-      # Multi-language tools
-      super-linter
-      megalinter
-      
-      # Git hooks helper scripts
-      (pkgs.writeShellScriptBin "init-code-quality" ''
+    environment.systemPackages = with pkgs;
+      lib.optionals cfg.linting.languages.shell [ shellcheck bashate ]
+      ++ lib.optionals cfg.linting.languages.yaml [ yamllint ]
+      ++ lib.optionals cfg.linting.languages.markdown [ mdl ]
+      ++ lib.optionals cfg.linting.languages.dockerfile [ hadolint ]
+      ++ lib.optionals cfg.linting.languages.terraform [ tflint checkov ]
+      ++ lib.optionals cfg.linting.languages.github [ actionlint ]
+      ++ lib.optionals cfg.formatting.enable [ shfmt ]
+      ++ [ nixpkgs-fmt treefmt ]
+      ++ lib.optionals cfg.security.gitSecrets [ git-secrets ]
+      ++ lib.optionals cfg.security.gitleaks [ gitleaks ]
+      ++ lib.optionals cfg.security.trivy [ trivy ]
+      ++ lib.optionals cfg.security.semgrep [ semgrep ]
+      ++ lib.optionals cfg.security.bandit [ python313Packages.bandit ]
+      ++ lib.optionals cfg.security.gosec [ gosec ]
+      ++ lib.optionals cfg.staticAnalysis.enable [ sonar-scanner-cli ]
+      ++ lib.optionals cfg.staticAnalysis.codeql [ codeql ]
+      ++ lib.optionals cfg.preCommit.enable [ pre-commit ]
+      ++ lib.optionals cfg.documentation.enable [ vale ]
+      ++ lib.optionals cfg.documentation.docLinters [ markdownlint-cli ]
+      ++ [
+        tokei
+        scc
+        gource
+        cargo-audit
+        cargo-outdated
+        bundler-audit
+        python3Packages.safety
+        npm-check
+        pnpm-audit
+        license-scanner
+        lizard
+        super-linter
+        megalinter
+        (pkgs.writeShellScriptBin "init-code-quality" ''
         #!/usr/bin/env bash
         set -euo pipefail
         
@@ -396,7 +366,7 @@ in
       '')
       
       # Security scan helper
-      (pkgs.writeShellScriptBin "security-scan" ''
+        (pkgs.writeShellScriptBin "security-scan" ''
         #!/usr/bin/env bash
         set -euo pipefail
         
@@ -435,7 +405,7 @@ in
       '')
       
       # Code quality report generator
-      (pkgs.writeShellScriptBin "code-quality-report" ''
+        (pkgs.writeShellScriptBin "code-quality-report" ''
         #!/usr/bin/env bash
         set -euo pipefail
         
@@ -481,7 +451,7 @@ in
         
         echo "Code quality reports generated in $REPORT_DIR/"
       '')
-    ];
+      ];
     
     # Shell aliases for code quality
     environment.shellAliases = {

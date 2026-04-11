@@ -240,7 +240,6 @@
     tree = "eza --tree";
     grep = "rg";
     # sed = "sd"; # Commented out - sd has different syntax than sed, causes issues
-    ps = "procs";
     du = "dust";
     df = "duf";
     top = "btop";
