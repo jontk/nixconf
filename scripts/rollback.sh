@@ -217,10 +217,8 @@ list_backups() {
     print_step "Available configuration backups:"
     
     if [[ -d "$BACKUP_DIR" ]]; then
-        local -a backups=()
-        local backup
-        mapfile -t backups < <(find "$BACKUP_DIR" -maxdepth 1 -type f -name 'config_backup_*.tar.gz' -printf '%T@ %p\n' 2>/dev/null | sort -nr | cut -d' ' -f2- | head -10)
-        for backup in "${backups[@]}"; do
+        # shellcheck disable=SC2012 # ls sort by mtime is portable across BSD/GNU
+        ls -1t "$BACKUP_DIR"/config_backup_*.tar.gz 2>/dev/null | head -10 | while read -r backup; do
             local filename
             local size
             local date
@@ -330,10 +328,11 @@ confirm_operation() {
 # Function to create emergency backup before rollback
 create_emergency_backup() {
     print_step "Creating emergency backup before rollback"
-    
+
     local timestamp
-    local backup_file="$BACKUP_DIR/emergency_backup_${timestamp}.tar.gz"
+    local backup_file
     timestamp=$(date '+%Y%m%d_%H%M%S')
+    backup_file="$BACKUP_DIR/emergency_backup_${timestamp}.tar.gz"
     
     mkdir -p "$BACKUP_DIR"
     
@@ -611,8 +610,9 @@ emergency_rollback() {
     
     # 2. Try most recent backup
     print_step "Attempting restore from most recent backup"
-    local latest_backup=""
-    latest_backup=$(find "$BACKUP_DIR" -maxdepth 1 -type f -name 'config_backup_*.tar.gz' -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -1 | cut -d' ' -f2-)
+    local latest_backup
+    # shellcheck disable=SC2012 # ls sort by mtime is portable across BSD/GNU
+    latest_backup=$(ls -1t "$BACKUP_DIR"/config_backup_*.tar.gz 2>/dev/null | head -1)
     if [[ -n "$latest_backup" ]]; then
         FORCE=true  # Force emergency operations
         if restore_from_backup "$latest_backup"; then
