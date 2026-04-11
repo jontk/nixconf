@@ -238,7 +238,9 @@ compare_to_baseline() {
     # Create current state snapshot
     local current_state
     current_state=$(mktemp)
-    
+    # shellcheck disable=SC2064 # expand $current_state now, not at trap time
+    trap "rm -f '$current_state'" RETURN
+
     create_baseline "current" > /dev/null
     mv "$BASELINE_DIR/baseline_current.json" "$current_state"
     
@@ -768,8 +770,8 @@ generate_health_report() {
     
     # Display report
     cat "$report_file"
-    rm -f -- "$current_state"
-    
+
+
     # Email report if configured
     if [[ -n "$ALERTS_EMAIL" ]]; then
         mail -s "Configuration Health Report - $(hostname)" "$ALERTS_EMAIL" < "$report_file"

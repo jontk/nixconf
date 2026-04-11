@@ -127,6 +127,8 @@ parse_args() {
     NO_BACKUP=false
     NO_CHECK=false
     FORCE=false
+    # shellcheck disable=SC2034 # kept for CLI compatibility; not consumed yet
+    VERBOSE=false
     SPECIFIC_INPUTS=""
     
     while [[ $# -gt 0 ]]; do
@@ -149,6 +151,11 @@ parse_args() {
                 ;;
             --force)
                 FORCE=true
+                shift
+                ;;
+            --verbose)
+                # shellcheck disable=SC2034 # kept for CLI compatibility; not consumed yet
+                VERBOSE=true
                 shift
                 ;;
             --timeout=*)
@@ -188,10 +195,11 @@ create_backup() {
     fi
     
     print_step "Creating backup of current configuration"
-    
+
     local timestamp
-    local backup_file="$BACKUP_DIR/config_backup_${timestamp}.tar.gz"
+    local backup_file
     timestamp=$(date '+%Y%m%d_%H%M%S')
+    backup_file="$BACKUP_DIR/config_backup_${timestamp}.tar.gz"
     
     # Create backup of important files
     tar -czf "$backup_file" \
@@ -214,18 +222,14 @@ create_backup() {
 
 # Function to cleanup old backups
 cleanup_old_backups() {
-    local -a backups=()
-    local backup_count=0
-
-    mapfile -t backups < <(find "$BACKUP_DIR" -maxdepth 1 -type f -name 'config_backup_*.tar.gz' -printf '%T@ %p\n' 2>/dev/null | sort -nr | cut -d' ' -f2-)
-    backup_count=${#backups[@]}
+    local backup_count
+    # shellcheck disable=SC2012 # ls sort by mtime is portable across BSD/GNU
+    backup_count=$(ls -1 "$BACKUP_DIR"/config_backup_*.tar.gz 2>/dev/null | wc -l)
 
     if [[ $backup_count -gt $MAX_BACKUPS ]]; then
         print_info "Cleaning up old backups (keeping $MAX_BACKUPS most recent)"
-        local old_backup
-        for old_backup in "${backups[@]:$MAX_BACKUPS}"; do
-            rm -f -- "$old_backup"
-        done
+        # shellcheck disable=SC2012
+        ls -1t "$BACKUP_DIR"/config_backup_*.tar.gz | tail -n +$((MAX_BACKUPS + 1)) | xargs rm -f
     fi
 }
 

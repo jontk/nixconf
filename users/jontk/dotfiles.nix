@@ -4,8 +4,10 @@ with lib;
 
 {
   # Dotfiles integration configuration for user jontk
+  # Disabled: dotfiles are managed by chezmoi directly (see CLAUDE.md).
+  # The legacy dotfiles-integration module is kept for reference only.
   modules.dotfilesIntegration = {
-    enable = true;
+    enable = false;
     
     # Use developer profile as the base
     profile = "developer";

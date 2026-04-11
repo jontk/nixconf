@@ -177,8 +177,13 @@ in
     database = {
       password = mkOption {
         type = types.str;
-        default = "";
-        description = "Optional password for the slurm MariaDB account; leave empty for unix_socket auth.";
+        default = "slurm";
+        description = ''
+          Password for the slurm MariaDB account used by slurmdbd.
+          Defaults to "slurm" because slurmdbd connects to MariaDB over
+          TCP (StorageHost=localhost:3306) where unix_socket auth does
+          not apply. Override if you manage the DB user out-of-band.
+        '';
       };
     };
   };
