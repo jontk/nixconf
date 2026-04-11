@@ -30,28 +30,28 @@ print_color() {
 }
 
 print_success() {
-    print_color $GREEN "✓ $1"
+    print_color "$GREEN" "✓ $1"
 }
 
 print_error() {
-    print_color $RED "✗ $1"
+    print_color "$RED" "✗ $1"
 }
 
 print_warning() {
-    print_color $YELLOW "⚠ $1"
+    print_color "$YELLOW" "⚠ $1"
 }
 
 print_info() {
-    print_color $BLUE "ℹ $1"
+    print_color "$BLUE" "ℹ $1"
 }
 
 print_step() {
-    print_color $PURPLE "▶ $1"
+    print_color "$PURPLE" "▶ $1"
 }
 
 print_header() {
     echo ""
-    print_color $CYAN "=== $1 ==="
+    print_color "$CYAN" "=== $1 ==="
     echo ""
 }
 
@@ -59,7 +59,8 @@ print_header() {
 log_message() {
     local level="$1"
     local message="$2"
-    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    local timestamp
+    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
     mkdir -p "$LOG_DIR"
     echo "[$timestamp] [$level] $message" >> "$LOG_DIR/rollback.log"
 }
@@ -171,7 +172,8 @@ parse_args() {
 
 # Function to list system generations
 list_system_generations() {
-    local platform=$(detect_platform)
+    local platform
+    platform=$(detect_platform)
     
     print_step "Available system generations:"
     
@@ -215,10 +217,16 @@ list_backups() {
     print_step "Available configuration backups:"
     
     if [[ -d "$BACKUP_DIR" ]]; then
-        ls -1t "$BACKUP_DIR"/config_backup_*.tar.gz 2>/dev/null | head -10 | while read -r backup; do
-            local filename=$(basename "$backup")
-            local size=$(du -h "$backup" | cut -f1)
-            local date=$(echo "$filename" | sed 's/config_backup_\([0-9]\{8\}_[0-9]\{6\}\)\.tar\.gz/\1/' | sed 's/_/ /' | sed 's/\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\) \([0-9]\{2\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)/\1-\2-\3 \4:\5:\6/')
+        local -a backups=()
+        local backup
+        mapfile -t backups < <(find "$BACKUP_DIR" -maxdepth 1 -type f -name 'config_backup_*.tar.gz' -printf '%T@ %p\n' 2>/dev/null | sort -nr | cut -d' ' -f2- | head -10)
+        for backup in "${backups[@]}"; do
+            local filename
+            local size
+            local date
+            filename=$(basename "$backup")
+            size=$(du -h "$backup" | cut -f1)
+            date=$(echo "$filename" | sed 's/config_backup_\([0-9]\{8\}_[0-9]\{6\}\)\.tar\.gz/\1/' | sed 's/_/ /' | sed 's/\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\) \([0-9]\{2\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)/\1-\2-\3 \4:\5:\6/')
             echo "  $filename ($size, $date)"
         done
     else
@@ -263,28 +271,28 @@ interactive_selection() {
     echo "4) Git commit"
     echo "5) Cancel"
     
-    read -p "Enter choice (1-5): " choice
+    read -r -p "Enter choice (1-5): " choice
     
     case $choice in
         1)
             COMMAND="generation"
             list_system_generations
-            read -p "Enter generation number: " TARGET
+            read -r -p "Enter generation number: " TARGET
             ;;
         2)
             COMMAND="home-generation"
             list_home_generations
-            read -p "Enter generation ID: " TARGET
+            read -r -p "Enter generation ID: " TARGET
             ;;
         3)
             COMMAND="backup"
             list_backups
-            read -p "Enter backup filename: " TARGET
+            read -r -p "Enter backup filename: " TARGET
             ;;
         4)
             COMMAND="git"
             list_git_commits
-            read -p "Enter commit hash or reference: " TARGET
+            read -r -p "Enter commit hash or reference: " TARGET
             ;;
         5)
             print_info "Rollback cancelled"
@@ -323,8 +331,9 @@ confirm_operation() {
 create_emergency_backup() {
     print_step "Creating emergency backup before rollback"
     
-    local timestamp=$(date '+%Y%m%d_%H%M%S')
+    local timestamp
     local backup_file="$BACKUP_DIR/emergency_backup_${timestamp}.tar.gz"
+    timestamp=$(date '+%Y%m%d_%H%M%S')
     
     mkdir -p "$BACKUP_DIR"
     
@@ -346,7 +355,8 @@ create_emergency_backup() {
 
 # Function to rollback to previous generation
 rollback_previous_generation() {
-    local platform=$(detect_platform)
+    local platform
+    platform=$(detect_platform)
     
     print_step "Rolling back to previous system generation"
     
@@ -397,7 +407,8 @@ rollback_previous_generation() {
 # Function to rollback to specific generation
 rollback_to_generation() {
     local generation_id="$1"
-    local platform=$(detect_platform)
+    local platform
+    platform=$(detect_platform)
     
     if [[ -z "$generation_id" ]]; then
         print_error "Generation ID not specified"
@@ -484,7 +495,8 @@ restore_from_backup() {
         
         # Rebuild system with restored configuration
         print_step "Rebuilding system with restored configuration"
-        local platform=$(detect_platform)
+        local platform
+        platform=$(detect_platform)
         
         case $platform in
             darwin)
@@ -532,8 +544,10 @@ rollback_git_commit() {
         return 1
     fi
     
-    local commit_hash=$(git rev-parse --short "$commit_ref")
-    local commit_message=$(git log -1 --format='%s' "$commit_ref")
+    local commit_hash
+    local commit_message
+    commit_hash=$(git rev-parse --short "$commit_ref")
+    commit_message=$(git log -1 --format='%s' "$commit_ref")
     
     print_step "Rolling back to git commit: $commit_hash ($commit_message)"
     confirm_operation "rollback to git commit" "$commit_hash"
@@ -552,7 +566,8 @@ rollback_git_commit() {
         
         # Rebuild system with rolled back configuration
         print_step "Rebuilding system with rolled back configuration"
-        local platform=$(detect_platform)
+        local platform
+        platform=$(detect_platform)
         
         case $platform in
             darwin)
@@ -584,7 +599,8 @@ emergency_rollback() {
     print_warning "Initiating emergency rollback to last known good state"
     
     # Try multiple recovery methods in order of preference
-    local platform=$(detect_platform)
+    local platform
+    platform=$(detect_platform)
     
     # 1. Try previous generation rollback
     print_step "Attempting previous generation rollback"
@@ -595,7 +611,8 @@ emergency_rollback() {
     
     # 2. Try most recent backup
     print_step "Attempting restore from most recent backup"
-    local latest_backup=$(ls -1t "$BACKUP_DIR"/config_backup_*.tar.gz 2>/dev/null | head -1)
+    local latest_backup=""
+    latest_backup=$(find "$BACKUP_DIR" -maxdepth 1 -type f -name 'config_backup_*.tar.gz' -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -1 | cut -d' ' -f2-)
     if [[ -n "$latest_backup" ]]; then
         FORCE=true  # Force emergency operations
         if restore_from_backup "$latest_backup"; then
@@ -631,7 +648,8 @@ verify_system() {
     
     # Basic system checks
     if command -v systemctl >/dev/null 2>&1; then
-        local failed_services=$(systemctl --failed --no-legend | wc -l)
+        local failed_services
+        failed_services=$(systemctl --failed --no-legend | wc -l)
         if [[ $failed_services -gt 0 ]]; then
             print_warning "$failed_services failed systemd services detected"
         else

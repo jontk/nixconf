@@ -32,28 +32,28 @@ print_color() {
 }
 
 print_success() {
-    print_color $GREEN "✓ $1"
+    print_color "$GREEN" "✓ $1"
 }
 
 print_error() {
-    print_color $RED "✗ $1"
+    print_color "$RED" "✗ $1"
 }
 
 print_warning() {
-    print_color $YELLOW "⚠ $1"
+    print_color "$YELLOW" "⚠ $1"
 }
 
 print_info() {
-    print_color $BLUE "ℹ $1"
+    print_color "$BLUE" "ℹ $1"
 }
 
 print_step() {
-    print_color $PURPLE "▶ $1"
+    print_color "$PURPLE" "▶ $1"
 }
 
 print_header() {
     echo ""
-    print_color $CYAN "=== $1 ==="
+    print_color "$CYAN" "=== $1 ==="
     echo ""
 }
 
@@ -61,7 +61,8 @@ print_header() {
 log_message() {
     local level="$1"
     local message="$2"
-    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    local timestamp
+    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
     echo "[$timestamp] [$level] $message" >> "$LOG_DIR/update.log"
 }
 
@@ -126,7 +127,6 @@ parse_args() {
     NO_BACKUP=false
     NO_CHECK=false
     FORCE=false
-    VERBOSE=false
     SPECIFIC_INPUTS=""
     
     while [[ $# -gt 0 ]]; do
@@ -149,10 +149,6 @@ parse_args() {
                 ;;
             --force)
                 FORCE=true
-                shift
-                ;;
-            --verbose)
-                VERBOSE=true
                 shift
                 ;;
             --timeout=*)
@@ -193,8 +189,9 @@ create_backup() {
     
     print_step "Creating backup of current configuration"
     
-    local timestamp=$(date '+%Y%m%d_%H%M%S')
+    local timestamp
     local backup_file="$BACKUP_DIR/config_backup_${timestamp}.tar.gz"
+    timestamp=$(date '+%Y%m%d_%H%M%S')
     
     # Create backup of important files
     tar -czf "$backup_file" \
@@ -217,11 +214,18 @@ create_backup() {
 
 # Function to cleanup old backups
 cleanup_old_backups() {
-    local backup_count=$(ls -1 "$BACKUP_DIR"/config_backup_*.tar.gz 2>/dev/null | wc -l)
-    
+    local -a backups=()
+    local backup_count=0
+
+    mapfile -t backups < <(find "$BACKUP_DIR" -maxdepth 1 -type f -name 'config_backup_*.tar.gz' -printf '%T@ %p\n' 2>/dev/null | sort -nr | cut -d' ' -f2-)
+    backup_count=${#backups[@]}
+
     if [[ $backup_count -gt $MAX_BACKUPS ]]; then
         print_info "Cleaning up old backups (keeping $MAX_BACKUPS most recent)"
-        ls -1t "$BACKUP_DIR"/config_backup_*.tar.gz | tail -n +$((MAX_BACKUPS + 1)) | xargs rm -f
+        local old_backup
+        for old_backup in "${backups[@]:$MAX_BACKUPS}"; do
+            rm -f -- "$old_backup"
+        done
     fi
 }
 
@@ -252,8 +256,9 @@ check_prerequisites() {
     fi
     
     # Check disk space (need at least 2GB for Nix operations)
-    local available_space=$(df "$CONFIG_ROOT" | tail -1 | awk '{print $4}')
+    local available_space
     local required_space=2097152  # 2GB in KB
+    available_space=$(df "$CONFIG_ROOT" | tail -1 | awk '{print $4}')
     
     if [[ $available_space -lt $required_space ]]; then
         print_error "Insufficient disk space. Need at least 2GB free."
@@ -267,7 +272,8 @@ check_prerequisites() {
     fi
     
     # Platform-specific checks
-    local platform=$(detect_platform)
+    local platform
+    platform=$(detect_platform)
     case $platform in
         darwin)
             if ! command -v darwin-rebuild >/dev/null 2>&1; then
@@ -303,7 +309,8 @@ check_for_updates() {
     }
     
     # Check if there are updates
-    local behind_count=$(git rev-list --count HEAD..origin/main 2>/dev/null || echo "0")
+    local behind_count
+    behind_count=$(git rev-list --count HEAD..origin/main 2>/dev/null || echo "0")
     
     if [[ $behind_count -gt 0 ]]; then
         print_info "Configuration is $behind_count commits behind remote"
@@ -328,19 +335,21 @@ update_inputs() {
     
     cd "$CONFIG_ROOT"
     
-    local update_cmd="nix flake update"
+    local -a update_cmd=(nix flake update)
+    local update_cmd_display="nix flake update"
     
     # Update specific inputs if specified
     if [[ -n "$SPECIFIC_INPUTS" ]]; then
         print_info "Updating specific inputs: $SPECIFIC_INPUTS"
         IFS=',' read -ra INPUTS <<< "$SPECIFIC_INPUTS"
         for input in "${INPUTS[@]}"; do
-            update_cmd="nix flake lock --update-input $input"
+            update_cmd=(nix flake lock --update-input "$input")
+            update_cmd_display="nix flake lock --update-input $input"
             if [[ "$DRY_RUN" == true ]]; then
-                print_info "Would run: $update_cmd"
+                print_info "Would run: $update_cmd_display"
             else
                 print_info "Updating input: $input"
-                timeout "$UPDATE_TIMEOUT" $update_cmd || {
+                timeout "$UPDATE_TIMEOUT" "${update_cmd[@]}" || {
                     print_error "Failed to update input: $input"
                     return 1
                 }
@@ -349,9 +358,9 @@ update_inputs() {
     else
         print_info "Updating all flake inputs"
         if [[ "$DRY_RUN" == true ]]; then
-            print_info "Would run: $update_cmd"
+            print_info "Would run: $update_cmd_display"
         else
-            timeout "$UPDATE_TIMEOUT" $update_cmd || {
+            timeout "$UPDATE_TIMEOUT" "${update_cmd[@]}" || {
                 print_error "Failed to update flake inputs"
                 return 1
             }
@@ -378,15 +387,19 @@ rebuild_system() {
     print_step "Rebuilding system configuration"
     
     cd "$CONFIG_ROOT"
-    local platform=$(detect_platform)
-    local rebuild_cmd=""
+    local platform
+    platform=$(detect_platform)
+    local -a rebuild_cmd=()
+    local rebuild_cmd_display=""
     
     case $platform in
         darwin)
-            rebuild_cmd="darwin-rebuild switch --flake ."
+            rebuild_cmd=(darwin-rebuild switch --flake .)
+            rebuild_cmd_display="darwin-rebuild switch --flake ."
             ;;
         nixos)
-            rebuild_cmd="sudo nixos-rebuild switch --flake ."
+            rebuild_cmd=(sudo nixos-rebuild switch --flake .)
+            rebuild_cmd_display="sudo nixos-rebuild switch --flake ."
             ;;
         *)
             print_error "Unsupported platform for rebuild: $platform"
@@ -395,15 +408,15 @@ rebuild_system() {
     esac
     
     if [[ "$DRY_RUN" == true ]]; then
-        print_info "Would run: $rebuild_cmd"
+        print_info "Would run: $rebuild_cmd_display"
         return 0
     fi
     
-    print_info "Running: $rebuild_cmd"
-    log_message "INFO" "Starting system rebuild: $rebuild_cmd"
+    print_info "Running: $rebuild_cmd_display"
+    log_message "INFO" "Starting system rebuild: $rebuild_cmd_display"
     
     # Run rebuild with timeout
-    if timeout "$UPDATE_TIMEOUT" $rebuild_cmd; then
+    if timeout "$UPDATE_TIMEOUT" "${rebuild_cmd[@]}"; then
         print_success "System rebuild completed successfully"
         log_message "INFO" "System rebuild completed successfully"
     else
@@ -420,7 +433,8 @@ verify_system() {
     # Basic system checks
     if command -v systemctl >/dev/null 2>&1; then
         # Check for failed services (NixOS)
-        local failed_services=$(systemctl --failed --no-legend | wc -l)
+        local failed_services
+        failed_services=$(systemctl --failed --no-legend | wc -l)
         if [[ $failed_services -gt 0 ]]; then
             print_warning "$failed_services failed systemd services detected"
             systemctl --failed --no-legend
@@ -439,7 +453,8 @@ verify_system() {
     fi
     
     # Platform-specific verification
-    local platform=$(detect_platform)
+    local platform
+    platform=$(detect_platform)
     case $platform in
         darwin)
             # Check if essential macOS services are running
@@ -462,7 +477,8 @@ verify_system() {
 cleanup_generations() {
     print_step "Cleaning up old system generations"
     
-    local platform=$(detect_platform)
+    local platform
+    platform=$(detect_platform)
     
     if [[ "$DRY_RUN" == true ]]; then
         print_info "Would clean up old generations"
@@ -498,7 +514,8 @@ cleanup_generations() {
 show_status() {
     print_header "System Status"
     
-    local platform=$(detect_platform)
+    local platform
+    platform=$(detect_platform)
     print_info "Platform: $platform"
     
     # Git status

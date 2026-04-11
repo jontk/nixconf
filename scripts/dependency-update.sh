@@ -98,16 +98,22 @@ check_updates() {
     cd "$REPO_ROOT"
     
     case "$check_type" in
-        "flake"|"all")
+        "all")
+            check_flake_updates
+            check_channel_updates
+            check_security_updates
+            check_system_updates
+            ;;
+        "flake")
             check_flake_updates
             ;;
-        "channels"|"all")
+        "channels")
             check_channel_updates
             ;;
-        "security"|"all")
+        "security")
             check_security_updates
             ;;
-        "system"|"all")
+        "system")
             check_system_updates
             ;;
     esac

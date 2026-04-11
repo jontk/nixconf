@@ -125,7 +125,8 @@ create_baseline() {
         # System state
         echo "  \"system\": {"
         if command -v nixos-rebuild >/dev/null 2>&1; then
-            local current_gen=$(nixos-rebuild list-generations | tail -1 | awk '{print $1}' 2>/dev/null || echo 'unknown')
+            local current_gen
+            current_gen=$(nixos-rebuild list-generations | tail -1 | awk '{print $1}' 2>/dev/null || echo 'unknown')
             echo "    \"type\": \"nixos\","
             echo "    \"generation\": \"$current_gen\","
             echo "    \"version\": \"$(nixos-version 2>/dev/null || echo 'unknown')\","
@@ -155,7 +156,7 @@ create_baseline() {
         done | sed '$ s/,$//'
         echo "    ],"
         echo "    \"total_files\": $(find . -name "*.nix" -type f | wc -l),"
-        echo "    \"config_hash\": \"$(find . -name "*.nix" -exec cat {} \\; | sha256sum | cut -d' ' -f1)\""
+        echo "    \"config_hash\": \"$(find . -name '*.nix' -exec cat {} \; | sha256sum | cut -d' ' -f1)\""
         echo "  },"
         
         # Services state
@@ -223,7 +224,8 @@ create_baseline() {
 # Compare current configuration to baseline
 compare_to_baseline() {
     local baseline_file="${1:-$BASELINE_DIR/latest.json}"
-    local report_file="/tmp/config-comparison-$(date +%Y%m%d_%H%M%S).txt"
+    local report_file
+    report_file="/tmp/config-comparison-$(date +%Y%m%d_%H%M%S).txt"
     
     log_info "Comparing current configuration to baseline..."
     
@@ -234,8 +236,8 @@ compare_to_baseline() {
     fi
     
     # Create current state snapshot
-    local current_state=$(mktemp)
-    trap "rm -f $current_state" EXIT
+    local current_state
+    current_state=$(mktemp)
     
     create_baseline "current" > /dev/null
     mv "$BASELINE_DIR/baseline_current.json" "$current_state"
@@ -414,8 +416,8 @@ check_drift() {
         fi
         
         # Unpushed commits
-        if git rev-parse --abbrev-ref --symbolic-full-name @{u} >/dev/null 2>&1; then
-            unpushed=$(git rev-list --count @{u}..HEAD 2>/dev/null || echo 0)
+        if git rev-parse --abbrev-ref --symbolic-full-name '@{u}' >/dev/null 2>&1; then
+            unpushed=$(git rev-list --count '@{u}'..HEAD 2>/dev/null || echo 0)
             if [[ $unpushed -gt 0 ]]; then
                 log_warning "Found $unpushed unpushed commits"
                 ((drift_issues++))
@@ -423,7 +425,7 @@ check_drift() {
         fi
         
         # Untracked important files
-        important_untracked=$(git ls-files --others --exclude-standard | grep -E '\.(nix|yaml|conf)$' | wc -l)
+        important_untracked=$(git ls-files --others --exclude-standard | grep -Ec '\.(nix|yaml|conf)$' || true)
         if [[ $important_untracked -gt 0 ]]; then
             log_warning "Found $important_untracked untracked configuration files"
             ((drift_issues++))
@@ -728,7 +730,8 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 # Generate health report
 generate_health_report() {
-    local report_file="/tmp/config-health-report-$(date +%Y%m%d_%H%M%S).txt"
+    local report_file
+    report_file="/tmp/config-health-report-$(date +%Y%m%d_%H%M%S).txt"
     
     log_info "Generating configuration health report..."
     
@@ -765,6 +768,7 @@ generate_health_report() {
     
     # Display report
     cat "$report_file"
+    rm -f -- "$current_state"
     
     # Email report if configured
     if [[ -n "$ALERTS_EMAIL" ]]; then

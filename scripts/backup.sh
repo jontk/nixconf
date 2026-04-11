@@ -222,9 +222,12 @@ list_backups() {
     local count=0
     for backup in "$BACKUP_DIR"/nixconf_backup_*.tar.gz; do
         if [[ -f "$backup" ]]; then
-            local basename=$(basename "$backup" .tar.gz)
-            local size=$(du -h "$backup" | cut -f1)
-            local date=$(echo "$basename" | sed 's/nixconf_backup_//' | sed 's/_/ /')
+            local basename
+            local size
+            local date
+            basename=$(basename "$backup" .tar.gz)
+            size=$(du -h "$backup" | cut -f1)
+            date=$(echo "$basename" | sed 's/nixconf_backup_//' | sed 's/_/ /')
             printf "  %-30s  %8s  %s\n" "$basename" "$size" "$date"
             ((count++))
         fi
@@ -272,7 +275,8 @@ restore_backup() {
     
     # Extract backup
     log_info "Extracting backup: $backup_name"
-    local temp_dir=$(mktemp -d)
+    local temp_dir
+    temp_dir=$(mktemp -d)
     tar -xzf "$backup_file" -C "$temp_dir"
     
     # Restore Nix configuration
@@ -315,8 +319,9 @@ verify_backup() {
         # Verify all backups
         for backup in "$BACKUP_DIR"/nixconf_backup_*.tar.gz; do
             if [[ -f "$backup" ]]; then
-                local basename=$(basename "$backup" .tar.gz)
+                local basename
                 local checksum_file="${backup}.sha256"
+                basename=$(basename "$backup" .tar.gz)
                 
                 if [[ -f "$checksum_file" ]]; then
                     if (cd "$BACKUP_DIR" && sha256sum -c "${basename}.tar.gz.sha256" >/dev/null 2>&1); then
@@ -346,7 +351,8 @@ cleanup_old_backups() {
     while IFS= read -r -d $'\0' backup; do
         ((count++))
         if [[ $count -gt $MAX_LOCAL_BACKUPS ]]; then
-            local basename=$(basename "$backup" .tar.gz)
+            local basename
+            basename=$(basename "$backup" .tar.gz)
             log_info "Removing old backup: $basename"
             rm -f "$backup" "${backup}.sha256"
         fi
