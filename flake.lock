@@ -33,19 +33,6 @@
         "type": "github"
       }
     },
-    "dotfiles": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1775314801,
-        "narHash": "sha256-i6diNLHqD4+XANVXmkU4DzpKXcHIxvjZ3QET8np41MI=",
-        "path": "/Users/jontk/src/github.com/jontk/dotfiles-chezmoi",
-        "type": "path"
-      },
-      "original": {
-        "path": "/Users/jontk/src/github.com/jontk/dotfiles-chezmoi",
-        "type": "path"
-      }
-    },
     "firefox-addons": {
       "inputs": {
         "nixpkgs": [
@@ -557,7 +544,6 @@
     },
     "root": {
       "inputs": {
-        "dotfiles": "dotfiles",
         "firefox-addons": "firefox-addons",
         "flake-parts": "flake-parts",
         "flake-utils": "flake-utils",

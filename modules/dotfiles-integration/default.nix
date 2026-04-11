@@ -4,7 +4,7 @@ with lib;
 
 let
   cfg = config.modules.dotfilesIntegration;
-  dotfilesInput = inputs.dotfiles;
+  dotfilesInput = if inputs ? dotfiles then inputs.dotfiles else null;
 in
 {
   imports = [ 
@@ -76,13 +76,20 @@ in
     };
     
     dotfilesPath = mkOption {
-      type = types.path;
+      type = types.nullOr types.path;
       default = dotfilesInput;
       description = "Path to the dotfiles repository";
     };
   };
   
   config = mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = cfg.dotfilesPath != null;
+        message = "modules.dotfilesIntegration.enable requires a dotfilesPath or an inputs.dotfiles flake input.";
+      }
+    ];
+
     # Module selection is now handled by home-manager-modules.nix
     # based on YAML configuration
   };

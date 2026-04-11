@@ -135,7 +135,9 @@
       
       grafana = {
         enable = true;
-        adminPassword = "change-me"; # Override in /etc/nixos/secrets or via sops
+        listenAddress = "127.0.0.1";
+        port = 3300;
+        adminPassword = "change-me";
         theme = "dark";
       };
       

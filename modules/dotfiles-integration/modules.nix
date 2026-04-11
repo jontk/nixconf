@@ -5,6 +5,7 @@ with lib;
 let
   cfg = config.modules.dotfilesIntegration;
   dotfilesPath = cfg.dotfilesPath;
+  dotfilesRoot = if dotfilesPath == null then "/var/empty" else toString dotfilesPath;
   
   # Module metadata and mappings
   moduleDefinitions = {
@@ -13,10 +14,10 @@ let
       name = "Shell Configuration";
       description = "Bash and Zsh configuration with aliases and functions";
       files = {
-        aliases = "${dotfilesPath}/../../modules/shell/shell_aliases";
-        functions = "${dotfilesPath}/../../modules/shell/shell_functions";
-        bashrc = "${dotfilesPath}/../../modules/shell/bashrc";
-        zshrc = "${dotfilesPath}/../../modules/shell/zshrc";
+        aliases = "${dotfilesRoot}/../../modules/shell/shell_aliases";
+        functions = "${dotfilesRoot}/../../modules/shell/shell_functions";
+        bashrc = "${dotfilesRoot}/../../modules/shell/bashrc";
+        zshrc = "${dotfilesRoot}/../../modules/shell/zshrc";
       };
       dependencies = [];
       platforms = [ "linux" "darwin" ];
@@ -26,9 +27,9 @@ let
       name = "Git Configuration";
       description = "Git configuration with aliases and hooks";
       files = {
-        config = "${dotfilesPath}/../../modules/git/gitconfig";
-        ignore = "${dotfilesPath}/../../modules/git/gitignore_global";
-        aliases = "${dotfilesPath}/../../modules/git/git_aliases";
+        config = "${dotfilesRoot}/../../modules/git/gitconfig";
+        ignore = "${dotfilesRoot}/../../modules/git/gitignore_global";
+        aliases = "${dotfilesRoot}/../../modules/git/git_aliases";
       };
       dependencies = [];
       platforms = [ "linux" "darwin" ];
@@ -38,8 +39,8 @@ let
       name = "Tmux Configuration";
       description = "Terminal multiplexer configuration";
       files = {
-        config = "${dotfilesPath}/../../modules/tmux/tmux.conf";
-        plugins = "${dotfilesPath}/../../modules/tmux/plugins.conf";
+        config = "${dotfilesRoot}/../../modules/tmux/tmux.conf";
+        plugins = "${dotfilesRoot}/../../modules/tmux/plugins.conf";
       };
       dependencies = [];
       platforms = [ "linux" "darwin" ];
@@ -49,8 +50,8 @@ let
       name = "Editor Configurations";
       description = "Vim and Neovim configurations";
       files = {
-        vim = "${dotfilesPath}/../../modules/editors/vimrc";
-        neovim = "${dotfilesPath}/../../modules/editors/init.vim";
+        vim = "${dotfilesRoot}/../../modules/editors/vimrc";
+        neovim = "${dotfilesRoot}/../../modules/editors/init.vim";
       };
       dependencies = [];
       platforms = [ "linux" "darwin" ];
@@ -61,8 +62,8 @@ let
       name = "Docker Configuration";
       description = "Docker aliases and helper functions";
       files = {
-        aliases = "${dotfilesPath}/../../modules/docker/docker_aliases";
-        functions = "${dotfilesPath}/../../modules/docker/docker_functions";
+        aliases = "${dotfilesRoot}/../../modules/docker/docker_aliases";
+        functions = "${dotfilesRoot}/../../modules/docker/docker_functions";
       };
       dependencies = [ "shell" ];
       platforms = [ "linux" "darwin" ];
@@ -72,8 +73,8 @@ let
       name = "Go Development";
       description = "Go development environment configuration";
       files = {
-        config = "${dotfilesPath}/../../modules/golang/go_config";
-        aliases = "${dotfilesPath}/../../modules/golang/go_aliases";
+        config = "${dotfilesRoot}/../../modules/golang/go_config";
+        aliases = "${dotfilesRoot}/../../modules/golang/go_aliases";
       };
       dependencies = [ "shell" ];
       platforms = [ "linux" "darwin" ];
@@ -83,8 +84,8 @@ let
       name = "Python Development";
       description = "Python development environment configuration";
       files = {
-        config = "${dotfilesPath}/../../modules/python/python_config";
-        aliases = "${dotfilesPath}/../../modules/python/python_aliases";
+        config = "${dotfilesRoot}/../../modules/python/python_config";
+        aliases = "${dotfilesRoot}/../../modules/python/python_aliases";
       };
       dependencies = [ "shell" ];
       platforms = [ "linux" "darwin" ];
@@ -94,8 +95,8 @@ let
       name = "Node.js Development";
       description = "Node.js and npm configuration";
       files = {
-        npmrc = "${dotfilesPath}/../../modules/nodejs/npmrc";
-        aliases = "${dotfilesPath}/../../modules/nodejs/node_aliases";
+        npmrc = "${dotfilesRoot}/../../modules/nodejs/npmrc";
+        aliases = "${dotfilesRoot}/../../modules/nodejs/node_aliases";
       };
       dependencies = [ "shell" ];
       platforms = [ "linux" "darwin" ];
@@ -105,8 +106,8 @@ let
       name = "Rust Development";
       description = "Rust development environment configuration";
       files = {
-        config = "${dotfilesPath}/../../modules/rust/cargo_config";
-        aliases = "${dotfilesPath}/../../modules/rust/rust_aliases";
+        config = "${dotfilesRoot}/../../modules/rust/cargo_config";
+        aliases = "${dotfilesRoot}/../../modules/rust/rust_aliases";
       };
       dependencies = [ "shell" ];
       platforms = [ "linux" "darwin" ];
@@ -116,8 +117,8 @@ let
       name = "Kubernetes Tools";
       description = "Kubernetes and kubectl configuration";
       files = {
-        config = "${dotfilesPath}/../../modules/kubernetes/kube_config";
-        aliases = "${dotfilesPath}/../../modules/kubernetes/kube_aliases";
+        config = "${dotfilesRoot}/../../modules/kubernetes/kube_config";
+        aliases = "${dotfilesRoot}/../../modules/kubernetes/kube_aliases";
       };
       dependencies = [ "shell" ];
       platforms = [ "linux" "darwin" ];
