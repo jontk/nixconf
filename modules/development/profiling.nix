@@ -225,51 +225,32 @@ in
 
   config = mkIf cfg.enable ({
     # Performance profiling and debugging packages
-    environment.systemPackages = with pkgs; [
-      # System profilers (Linux-only, in isNixOS section below)
-      
-      # Language-specific profilers
-      (mkIf cfg.languageProfilers.go pprof)
-      (mkIf cfg.languageProfilers.rust cargo-flamegraph)
-      # (mkIf cfg.languageProfilers.rust cargo-profiling)  # Package not available
-      (mkIf cfg.languageProfilers.python py-spy)
-      (mkIf cfg.languageProfilers.python python313Packages.memory_profiler)
-      (mkIf cfg.languageProfilers.python python313Packages.line_profiler)
-      (mkIf cfg.languageProfilers.python python313Packages.snakeviz)
-      # (mkIf cfg.languageProfilers.node nodePackages.clinic)  # Package not available
-      # (mkIf cfg.languageProfilers.node nodePackages."0x")  # Package not available
-      
-      # Debuggers (cross-platform)
-      (mkIf cfg.debuggers.lldb lldb)
-      
-      # Memory tools (Linux-only, in isNixOS section below)
-      
-      # Benchmarking tools
-      (mkIf cfg.benchmarking.hyperfine hyperfine)
-      (mkIf cfg.benchmarking.wrk wrk)
-      (mkIf cfg.benchmarking.vegeta vegeta)
-      httperf
-      jmeter
-      
-      # Visualization tools
-      (mkIf cfg.visualization.flamegraph flamegraph)
-      
-      # Additional profiling tools
-      gperftools
-      jemalloc
-      mimalloc
-
-      # System monitoring during profiling
-      htop
-      btop
-
-      # Disk I/O profiling
-      ioping
-      fio
-
-      # Network profiling
-      iperf3
-    ] ++ lib.optionals isNixOS [
+    environment.systemPackages = with pkgs;
+      lib.optionals cfg.languageProfilers.go [ pprof ]
+      ++ lib.optionals cfg.languageProfilers.rust [ cargo-flamegraph ]
+      ++ lib.optionals cfg.languageProfilers.python [
+        py-spy
+        python313Packages.memory_profiler
+        python313Packages.line_profiler
+        python313Packages.snakeviz
+      ]
+      ++ lib.optionals cfg.debuggers.lldb [ lldb ]
+      ++ lib.optionals cfg.benchmarking.hyperfine [ hyperfine ]
+      ++ lib.optionals cfg.benchmarking.wrk [ wrk ]
+      ++ lib.optionals cfg.benchmarking.vegeta [ vegeta ]
+      ++ [ httperf jmeter ]
+      ++ lib.optionals cfg.visualization.flamegraph [ flamegraph ]
+      ++ [
+        gperftools
+        jemalloc
+        mimalloc
+        htop
+        btop
+        ioping
+        fio
+        iperf3
+      ]
+      ++ lib.optionals isNixOS [
       # Linux-only tools
       linuxPackages.perf
       bpftools

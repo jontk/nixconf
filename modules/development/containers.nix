@@ -223,34 +223,24 @@ in
 
   config = mkIf cfg.enable ({
     # Container tools packages
-    environment.systemPackages = with pkgs; [
-      # Docker tools
-      (mkIf cfg.docker.enable docker)
-      (mkIf (cfg.docker.enable && cfg.docker.compose.enable) docker-compose)
-      docker-credential-helpers
-      
-      # Podman tools
-      (mkIf cfg.podman.enable podman)
-      (mkIf cfg.podman.enable podman-compose)
-      (mkIf cfg.podman.enable buildah)
-      (mkIf cfg.podman.enable skopeo)
-      
-      # Container utilities
-      (mkIf cfg.tools.dive dive)
-      (mkIf cfg.tools.lazydocker lazydocker)
-      (mkIf cfg.tools.ctop ctop)
-      (mkIf cfg.tools.hadolint hadolint)
-      
-      # Additional tools
-      docker-slim
-      dockerfile-language-server-nodejs
-      container-diff
-      cosign
-      crane
-      regctl
-      
-      # Development container tools
-      (mkIf cfg.devcontainers.enable (pkgs.writeShellScriptBin "devcontainer-init" ''
+    environment.systemPackages = with pkgs;
+      lib.optionals cfg.docker.enable [ docker ]
+      ++ lib.optionals (cfg.docker.enable && cfg.docker.compose.enable) [ docker-compose ]
+      ++ [ docker-credential-helpers ]
+      ++ lib.optionals cfg.podman.enable [ podman podman-compose buildah skopeo ]
+      ++ lib.optionals cfg.tools.dive [ dive ]
+      ++ lib.optionals cfg.tools.lazydocker [ lazydocker ]
+      ++ lib.optionals cfg.tools.ctop [ ctop ]
+      ++ lib.optionals cfg.tools.hadolint [ hadolint ]
+      ++ [
+        docker-slim
+        dockerfile-language-server-nodejs
+        container-diff
+        cosign
+        crane
+        regctl
+      ]
+      ++ lib.optionals cfg.devcontainers.enable [ (pkgs.writeShellScriptBin "devcontainer-init" ''
         #!/usr/bin/env bash
         set -euo pipefail
         
@@ -279,10 +269,8 @@ in
             exit 1
             ;;
         esac
-      ''))
-      
-      # Docker compose stack generator
-      (mkIf (cfg.development.stacks != {}) (pkgs.writeShellScriptBin "dev-stack" ''
+      '') ]
+      ++ lib.optionals (cfg.development.stacks != {}) [ (pkgs.writeShellScriptBin "dev-stack" ''
         #!/usr/bin/env bash
         set -euo pipefail
         
@@ -309,8 +297,7 @@ in
             exit 1
             ;;
         esac
-      ''))
-    ];
+      '') ];
     
     # Environment variables
     environment.variables = mkMerge [
@@ -321,8 +308,10 @@ in
       {
         # Container development paths
         DOCKER_CONFIG = "$HOME/.docker";
-        CONTAINER_HOST = mkIf cfg.podman.enable "unix:///run/user/$UID/podman/podman.sock";
       }
+      (mkIf cfg.podman.enable {
+        CONTAINER_HOST = "unix:///run/user/$UID/podman/podman.sock";
+      })
     ];
     
     # Shell aliases
