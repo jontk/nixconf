@@ -63,15 +63,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     
-    # Dotfiles repository for integration
-    # Point to local chezmoi dotfiles; set flake=false since it's not a flake
-    dotfiles = {
-      url = "path:/Users/jontk/src/github.com/jontk/dotfiles-chezmoi";
-      flake = false;
-    };
   };
 
-  outputs = { self, nixpkgs, nixpkgs-stable, nix-darwin, home-manager, hyprland, nixos-hardware, flake-utils, flake-parts, rust-overlay, nix-vscode-extensions, firefox-addons, sops-nix, dotfiles }:
+  outputs = { self, nixpkgs, nixpkgs-stable, nix-darwin, home-manager, hyprland, nixos-hardware, flake-utils, flake-parts, rust-overlay, nix-vscode-extensions, firefox-addons, sops-nix }:
     let
       systems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
       
@@ -108,7 +102,7 @@
             inherit system modules;
             specialArgs = specialArgs // {
               inherit self nixpkgs nixpkgs-stable pkgs isDarwin isNixOS;
-              inputs = { inherit rust-overlay nix-vscode-extensions firefox-addons sops-nix dotfiles; };
+              inputs = { inherit rust-overlay nix-vscode-extensions firefox-addons sops-nix; };
             };
           }
         else
@@ -116,7 +110,7 @@
             inherit system modules;
             specialArgs = specialArgs // {
               inherit self nixpkgs nixpkgs-stable nixos-hardware pkgs isDarwin isNixOS;
-              inputs = { inherit hyprland rust-overlay nix-vscode-extensions firefox-addons sops-nix dotfiles; };
+              inputs = { inherit hyprland rust-overlay nix-vscode-extensions firefox-addons sops-nix; };
             };
           };
       

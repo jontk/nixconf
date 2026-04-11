@@ -3,6 +3,9 @@
 let
   cfg = config.services.slurm-local;
   slurmPackage = pkgs.callPackage ./slurm-package.nix {};
+  mysqlPasswordLine = lib.optionalString (cfg.database.password != "") ''
+    StoragePass=${cfg.database.password}
+  '';
 
   slurmConf = ''
     # SLURM Local Dev Cluster Configuration
@@ -87,7 +90,7 @@ let
     StorageHost=localhost
     StoragePort=3306
     StorageUser=slurm
-    StoragePass=slurm
+    ${mysqlPasswordLine}
     StorageLoc=slurm_acct_db
 
     # Purge old data after 6 months
@@ -168,6 +171,14 @@ in
         type = types.port;
         default = 6820;
         description = "Port for slurmrestd to listen on";
+      };
+    };
+
+    database = {
+      password = mkOption {
+        type = types.str;
+        default = "";
+        description = "Optional password for the slurm MariaDB account; leave empty for unix_socket auth.";
       };
     };
   };

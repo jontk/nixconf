@@ -58,6 +58,12 @@ in
     
     grafana = {
       enable = mkEnableOption "Grafana visualization" // { default = true; };
+
+      listenAddress = mkOption {
+        type = types.str;
+        default = "127.0.0.1";
+        description = "Address for Grafana to bind to";
+      };
       
       port = mkOption {
         type = types.port;
@@ -76,6 +82,12 @@ in
         default = "dark";
         description = "Default UI theme";
       };
+    };
+
+    openFirewall = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Open firewall ports for monitoring endpoints";
     };
     
     loki = {
@@ -258,6 +270,7 @@ in
       enable = true;
       settings = {
         server = {
+          http_addr = cfg.grafana.listenAddress;
           http_port = cfg.grafana.port;
           domain = "localhost";
           root_url = "http://localhost:${toString cfg.grafana.port}";
@@ -296,6 +309,7 @@ in
         
         datasources.settings.datasources = [
           {
+            uid = "prometheus";
             name = "Prometheus";
             type = "prometheus";
             access = "proxy";
@@ -303,6 +317,7 @@ in
             isDefault = true;
           }
         ] ++ lib.optional cfg.loki.enable {
+          uid = "loki";
           name = "Loki";
           type = "loki";
           access = "proxy";
@@ -1195,11 +1210,12 @@ in
     };
     
     # Firewall rules for monitoring services
-    networking.firewall.allowedTCPPorts = 
+    networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall (
       lib.optional cfg.prometheus.enable cfg.prometheus.port
       ++ lib.optional cfg.grafana.enable cfg.grafana.port
       ++ lib.optional cfg.loki.enable cfg.loki.port
-      ++ lib.optional cfg.alertmanager.enable cfg.alertmanager.port;
+      ++ lib.optional cfg.alertmanager.enable cfg.alertmanager.port
+    );
     
     # System packages for monitoring
     environment.systemPackages = with pkgs; [
