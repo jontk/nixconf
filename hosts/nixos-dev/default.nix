@@ -558,6 +558,8 @@
     btrfs-progs
     xfsprogs
     cifs-utils
+    erofs-utils   # mkfs.erofs, fsck.erofs — EROFS filesystem tools for composefs bundles
+    composefs     # mkcomposefs, composefs-info, mount.composefs — composefs image creation
     
     # Compression
     zip
