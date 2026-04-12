@@ -223,6 +223,8 @@
     firewall = {
       enable = true;
       allowPing = true;
+      # Trust libvirt bridge so VMs can DHCP and communicate with host services
+      trustedInterfaces = [ "virbr0" ];
       # Open ports for development
       allowedTCPPorts = [
         22    # SSH
@@ -917,6 +919,8 @@
         ovmf.enable = true;
         swtpm.enable = true;
       };
+      # Start the default NAT network on boot so VMs get DHCP
+      onBoot = "start";
     };
     
     # Podman as Docker alternative
